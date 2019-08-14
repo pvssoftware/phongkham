@@ -66,14 +66,14 @@
             var time_take_medicine = $("#time_take_medicine").val();
             var valid = true;
 
-            if(!ValidateDigit(parseInt(dose))){
+            if(!ValidateDigit(dose)){
             $("#alert_dose").text("Giá trị nhập không hợp lệ");
               valid &= false;
             } else{
                 $("#alert_dose").text("");
             }
 
-            if(!ValidateDigit(parseInt(quantity))){
+            if(!ValidateDigit(quantity)){
             $("#alert_quantity").text("Giá trị nhập không hợp lệ");
               valid &= false;
             } else{

@@ -54,7 +54,8 @@ $(document).ready(function(){
         var import_price = $("#import_price").val();
         var quantity = $("#quantity").val();
         var valid = true;
-        console.log(sale_price);
+
+        console.log(parseInt(quantity));
         console.log((ValidateDigit(sale_price)));
 
         if(name ===""){
@@ -69,19 +70,19 @@ $(document).ready(function(){
         } else{
             $("#alert_full_name").text("");
         }
-        if(!ValidateDigit(parseInt(sale_price))){
+        if(!ValidateDigit(sale_price)){
             $("#alert_sale_price").text("Bạn nên nhập giá bán của thuốc");
             valid &= false;
         } else{
             $("#alert_sale_price").text("");
         }
-        if(!ValidateDigit(parseInt(import_price))){
+        if(!ValidateDigit(import_price)){
             $("#alert_import_price").text("Bạn nên nhập giá mua vào của thuốc");
             valid &= false;
         } else{
             $("#alert_import_price").text("");
         }
-        if(!ValidateDigit(parseInt(quantity))){
+        if(!ValidateDigit(quantity)){
             $("#alert_quantity").text("Bạn nên nhập số lượng thuốc");
             valid &= false;
         } else{
