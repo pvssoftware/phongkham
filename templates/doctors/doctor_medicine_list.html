@@ -2,11 +2,21 @@
  {% block content %}
 
 <div class="container">
+    <form action="{% url 'medicine_list' doctor.pk %}" class="search_drug_form" method="post">
+        {% csrf_token %}
+        <div class="input-group my-3">
+        <input type="text" class="form-control" placeholder="Nhập tên thuốc cần tìm" id="search_drug" name="search_drug">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary btn-finished" type="button">Tìm thuốc</button>
+        </div>
+        </div>
+        
+    </form>
     <div class="row my-3">
-        <div class="col-9">
+        <div class="col-sm-9">
             <h3 class="">Danh sách thuốc trong kho</h3>
         </div>
-        <div class="col-3">
+        <div class="col-sm-3">
             <button class="btn btn-submit" type="button"><a href="{% url 'medicine_create' doctor.pk %}">Thêm thuốc</a></button>
         </div>
     </div>
@@ -125,6 +135,18 @@
             let cost = parseInt($(this).text());
             $(this).text(cost.toLocaleString());
         }); // end each
+
+        $(".btn-finished").click(function(){
+            var search_drug = $("#search_drug").val();
+            var valid = true;
+
+            if(search_drug === ""){
+                valid &= false;
+            }
+            if(valid){
+                $(".search_drug_form").submit();
+            }
+        }); // end click
 
     }); //end ready
 </script>

@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit
+from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit, search_drugs
 
 
 
@@ -9,6 +9,7 @@ urlpatterns = [
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/search/$",search_navbar,name="search_navbar"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/$",DoctorProfileView.as_view(),name="doctor_profile"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medicine-list/$",MedicineList.as_view(),name="medicine_list"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/search-drugs/$",search_drugs,name="search_drugs"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medicine-create/$",medicine_create,name="medicine_create"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medicine-edit/(?P<pk_medicine>\d+)/$",medicine_edit,name="medicine_edit"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record-create/$",medical_record_create,name="medical_record_create"),

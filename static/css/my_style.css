@@ -108,3 +108,15 @@
     color: #d9534f;
     font-size: 15px;
 }
+
+
+
+
+
+
+
+@media screen and (min-width: 768px){
+	.search_drug_form{
+        width: 70%;
+    }
+}

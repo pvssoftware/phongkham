@@ -17,16 +17,29 @@ def search_navbar(request,pk_doctor):
     user = User.objects.get(pk=pk_doctor)
     if user.doctor:
         form = SearchNavBarForm(request.GET)
-        print(form)
-        results = MedicalRecord.objects.filter(Q(doctor=user),Q (full_name__icontains=form.cleaned_data['search_navbar']) | Q(identity_card__icontains=form.cleaned_data["search_navbar"]))
+        if form.is_valid():
+            results = MedicalRecord.objects.filter(Q(doctor=user),Q (full_name__icontains=form.cleaned_data['search_navbar']) | Q(identity_card__icontains=form.cleaned_data["search_navbar"]))
 
-        return render(request,'doctors/doctor_search_navbar.html',{"results":results,"pk_doctor":pk_doctor})
+            return render(request,'doctors/doctor_search_navbar.html',{"results":results,"pk_doctor":pk_doctor})
 
 # Medicine List view
 class MedicineList(MedicineMixin,PageLinksMixin):
     model = Medicine
     template_name = 'doctors/doctor_medicine_list.html'
     paginate_by = 10
+
+# Search medicine
+def search_drugs(request,pk_doctor):
+    doctor = User.objects.get(pk=pk_doctor)
+    if doctor == request.user:
+        form = SearchDrugForm(request.GET)
+        if form.is_valid():
+
+            search_drug_value = form.cleaned_data["search_drug"]
+
+            drug_results = Medicine.objects.filter(Q(name__icontains=search_drug_value)| Q(full_name__icontains=search_drug_value))
+
+            return render(request,'doctors/doctor_search_drugs.html',{"pk_doctor":pk_doctor,"drug_results":drug_results})
 
 # Medicine create view
 def medicine_create(request,pk_doctor):
@@ -189,16 +202,9 @@ def prescription_drug(request, pk_doctor, pk_mrecord, pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
         history = MedicalHistory.objects.get(pk=pk_history)
-        if request.method == "POST":
-            form = SearchDrugForm(request.POST)
-            if form.is_valid():
-                search_drug_value = form.cleaned_data["search_drug"]
-
-                drug_results = Medicine.objects.filter(Q(name__icontains=search_drug_value)| Q(full_name__icontains=search_drug_value))
-
-                return render(request,"doctors/doctor_drug_results.html",{"pk_doctor":pk_doctor,"pk_history":pk_history, "pk_mrecord":pk_mrecord,"drug_results":drug_results})
-        else:
-            return render(request, "doctors/doctor_prescription.html", {"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": pk_history,"history":history})
+        medicine_list = Medicine.objects.filter(doctor=doctor)
+        
+        return render(request, "doctors/doctor_prescription.html", {"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": pk_history,"history":history,"medicine_list":medicine_list})
 
 # Take drug to prescription view
 

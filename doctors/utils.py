@@ -1,5 +1,9 @@
 from user.models import User
 from django.views.generic import ListView
+from django.shortcuts import render
+from django.db.models import Q
+from .forms import SearchDrugForm
+from .models import Medicine
 
 
 
@@ -104,5 +108,17 @@ class MedicineMixin:
             context.update({"doctor":doctor,"page":page,"order":order})
 
             return self.render_to_response(context)
-            
+
+    def post(self,request,pk_doctor):
+        doctor = User.objects.get(pk=pk_doctor)
+        if doctor == request.user:
+            form = SearchDrugForm(request.POST)
+            if form.is_valid():
+                search_drug_value = form.cleaned_data["search_drug"]
+
+                drug_results = Medicine.objects.filter(Q(name__icontains=search_drug_value)| Q(full_name__icontains=search_drug_value))
+
+                return render(request,'doctors/doctor_search_drugs.html',{"pk_doctor":pk_doctor,"drug_results":drug_results})
+
+
             
