@@ -1,0 +1,83 @@
+{% load staticfiles %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Healthy Care</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Font Awesome 4.7 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Yellowtail Font-->
+    <link href="https://fonts.googleapis.com/css?family=Yellowtail&display=swap" rel="stylesheet">
+    <!-- Jquery -->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+
+    <!-- UI Jquery css -->
+    <link href="{% static 'css/jquery-ui.min.css' %}" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{% static 'css/custom_radio.css' %}">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    
+    <link rel="stylesheet" href="{% static 'css/my_style.css' %}">
+  </head>
+  <body>
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-mix-bg">
+                <a class="navbar-brand navbar-mix-color" href="{% url 'doctor_profile' request.user.pk %}" style="font-family:'Yellowtail', cursive; font-size: 30px;">Healthy Care</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon"></span>
+                </button>
+              
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                  <ul class="navbar-nav mr-auto ">
+                    <li class="nav-item">
+                      <a class="nav-link navbar-mix-color" href="{% url 'medical_record_create' request.user.pk %}">THÊM BỆNH NHÂN</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link navbar-mix-color" href="{% url 'medicine_list' request.user.pk %}">QUẢN LÝ THUỐC</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link navbar-mix-color" href="{% url 'logout' %}">THOÁT</a>
+                    </li>
+                    
+      
+                  </ul>
+                  <form class="form-inline my-2 my-lg-0" id="form_search_navbar" action="{% url 'search_navbar' request.user.pk %}" method="get">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" name="search_navbar" aria-label="Search" id="search_navbar">
+                    <button class="btn btn-outline-success btn-navbar-search my-2 my-sm-0" type="button" id="bt_search_navbar" required>Search</button>
+                  </form>
+                </div>
+              </nav>
+              {% block content %}
+              Helathy Care
+              {% endblock %}
+      
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}" ></script>
+    <!-- Jquery UI js file -->
+    <script src="{% static 'js/jquery-ui.min.js' %}"></script>
+    <script>
+      $(document).ready(function(){
+
+        $("#bt_search_navbar").click(function(){
+          var search_navbar = $("#search_navbar").val();
+          var valid = true;
+
+          if(search_navbar ===""){
+              
+                valid &= false;
+            }
+
+            if(valid){
+              $("#form_search_navbar").submit();
+            }
+          
+        }); //end click
+      });
+    </script>
+  </body>
+</html>

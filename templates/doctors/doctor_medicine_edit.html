@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+ {% block content %}
+
+<div class="container">
+    <h3 class="my-3">Sửa thông tin thuốc</h3>
+
+    <form action="{% url 'medicine_edit' pk_doctor pk_medicine %}" id="medicine_edit_form" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="name">Sửa tên thuốc<span class="required-input">*</span></label>
+            <input name="name" id="name" type="text" class="form-control" value="{{ form.name.value }}" placeholder="Sửa tên của thuốc">
+            <span id="alert_name" style="color: #d9534f;font-size:15px"></span>
+        </div>
+        <div class="form-group">
+            <label  for="full_name">Nhập tên đầy đủ thuốc<span class="required-input">*</span></label>
+            <input name="full_name" id="full_name" type="text" class="form-control" value="{{ form.full_name.value }}" placeholder="Sửa tên đầy đủ của thuốc">
+            <span id="alert_full_name" style="color: #d9534f;font-size:15px"></span>
+        </div>
+        <div class="row">
+            <div class="col-md-5">
+                <label for="sale_price">Giá bán<span class="required-input">*</span></label>
+                <input class="form-control" value="{{ form.sale_price.value }}" type="text" name="sale_price" id="sale_price" placeholder="Sửa giá bán">
+                <span id="alert_sale_price" style="color: #d9534f;font-size:15px"></span>
+            </div>
+            <div class="col-md-5">
+                <label for="import_price">Giá mua<span class="required-input">*</span></label>
+                <input class="form-control" value="{{ form.import_price.value }}" type="text" name="import_price" id="import_price" placeholder="Sửa giá mua">
+                <span id="alert_import_price" style="color: #d9534f;font-size:15px"></span>
+            </div>
+            <div class="col-md-2">
+                <label for="quantity">Số lượng<span class="required-input">*</span></label>
+                <input class="form-control" value="{{ form.quantity.value }}" type="text" name="quantity" id="quantity" placeholder="Sửa số lượng">
+                <span id="alert_quantity" style="color: #d9534f;font-size:15px"></span>
+            </div>
+        </div>
+        <button class="btn btn-submit mt-3" type="button">Sửa thuốc</button>
+    </form>
+    
+</div>
+<script>
+$(document).ready(function(){
+    // validate digital
+    function ValidateDigit(value){
+        regex = new RegExp("^\\d+$");
+        var isValid =  regex.test(value);
+        return isValid;
+    }
+
+    $(".btn-submit").click(function(){
+        var name = $("#name").val();
+        var full_name = $("#full_name").val();
+        console.log(full_name);
+        var sale_price = $("#sale_price").val();
+        var import_price = $("#import_price").val();
+        var quantity = $("#quantity").val();
+        var valid = true;
+
+        if(name ===""){
+            $("#alert_name").text("Bạn nên nhập tên thuốc");
+            valid &= false;
+        } else{
+            $("#alert_name").text("");
+        }
+        if(full_name ===""){
+            $("#alert_full_name").text("Bạn nên nhập tên đầy đủ thuốc");
+            valid &= false;
+        } else{
+            $("#alert_full_name").text("");
+        }
+        if(!ValidateDigit(parseInt(sale_price))){
+            $("#alert_sale_price").text("Bạn nên nhập giá bán của thuốc");
+            valid &= false;
+        } else{
+            $("#alert_sale_price").text("");
+        }
+        if(!ValidateDigit(parseInt(import_price))){
+            $("#alert_import_price").text("Bạn nên nhập giá mua vào của thuốc");
+            valid &= false;
+        } else{
+            $("#alert_import_price").text("");
+        }
+        if(!ValidateDigit(parseInt(quantity))){
+            $("#alert_quantity").text("Bạn nên nhập số lượng thuốc");
+            valid &= false;
+        } else{
+            $("#alert_quantity").text("");
+        }
+
+        if(valid){
+          $("#medicine_edit_form").submit();  
+        }
+        
+    }); // end click
+});
+</script>
+ {% endblock %}

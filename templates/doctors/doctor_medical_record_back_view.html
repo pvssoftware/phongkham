@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+ {% block content %}
+
+
+ <div class="container">
+     <h2 class="my-4">Hồ sớ khám chữa bệnh</h2>
+     <table class="table">
+         <tbody>
+             <tr class="table-active">
+                 <th>Họ tên</th>
+                 <td>{{ mrecord.full_name }}</td>
+             </tr>
+             <tr class="table-active">
+                 <th>Giới tính</th>
+                 {% if mrecord.sex %}
+                 <td>Nữ</td>
+                 {% else %}
+                 <td>Nam</td>
+                 {% endif %}
+             </tr>
+             <tr class="table-active">
+                 <th>Ngày sinh</th>
+                 <td>{{ mrecord.birth_date }}</td>
+             </tr>
+             <tr class="table-active">
+                 <th>Địa chỉ</th>
+                 <td>{{ mrecord.address }}</td>
+             </tr>
+             <tr class="table-active">
+                 <th>CMT</th>
+                 <td>{{ mrecord.identity_card }}</td>
+             </tr>
+             <tr class="table-active">
+                 <th>Chiều cao</th>
+                 <td>{{ mrecord.height }}</td>
+             </tr>
+         </tbody>
+     </table>
+
+     {% if histories %}
+     <h4>Các lần đi khám bệnh</h4>
+     {% for history in histories %}
+     <div class="box-shadow rounded bg-light p-3 my-3">
+         <h6 style="cursor: pointer" class=" pb-2 mb-0"><i class="fa fa-plus"></i><i class="fa fa-minus"></i> Lần khám thứ {{ forloop.counter }} -- <i class="fa fa-calendar"></i> {{ history.date|date:"P D. d-m-Y"  }}</h6>
+         <div class="media pt-3">
+                <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                   <strong class="d-block text-gray-dark">Triệu chứng</strong>
+                   {{ history.disease_symptom }}
+                </p>
+            </div>
+            <div class="media pt-3">
+                <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                   <strong class="d-block text-gray-dark">Chẩn đoán</strong>
+                   {{ history.diagnostis }}
+                </p>
+            </div>
+            <div>
+            <small class="text-right d-flex justify-content-between mt-3">
+                <a href="{% url 'export_final_info_excel' doctor.pk mrecord.pk history.pk %}" style="color: #00796B">Xuất file excel</a>
+                <a href="{% url 'medical_history_del' doctor.pk mrecord.pk history.pk %}" style="color: #d9534f">Xoá lịch sử</a>
+            </small>
+           </div>
+     </div>
+     {% endfor %}
+     {% endif %}
+
+     <h4 class="mt-3"> Nhập thông tin lần khám hiện tại</h4>
+     <form action="{% url 'medical_record_back_view' doctor.pk mrecord.pk history_edit.pk %}" method="post" id="history_form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="disease_symptom">Triệu chứng</label>
+            <textarea class="form-control" id="disease_symptom" name="disease_symptom" rows="3">{{ form.disease_symptom.value }}</textarea>
+          </div>
+        <div class="form-group">
+            <label for="diagnostis">Chẩn đoán</label>
+            <textarea class="form-control" id="diagnostis" name="diagnostis" rows="3" >{{ form.diagnostis.value }}</textarea>
+          </div>
+        <button class="btn btn-submit btn_history mb-4" type="button">Kê thuốc</button>
+        <button class="btn btn-del float-right mb-4" type="button"><a href="{% url 'medical_history_del' doctor.pk mrecord.pk history_edit.pk %}">Huỷ</a></button>
+     </form>
+ </div>
+
+
+ <script>
+     $(document).ready(function(){
+        $(".fa-minus").hide();
+        $("h6").next().hide();
+        $("h6").next().next().hide();
+        $("h6").next().next().next().hide();
+
+        $("body").on("click","h6",function(){
+            console.log($(this));
+            var fa_minus = $(this).children(".fa-minus");
+            var fa_plus = $(this).children(".fa-plus");
+            var disease_symptom = $(this).next();
+            var diagnostis = disease_symptom.next();
+            if (fa_minus.is(":hidden")) {
+            $(this).addClass('border-bottom border-gray')
+			fa_minus.show();
+			fa_plus.hide();
+			disease_symptom.show();
+			diagnostis.show();
+			diagnostis.next().show();
+		} else {
+			$(this).removeClass('border-bottom border-gray')
+			fa_minus.hide();
+			fa_plus.show();
+			disease_symptom.hide();
+			diagnostis.hide();
+			diagnostis.next().hide();
+		}
+        }); // end click
+
+        $(".btn_history").click(function(){
+            $("#history_form").submit();
+        }); // end click
+     }); // end ready
+ </script>
+
+ {% endblock %}

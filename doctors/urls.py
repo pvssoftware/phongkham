@@ -1,0 +1,27 @@
+from django.conf.urls import url
+from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit
+
+
+
+
+urlpatterns = [
+
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/search/$",search_navbar,name="search_navbar"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/$",DoctorProfileView.as_view(),name="doctor_profile"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medicine-list/$",MedicineList.as_view(),name="medicine_list"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medicine-create/$",medicine_create,name="medicine_create"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medicine-edit/(?P<pk_medicine>\d+)/$",medicine_edit,name="medicine_edit"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record-create/$",medical_record_create,name="medical_record_create"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record/(?P<pk_mrecord>\d+)/$",medical_record_view,name="medical_record_view"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record-edit/(?P<pk_mrecord>\d+)/$",medical_record_edit,name="medical_record_edit"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record-del/(?P<pk_mrecord>\d+)/$",medical_record_del,name="medical_record_del"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record/(?P<pk_mrecord>\d+)/medical-history-edit/(?P<pk_history>\d+)/$",medical_record_back_view,
+    name="medical_record_back_view"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record/(?P<pk_mrecord>\d+)/medical-history-del/(?P<pk_history>\d+)/$",medical_history_del,name="medical_history_del"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record/(?P<pk_mrecord>\d+)/medical-history/(?P<pk_history>\d+)/$",prescription_drug,name="prescription_drug"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record/(?P<pk_mrecord>\d+)/medical-history/(?P<pk_history>\d+)/drug/(?P<pk_drug>\d+)/$",take_drug,name="take_drug"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record/(?P<pk_mrecord>\d+)/medical-history/(?P<pk_history>\d+)/drug-remove/(?P<pk_prescriptiondrug>\d+)/$",remove_drug,name="remove_drug"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record/(?P<pk_mrecord>\d+)/medical-history-final/(?P<pk_history>\d+)/$",final_info,name="final_info"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record/(?P<pk_mrecord>\d+)/medical-history-export/(?P<pk_history>\d+)/$",export_final_info_excel,name="export_final_info_excel"),
+    
+]

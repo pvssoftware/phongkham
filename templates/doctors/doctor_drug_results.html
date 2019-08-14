@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+ {% block content %}
+
+
+<div class="container">
+        <form action="{% url 'prescription_drug' pk_doctor pk_mrecord pk_history %}" id="form_search_drug" class="mt-3" method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="form-group mb-2 col-6">
+            <input type="text" class="form-control" placeholder="Tìm kiếm thuốc" id="search_drug" type="button" name="search_drug">
+            </div>
+            <div class="col-2">
+                <button class="btn btn-submit mb-2" id="bt_search_drug">Tìm kiếm</button>
+            </div>
+            
+            </div>
+        </form>
+    <h3>Kết quả tìm kiếm</h3>
+    {% if drug_results %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Tên thuốc</th>
+                <th>Số lượng trong kho</th>
+                
+            </tr>
+        </thead>
+        {% for drug in drug_results %}
+        <tbody>
+            <tr>
+                <td scope="row"><a href="{% url 'take_drug' pk_doctor pk_mrecord pk_history drug.pk %}">{{ drug.full_name }}</a></td>
+                <td>{{ drug.quantity }}</td>
+            </tr>
+
+        </tbody>
+        {% endfor %}
+    </table>
+    {% else %}
+    <h6>Không tìm thấy loại thuốc cần tìm</h6>
+    
+    {% endif %}
+    <button class="btn btn-back"><a href="{% url 'prescription_drug' pk_doctor pk_mrecord pk_history %}">Quay lại kê đơn thuốc</a></button>
+</div>
+
+<script>
+    $(document).ready(function(){
+        $("#bt_search_drug").click(function(){
+            $("#form_search_drug").submit();
+        }); // end click
+    }); // end ready
+</script>
+
+ {% endblock %}

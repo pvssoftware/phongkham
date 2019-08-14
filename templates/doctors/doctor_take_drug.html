@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+ {% block content %}
+<div class="container">
+    <h3 class="my-3">Them thuoc vao toa</h3>
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Tên thuốc</th>
+                <td>{{ drug.name }}</td>
+            </tr>
+            <tr>
+                <th>Tên đầy đủ</th>
+                <td>{{ drug.full_name }}</td>
+            </tr>
+            <tr>
+                <th>Số lượng trong kho</th>
+                <td>{{ drug.quantity }}</td>
+            </tr>
+            <tr>
+                <th>Giá bán ra</th>
+                <td class="sale_price">{{ drug.sale_price }}</td>
+            </tr>
+            <tr>
+                <th>Giá mua vào</th>
+                <td class="import_price">{{ drug.import_price }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <form action="{% url 'take_drug' pk_doctor pk_mrecord pk_history drug.pk %}" method="post" id="form_take_drug" >
+        {% csrf_token %}
+        <div class="form-row align-items-center">
+        <div class="col-md-4 form-group">
+            <label for="dose">Liều lượng<span class="required-input">*</span></label>
+            <input type="text" name="dose" class="form-control" id="dose" placeholder="Mỗi lần uống bao nhiêu viên?">
+            <span id="alert_dose" style="color: #d9534f;font-size:15px"></span>
+        </div>
+        <div class="col-md-4 form-group">
+            <label for="quantity">Số lượng<span class="required-input">*</span></label>
+            <input type="text" name="quantity" class="form-control" id="quantity" placeholder="Số lượng bao nhiêu?">
+            <span id="alert_quantity" style="color: #d9534f;font-size:15px"></span>
+        </div>
+        <div class="col-md-4  form-group">
+            <label for="time_take_medicine">Thời gian<span class="required-input">*</span></label>
+            <input type="text" name="time_take_medicine" class="form-control" id="time_take_medicine" placeholder="Uống khi nào?">
+            <span id="alert_time_take_medicine" style="color: #d9534f;font-size:15px"></span>
+        </div>
+        </div>
+
+    <button type="button" class="btn btn-back mt-3"><a href="{% url 'prescription_drug' pk_doctor pk_mrecord pk_history %}">Quay về kê toa thuốc</a></button>
+    <button type="button" class="btn btn-submit ml-3 mt-3" id="bt_take_drug">Thêm</button>
+    </form>
+</div>
+
+<script>
+    $(document).ready(function(){
+        // validate digital
+        function ValidateDigit(value){
+            regex = new RegExp("^\\d+$");
+            var isValid =  regex.test(value);
+            return isValid;
+        }
+        $("#bt_take_drug").click(function(){
+            var dose = $("#dose").val();
+            var quantity = $("#quantity").val();
+            var time_take_medicine = $("#time_take_medicine").val();
+            var valid = true;
+
+            if(!ValidateDigit(parseInt(dose))){
+            $("#alert_dose").text("Giá trị nhập không hợp lệ");
+              valid &= false;
+            } else{
+                $("#alert_dose").text("");
+            }
+
+            if(!ValidateDigit(parseInt(quantity))){
+            $("#alert_quantity").text("Giá trị nhập không hợp lệ");
+              valid &= false;
+            } else{
+                $("#alert_quantity").text("");
+            }
+
+            if( time_take_medicine===""){
+            $("#alert_time_take_medicine").text("Bạn chưa nhập thời gian uống");
+            valid &= false;
+            } else{
+                $("#alert_time_take_medicine").text("");
+            }
+
+            if (valid){
+                $("#form_take_drug").submit();
+            }
+                
+            }); // end click
+
+        let sale_price = parseInt($(".sale_price").text());
+        $(".sale_price").text(sale_price.toLocaleString()+" VNĐ");
+
+        let import_price = parseInt($(".import_price").text());
+        $(".import_price").text(import_price.toLocaleString()+" VNĐ");
+    }); // end ready
+</script>
+
+ {% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+ {% block content %}
+
+<div class="container">
+
+<div class="my-3">
+  <h3>Bác sĩ {{ doctor.doctor.full_name }}</h3>
+  
+</div>
+{% if object_list %}
+<div class="my-3 p-3 bg-light rounded box-shadow">
+  <div class="d-flex justify-content-between align-items-center border-bottom border-gray">
+    <h4 class="pb-2 mb-0">Danh sách bệnh nhân</h4>
+    <span style="font-weight: bold"><a href="?sex=None" class="page-link-mix">Giới tính</a></span>
+  </div>
+  
+  {% for ob in object_list %}
+<div class="media text-muted pt-3">
+    <i class="fa fa-square mr-2"
+     {% if ob.sex %}
+      style="font-size: 47px;color: #ff4081 "
+      {% else %}
+      style="font-size: 47px;color: #304ffe"
+      {% endif %}></i>
+    <div class="media-body pb-3 mb-0 lh-125 border-bottom border-gray">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_view' doctor.pk ob.pk %}">{{ ob.full_name }}</a></strong>
+        {% if ob.sex %}
+      <a href="?sex=female" class="page-link-mix">Nữ</a>
+      {% else %}
+      <a href="?sex=male" class="page-link-mix">Nam</a>
+      {% endif %}
+      </div>
+      <div>
+          {% if ob.sex %}
+          <i class="fa fa-female"></i>
+          {% else %}
+          <i class="fa fa-male"></i>
+          {% endif %}
+      <span >{{ ob.identity_card }}</span>
+      </div>
+    </div>
+</div>
+{% endfor %}
+</div>
+{% endif %}
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+      
+    <li class="page-item
+        {% if not first_page_url %}
+           disabled
+       {% endif %}"><a class="page-link page-link-mix" href="{{ first_page_url }}&sex={{ sex }}">First</a></li>         
+    
+    
+    <li class="page-item 
+    {% if not previous_page_url %}
+        disabled
+    {% endif %}">
+      <a class="page-link page-link-mix" href="{{ previous_page_url }}&sex={{ sex }}" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+        <span class="sr-only">Previous</span>
+      </a>
+    </li>
+
+        
+    {% for i in page_obj.paginator.page_range %}
+    <li class="page-item
+    {% if page_obj.number == i %}
+      active
+    {% endif %}">
+        <a href="?page={{ i }}&sex={{ sex }}" class="page-link page-link-mix">{{ i }}</a>
+    </li>
+    {% endfor %}
+
+    
+    
+    <li class="page-item 
+    {% if not next_page_url %}
+        disabled
+    {% endif %}">
+    <a class="page-link page-link-mix" href="{{ next_page_url }}&sex={{ sex }}" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+        <span class="sr-only">Next</span>
+    </a>
+    </li>
+        
+    
+    <li class="page-item
+     {% if not last_page_url %}
+        disabled
+    {% endif %}"><a class="page-link page-link-mix" href="{{ last_page_url }}&sex={{ sex }}">Last</a></li>
+  </ul>
+</nav>
+</div>
+<script>
+  $(document).ready(function() {
+    // $("#bt_search_navbar").click(function() {
+    //   var value = $("#search_navbar").val();
+    //   alert(value);
+    //   console.log(value);
+    // }); // end click
+  });
+</script>
+{% endblock %}

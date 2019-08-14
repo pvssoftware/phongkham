@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+ {% block content %}
+
+<div class="container">
+    <h3 class="mt-3">Tạo hồ sơ bệnh nhân</h3>
+
+    <form action="{% url 'medical_record_create' pk_doctor %}" id="mrecord_create_form" method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="full_name">Họ và tên<span class="required-input">*</span></label>
+                <input type="text" name="full_name" class="form-control" placeholder="" id="full_name">
+                <span id="alert_full_name" style="color: #d9534f;font-size:15px"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="birth_date">Ngày sinh<span class="required-input">*</span></label>
+                <input type="text" id="birth_date" name="birth_date" class="form-control" placeholder="ngày / tháng / năm" id="birth_date">
+                <span id="alert_birth_date" style="color: #d9534f;font-size:15px"></span>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="address">Địa chỉ<span class="required-input">*</span></label>
+            <input type="text" id="address" name="address" class="form-control" placeholder="" id="address">
+            <span id="alert_address" style="color: #d9534f;font-size:15px"></span>
+        </div>
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <p class="mb-0">Giới tính</p>
+                <div>
+                    <label class="custom_radio mr-4">
+                        <input type="radio" name="sex" value="0" checked>
+                        <span>Nam</span>
+                    </label>
+                    <label class="custom_radio">
+                        <input type="radio" name="sex" value="1">
+                        <span>Nữ</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="height">Chiều cao</label>
+            <input type="text" id="height" name="height" class="form-control" placeholder="">
+            </div>
+            <div class="col-md-6 mb-3">
+            <label for="address">Chứng minh thư<span class="required-input">*</span></label>
+            <input type="text" id="identity_card" name="identity_card" class="form-control" placeholder="">
+            <span id="alert_identity_card" style="color: #d9534f;font-size:15px"></span>
+        </div>
+        </div>
+        
+        <button class="btn btn-submit" type="button">Tạo hồ sơ</button>
+    </form>
+</div>
+
+<script>
+$(document).ready(function(){
+    // validate datetime format dd/mm/Y
+    function ValidateDate(value){
+      regex = new RegExp("^([0-2]\\d{1}|3[0-1])\\/(0\\d{1}|1[0-2])\\/(19|20)\\d{2}$");
+      var isValid = regex.test(value);
+      return isValid;
+    }
+
+    // Kiem tra dinh dang cho chu
+    function ValidateWord(value){
+        regex = new RegExp("^[a-zA-Z_ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶ" +
+            "ẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợ" +
+            "ụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\\s]+$");
+        var isValid =  regex.test(value);
+        return isValid;
+    }
+    // date picker
+    $("#birth_date").datepicker({
+    dateFormat: "dd/mm/yy",
+    changeMonth: true,
+    changeYear: true,
+    yearRange:"-90:+0",
+    monthNames: ["1","2","3","4","5","6","7","8","9","10","11","12"],
+    monthNamesShort: ["1","2","3","4","5","6","7","8","9","10","11","12"]
+    });// end datepicker
+
+    $(".btn-submit").click(function(){
+        var full_name = $("#full_name").val();
+        var birth_date = $("#birth_date").val();
+        var address = $("#address").val();
+        var identity_card = $("#identity_card").val();
+        var valid = true;
+
+        if(!ValidateWord(full_name)){
+            $("#alert_full_name").text("Tên nhập không hợp lệ");
+            valid &= false;
+        } else{
+            $("#alert_full_name").text("");
+        }
+        if(address ===""){
+            $("#alert_address").text("Bạn chưa nhập địa chỉ");
+            valid &= false;
+        } else{
+            $("#alert_address").text("");
+        }
+
+        if(!ValidateDate(birth_date)){
+            $("#alert_birth_date").text("Ngày sinh không hợp lệ");
+            valid &= false;
+        } else{
+            $("#alert_birth_date").text("");
+        }
+
+        if(identity_card ===""){
+            $("#alert_identity_card").text("Bạn chưa nhập CMT");
+            valid &= false;
+        } else{
+            $("#alert_identity_card").text("");
+        }
+        if(valid){
+            $("#mrecord_create_form").submit();
+        }
+        
+    }); // end click
+
+
+    
+}); // end ready
+</script>
+
+ {% endblock %}

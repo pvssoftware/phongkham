@@ -1,0 +1,110 @@
+
+.navbar-mix-bg{
+    background-color: #009688!important;
+
+}
+.navbar-mix-bg a:hover{
+    color: #BDBDBD!important;
+}
+.navbar-mix-color{
+    color: #FFFFFF!important;
+}
+
+.btn-navbar-search{
+    color: #FFFFFF!important;
+    border-color: #FFFFFF!important;
+}
+
+.btn-navbar-search:hover{
+    background-color: #3700b3;
+}
+
+/* pagination */
+.page-link-mix{
+    color: #009688;
+    
+}
+.page-link-mix:hover{
+    color: #009688;
+    opacity: 0.7;
+    
+}
+
+.page-item.active .page-link-mix{
+    color: #FFFFFF;
+    background-color:#009688; 
+    border-color: #009688;
+}
+
+/* btn Ke thuoc */
+
+.btn-finished{
+    color: #FFFFFF;
+    background-color: #009688;
+}
+.btn-finished:hover{
+    opacity: 0.7;
+    background-color: #009688;
+}
+.btn-finished a{
+    color: inherit;
+    text-decoration-line: none
+}
+
+.btn-submit{
+    color: #FFFFFF;
+    background-color: #3700b3;
+}
+.btn-submit:hover{
+    opacity: 0.7;
+    background-color: #3700b3;
+}
+.btn-submit a{
+    color: inherit;
+    text-decoration-line: none
+}
+
+
+.btn-back{
+    color: #FFFFFF;
+    background-color: #757575;
+}
+.btn-back:hover{
+    opacity: 0.7;
+    background-color: #757575;
+}
+.btn-back a{
+    color: inherit;
+    text-decoration-line: none;
+}
+
+.btn-del{
+    color: #FFFFFF;
+    background-color:#d9534f; 
+}
+.btn-del:hover{
+    opacity: 0.7;
+    background-color:#d9534f; 
+}
+.btn-del a{
+    color: inherit;
+    text-decoration-line: none;
+}
+
+.icon_remove{
+    color: #d9534f;
+    font-size: 20px;
+}
+.icon_remove:hover{
+    opacity: 0.7;
+    color: #d9534f;
+}
+
+.icon{
+    fill: #009688;
+}
+
+.required-input{
+    color: #d9534f;
+    font-size: 15px;
+}

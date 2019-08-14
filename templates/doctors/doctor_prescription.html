@@ -1,0 +1,114 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="container">
+  <h2 class="mt-3">Kê toa thuốc</h2>
+
+  <form
+    action="{% url 'prescription_drug' pk_doctor pk_mrecord pk_history %}"
+    id="form_search_drug"
+    method="post"
+  >
+    {% csrf_token %}
+    <div class="row">
+      <div class="form-group mb-2 col-8">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Tìm kiếm thuốc"
+          id="search_drug"
+          
+          name="search_drug"
+        />
+        <span id="alert_search_drug" style="color: #d9534f;font-size:15px"></span>
+      </div>
+      <div class="col-2">
+        <button class="btn btn-submit mb-2" id="bt_search_drug" type="button">
+          Tìm kiếm
+        </button>
+      </div>
+    </div>
+  </form>
+
+  {% if history.prescriptiondrug_set.all %}
+  <h6>Danh sách thuốc đã thêm vào toa</h6>
+
+  <table class="table text-center">
+    <thead>
+      <tr>
+        <th>Tên Thuốc</th>
+        <th>Liều lượng</th>
+        <th>Số lượng</th>
+        <th>Giá tiền</th>
+        <th>Thời gian uống</th>
+        <th>Xóa khỏi toa</th>
+      </tr>
+    </thead>
+    {% for drug in history.prescriptiondrug_set.all %}
+    <tbody>
+      <tr>
+        <td scope="row">{{ drug.medicine.full_name }}</td>
+        <td>{{ drug.dose }}</td>
+        <td>{{ drug.quantity }}</td>
+        <td class="cost_drug">{{ drug.cost }}</td>
+        <td>{{ drug.time_take_medicine }}</td>
+        <td>
+          <a
+            class="icon_remove"
+            href="{% url 'remove_drug' pk_doctor pk_mrecord pk_history drug.pk %}"
+            ><i class="fa fa-times-circle"></i
+          ></a>
+        </td>
+      </tr>
+    </tbody>
+    {% endfor %}
+  </table>
+  {% else %}
+  <h5 class="mt-3">Chưa thêm thuốc vào toa!</h5>
+  {% endif %}
+
+  <button class="btn btn-back mt-4">
+    <a
+      href="{% url 'medical_record_back_view' pk_doctor pk_mrecord pk_history %}"
+      >Quay lại</a
+    >
+  </button>
+  <button class="btn btn-submit ml-3 mt-4" type="button">
+    <a href="{% url 'final_info' pk_doctor pk_mrecord pk_history %}"
+      >Tiếp theo</a
+    >
+  </button>
+  <button class="btn btn-del float-right mt-4" type="button">
+    <a href="{% url 'medical_history_del' pk_doctor pk_mrecord pk_history %}"
+      >Huỷ</a
+    >
+  </button>
+</div>
+
+<script>
+  $(document).ready(function() {
+    $("#bt_search_drug").click(function() {
+      var search_drug = $("#search_drug").val();
+      var valid = true;
+
+      if(search_drug ===""){
+            $("#alert_search_drug").text("Bạn chưa nhập tên thuốc");
+            valid &= false;
+        } else{
+            $("#alert_search_drug").text("");
+        }
+
+        if(valid){
+           $("#form_search_drug").submit();
+        }
+     
+    }); // end click
+
+    $(".cost_drug").each(function() {
+      
+      let cost = parseInt($(this).text());
+      $(this).text(cost.toLocaleString() + " VNĐ");
+    }); // end each
+  }); // end ready
+</script>
+
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+ {% block content %}
+
+
+ <div class="container">
+     <h3 class="mt-3">Thông tin khám bệnh</h3>
+
+     <table class="table box-shadow rounded">
+         <tbody">
+            <tr class="table-active">
+                <th>Tên bệnh nhân</th>
+                <td>{{ mrecord.full_name }}</td>
+            </tr>
+            
+            <tr class="table-active">
+                <th>Năm sinh</th>
+                <td>{{ mrecord.birth_date|date:"d-m-Y" }}</td>
+            </tr>
+            <tr class="table-active">
+                <th>Giới tính</th>
+                {% if mrecord.sex %}
+                 <td>Nữ</td>
+                 {% else %}
+                 <td>Nam</td>
+                 {% endif %}
+            </tr>
+            <tr class="table-active">
+                <th>Địa chỉ</th>
+                <td>{{ mrecord.address }}</td>
+            </tr>
+         </tbody>
+     </table>
+     <table class="table">
+         <tbody>
+             <tr class="table-active">
+                 <th>Triệu chứng</th>
+                 <td>{{ history.disease_symptom }}</td>
+             </tr>
+             <tr class="table-active">
+                 <th>Chẩn đoán</th>
+                 <td>{{ history.diagnostis }}</td>
+             </tr>
+         </tbody>
+     </table>
+
+     {% if history.prescriptiondrug_set.all %}
+     
+     {% for drug in history.prescriptiondrug_set.all  %}
+     <div>
+            <h6 style="cursor: pointer" class="drug_name"><i class="fa fa-plus"></i><i class="fa fa-minus"></i> Tên thuốc: {{ drug.medicine.name }}</h6>
+        <table class="table drug_info">
+             <tbody>
+                 <tr class="table-active">
+                     <th>Tên thuốc</th>
+                     <td>{{ drug.medicine.full_name }}</td>
+                 </tr>
+                 <tr class="table-active">
+                     <th>Số liều</th>
+                     <td>{{ drug.dose }}</td>
+                 </tr>
+                 <tr class="table-active">
+                     <th>Số lượng</th>
+                     <td>{{ drug.quantity }}</td>
+                 </tr>
+                 <tr class="table-active">
+                     <th>Thời gian uống</th>
+                     <td>{{ drug.time_take_medicine }}</td>
+                 </tr>
+                 <tr class="table-active">
+                     <th>Giá tiền</th>
+                     <td class="cost_drug">{{ drug.cost }}</td>
+                 </tr>
+             </tbody>
+         </table> 
+     </div>
+         
+     {% endfor %}
+    <h5 class="mb-4">Tổng tiền thuốc: <span id="total_cost">{{ total_cost }}</span></h5>
+     {% endif %}
+
+     <button class="btn btn-back mt-3"><a href="{% url 'prescription_drug' doctor.pk mrecord.pk history.pk %}">Quay lại kê thuốc</a></button>
+     <button class="btn btn-finished mt-3 ml-3"><a href="{% url 'medical_record_view' doctor.pk mrecord.pk %}">Hoàn tất</a></button>
+     <button class="btn btn-submit ml-3 mt-3" type="button"><a href="{% url 'export_final_info_excel' doctor.pk mrecord.pk history.pk %}">In file excel</a></button>
+     <button class="btn btn-del float-right mt-3" type="button"><a href="{% url 'medical_history_del' doctor.pk mrecord.pk history.pk %}">Huỷ</a></button>
+     
+ </div>
+
+ <script>
+    $(document).ready(function(){
+
+        $(".cost_drug").each(function(){
+            console.log($(this));
+            let cost = parseInt($(this).text());
+            console.log(typeof(cost));
+            $(this).text(cost.toLocaleString()+" VNĐ");
+        }); // end each
+        
+        let total_cost = parseInt($("#total_cost").text());
+        $("#total_cost").text(total_cost.toLocaleString()+" VNĐ");
+
+        $(".fa-minus").hide();
+        $(".drug_info").hide();
+        $("body").on("click",".drug_name",function(){
+            console.log($(this));
+            var fa_minus = $(this).children(".fa-minus");
+            var fa_plus = $(this).children(".fa-plus");
+            var drug_info = $(this).next();
+            if (fa_minus.is(":hidden")) {
+			fa_minus.show();
+			fa_plus.hide();
+			drug_info.show()
+			
+		} else {
+			fa_minus.hide();
+			fa_plus.show();
+			drug_info.hide();
+			
+		}
+        }); // end click
+    }); // end ready
+</script>
+
+ {% endblock %}
