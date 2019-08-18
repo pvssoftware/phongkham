@@ -34,35 +34,180 @@
                  <th>Địa chỉ</th>
                  <td>{{ mrecord.address }}</td>
              </tr>
-             <tr class="table-active">
+             <!-- <tr class="table-active">
                  <th>CMT</th>
                  <td>{{ mrecord.identity_card }}</td>
              </tr>
              <tr class="table-active">
                  <th>Chiều cao</th>
                  <td>{{ mrecord.height }}</td>
-             </tr>
+             </tr> -->
          </tbody>
      </table>
+
+     <h4>Nhập thông tin lần khám hiện tại</h4>
+     <form action="{% url 'medical_record_view' doctor.pk mrecord.pk %}" method="post" id="history_form">
+        {% csrf_token %}
+
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label for="PARA">PARA<span class="required-input">*</span></label>
+                <input type="text" class="form-control" id="PARA" name="PARA" placeholder="A-B-C-D">
+                <span id="alert_PARA" style="color: #d9534f;font-size:15px"></span>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="last_menstrual_period">Kinh cuối<span class="required-input">*</span></label>
+                <input type="text" class="form-control" id="last_menstrual_period" name="last_menstrual_period" placeholder="Ngày / tháng">
+                <span id="alert_last_menstrual_period" style="color: #d9534f;font-size:15px"></span>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="contraceptive">Ngừa thai<span class="required-input">*</span></label>
+                <select id="contraceptive" class="form-control" name="contraceptive">
+                <option selected>Lựa chọn...</option>
+                <option>Thuốc</option>
+                <option>Vòng</option>
+                <option>BCS</option>
+                <option>Không</option>
+                </select>
+                <span id="alert_contraceptive" style="color: #d9534f;font-size:15px"></span>
+            </div>           
+        </div>
+
+        <div class="mb-2">
+            <div>
+                <label class="custom_radio mr-5">
+                    <input type="radio" name="service" value="khám phụ sản" checked id="phu_san_radio">
+                    <span>Khám phụ sản</span>
+                </label>
+                <label class="custom_radio">
+                    <input type="radio" name="service" value="khám phụ khoa" id="phu_khoa_radio">
+                    <span>Khám phụ khoa</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="mb-3 ml-3" id="phu_san">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="Cổ tử cung" id="co_tu_cung_ps" name="co_tu_cung_ps">
+                <label class="form-check-label" for="co_tu_cung_ps">
+                    Cổ tử cung
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="Tim thai" id="tim_thai_ps" name="tim_thai_ps">
+                <label class="form-check-label" for="tim_thai_ps">
+                    Tim thai
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="Cân go" id="can_go_ps" name="can_go_ps">
+                <label class="form-check-label" for="can_go_ps">
+                   Cân gò
+                </label>
+            </div>
+        </div>
+
+        <div class="mb-3 ml-3" id="phu_khoa">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="Cổ tử cung" id="co_tu_cung_pk" name="co_tu_cung_pk">
+                    <label class="form-check-label" for="co_tu_cung_pk">
+                        Cổ tử cung
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="Âm đạo" id="am_dao_pk" name="am_dao_pk">
+                    <label class="form-check-label" for="am_dao_pk">
+                        Âm đạo
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="Chuẩn đoán khác" id="chuan_doan_khac_pk" name="chuan_doan_khac_pk">
+                    <label class="form-check-label" for="chuan_doan_khac_pk">
+                       Chuẩn đoán khác
+                    </label>
+                </div>
+            </div>
+        <div class="form-group">
+            <label for="inputAddress">Ghi chú</label>
+            <input type="text" class="form-control" id="note" placeholder="" name="note">
+        </div>
+        <div class="form-group">
+            <label for="disease_symptom">Triệu chứng<span class="required-input">*</span></label>
+            <textarea class="form-control" id="disease_symptom" name="disease_symptom" rows="3"></textarea>
+            <span id="alert_disease_symptom" style="color: #d9534f;font-size:15px"></span>
+          </div>
+        <div class="form-group">
+            <label for="diagnostis">Chuẩn đoán<span class="required-input">*</span></label>
+            <textarea class="form-control" id="diagnostis" name="diagnostis" rows="3"></textarea>
+            <span id="alert_diagnostis" style="color: #d9534f;font-size:15px"></span>
+          </div>
+        <button class="btn btn-submit btn_history mb-4" type="button">Kê thuốc</button>
+     </form>
 
      {% if mrecord.medicalhistory_set.all %}
      <h4>Các lần đi khám bệnh</h4>
      {% for history in mrecord.medicalhistory_set.all %}
      <div class="box-shadow rounded bg-light p-3 my-3">
          <h6 style="cursor: pointer" class=" pb-2 mb-0"><i class="fa fa-plus"></i><i class="fa fa-minus"></i> Lần khám thứ {{ forloop.counter }} -- <i class="fa fa-calendar"></i> {{ history.date|date:"P D. d-m-Y" }}</h6>
-         <div class="media pt-3">
+         <div class="info_basic">
+             <div class="media pt-3 d-flex justify-content-between">
+            <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+            <strong class="d-block text-gray-dark">PARA</strong>
+            {{ history.PARA }}
+            </p>
+            <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-center">
+            <strong class="d-block text-gray-dark">Kinh cuối</strong>
+            {{ history.last_menstrual_period | date:"d-m-Y"}}
+            </p>
+            <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right">
+            <strong class="d-block text-gray-dark">Ngừa thai</strong>
+            {{ history.contraceptive }}
+            </p>
+            </div>
+        </div>
+
+         <div class="media pt-3 info_service" >
+             <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                <strong class="d-block text-gray-dark">{{ history.service|title }}</strong>
+                {% if history.co_tu_cung_ps %}
+                cổ tử cung,
+                {% endif %}
+                {% if history.tim_thai_ps %}
+                tim thai,
+                {% endif %}
+                {% if history.can_go_ps %}
+                cần go,
+                {% endif %}
+                {% if history.co_tu_cung_pk %}
+                cổ tử cung,
+                {% endif %}
+                {% if history.am_dao_pk %}
+                âm đạo,
+                {% endif %}
+                {% if history.chuan_doan_khac_pk %}
+                chuẩn đoán khác,
+                {% endif %}
+             </p>
+         </div>
+         <div class="media pt-3 info_note">
+             <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                <strong class="d-block text-gray-dark">Ghi chú</strong>
+                {{ history.note }}
+             </p>
+         </div>
+         <div class="media pt-3 info_disease_symptom ">
              <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
                 <strong class="d-block text-gray-dark">Triệu chứng</strong>
                 {{ history.disease_symptom }}
              </p>
          </div>
-         <div class="media pt-3">
+         <div class="media pt-3 info_diagnostis">
              <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
                 <strong class="d-block text-gray-dark">Chẩn đoán</strong>
                 {{ history.diagnostis }}
              </p>
          </div>
-         <div>
+         <div class="info_bt">
          <small class="text-right d-flex justify-content-between mt-3">
              <a href="{% url 'export_final_info_excel' doctor.pk mrecord.pk history.pk %}" style="color: #00796B">Xuất file excel</a>
              <a href="{% url 'medical_history_del' doctor.pk mrecord.pk history.pk %}" style="color: #d9534f">Xoá lịch sử</a>
@@ -73,56 +218,143 @@
      {% endfor %}
      {% endif %}
 
-     <h4>Nhập thông tin lần khám hiện tại</h4>
-     <form action="{% url 'medical_record_view' doctor.pk mrecord.pk %}" method="post" id="history_form">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="disease_symptom">Triệu chứng</label>
-            <textarea class="form-control" id="disease_symptom" name="disease_symptom" rows="3"></textarea>
-          </div>
-        <div class="form-group">
-            <label for="diagnostis">Chẩn đoán</label>
-            <textarea class="form-control" id="diagnostis" name="diagnostis" rows="3"></textarea>
-          </div>
-        <button class="btn btn-submit btn_history mb-4" type="button">Kê thuốc</button>
-     </form>
+     
  </div>
 
 
  <script>
      $(document).ready(function(){
+
+         // validate datetime format dd/mm/Y
+        function ValidateDate(value){
+        regex = new RegExp("^([0-2]\\d{1}|3[0-1])\\/(0\\d{1}|1[0-2])\\/(19|20)\\d{2}$");
+        var isValid = regex.test(value);
+        return isValid;
+        }
+        
+        var info_basic = $(".info_basic");
+        var info_service = $(".info_service");
+        var info_note = $(".info_note");
+        var info_disease_symptom = $(".info_disease_symptom");
+        var info_diagnostis = $(".info_diagnostis");
+        var info_bt = $(".info_bt");
+
         $(".fa-minus").hide();
-        $("h6").next().hide();
-        $("h6").next().next().hide();
-        $("h6").next().next().next().hide();
+        info_basic.hide();
+        info_service.hide();
+        info_note.hide();
+        info_disease_symptom.hide();
+        info_diagnostis.hide();
+        info_bt.hide();
 
         $("body").on("click","h6",function(){
             
             var fa_minus = $(this).children(".fa-minus");
             var fa_plus = $(this).children(".fa-plus");
-            var disease_symptom = $(this).next();
-            var diagnostis = disease_symptom.next();
+            var info_basic = $(this).next();
+            var info_service = info_basic.next();
+            var info_note = info_service.next();
+            var info_disease_symptom = info_note.next();
+            var info_diagnostis = info_disease_symptom.next();
+            var info_bt = info_diagnostis.next();
+
             if (fa_minus.is(":hidden")) {
             $(this).addClass('border-bottom border-gray')
 			fa_minus.show();
 			fa_plus.hide();
-			disease_symptom.show();
-			diagnostis.show();
-			diagnostis.next().show();
+			info_basic.show();
+            info_service.show();
+            info_note.show();
+            info_disease_symptom.show();
+            info_diagnostis.show();
+            info_bt.show();
             
 		} else {
             $(this).removeClass('border-bottom border-gray')
 			fa_minus.hide();
 			fa_plus.show();
-			disease_symptom.hide();
-			diagnostis.hide();
-			diagnostis.next().hide();
+			info_basic.hide();
+            info_service.hide();
+            info_note.hide();
+            info_disease_symptom.hide();
+            info_diagnostis.hide();
+            info_bt.hide();
 		}
         }); // end click
 
+        
+
+        $("#phu_khoa").hide();
+        // choose phu san or phu khoa
+        $("#phu_san_radio,#phu_khoa_radio").click(function(){
+            if($("#phu_san_radio").prop("checked")){
+                $("#phu_san").show();
+                $("#phu_khoa").hide();
+            } else {
+                $("#phu_san").hide();
+                $("#phu_khoa").show();
+            }
+        });// end click
+
+        // date picker
+        $("#last_menstrual_period").datepicker({
+        dateFormat: "dd/mm/yy",
+        changeMonth: true,
+        // changeYear: true,
+        // yearRange:"-90:+0",
+        monthNames: ["1","2","3","4","5","6","7","8","9","10","11","12"],
+        monthNamesShort: ["1","2","3","4","5","6","7","8","9","10","11","12"]
+        });// end datepicker
+
+
         $(".btn_history").click(function(){
-            $("#history_form").submit();
+            var last_menstrual_period = $("#last_menstrual_period").val();
+            var contraceptive = $("#contraceptive").val();
+            var PARA = $("#PARA").val();
+            
+            var disease_symptom = $('#disease_symptom').val();
+            var diagnostis = $("#diagnostis").val();
+
+            var valid = true;
+
+            if(PARA ===""){
+            $("#alert_PARA").text("Bạn chưa nhập PARA");
+            valid &= false;
+            } else{
+                $("#alert_PARA").text("");
+            }
+            if(disease_symptom ===""){
+            $("#alert_disease_symptom").text("Bạn chưa nhập triệu chứng");
+            valid &= false;
+            } else{
+                $("#alert_disease_symptom").text("");
+            }
+            if(diagnostis ===""){
+            $("#alert_diagnostis").text("Bạn chưa nhập chuẩn đoán");
+            valid &= false;
+            } else{
+                $("#alert_diagnostis").text("");
+            }
+            if(contraceptive ==="Lựa chọn..."){
+            $("#alert_contraceptive").text("Bạn chưa nhập cách ngừa thai");
+            valid &= false;
+            } else{
+                $("#alert_contraceptive").text("");
+            }
+
+            if(!ValidateDate(last_menstrual_period)){
+                $("#alert_last_menstrual_period").text("Ngày không hợp lệ");
+                valid &= false;
+            } else{
+                $("#alert_last_menstrual_period").text("");
+            }
+
+            if (valid){
+                $("#history_form").submit();
+            }
+            
         }); // end click
+
      }); // end ready
  </script>
 

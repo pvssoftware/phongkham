@@ -3,45 +3,53 @@
 <div class="container">
   <h2 class="mt-3">Kê toa thuốc</h2>
 
-
   <div class="input-group mb-3 search_drug_form">
-      <input type="text" class="form-control" placeholder="Nhập tên thuốc cần tìm" id="search_drug">
-      <div class="input-group-append">
-        <span class="input-group-text btn-finished" id="basic-addon2">Tìm thuốc</span>
-      </div>
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Nhập tên thuốc cần tìm"
+      id="search_drug"
+    />
+    <div class="input-group-append">
+      <span class="input-group-text btn-finished" id="basic-addon2"
+        >Tìm thuốc</span
+      >
     </div>
-    
-    {% if medicine_list %}
-  
-      <h6 class="artical_search">Danh sách thuốc tìm kiếm</h6>
-      <div class="table_search">
-          <table class="table">
-              <thead>
-                  <tr>
-                      <th>Tên thuốc</th>
-                      <th>Số lượng</th>
-                      <th>Giá bán (VNĐ)</th>
-                      <th>Giá mua (VNĐ)</th>
-                  </tr>
-              </thead>
-              {% for drug in medicine_list %}
-              <tbody>
-                  <tr>
-                      <td scope="row"><a
-                          class="page-link-mix" href="{% url 'take_drug' pk_doctor pk_mrecord pk_history drug.pk %}">{{ drug.full_name }}</a></td>
-                      <td>{{ drug.quantity }}</td>
-                      <td class="sale_price">{{ drug.sale_price }}</td>
-                      <td class="import_price">{{ drug.import_price }}</td>
-                  </tr>
-                  
-              </tbody>
-              {% endfor %}
-          </table>
-      </div>
-    {% endif %}
-      
+  </div>
 
-  {% if history.prescriptiondrug_set.all %}
+  {% if medicine_list %}
+
+  <h6 class="artical_search">Danh sách thuốc tìm kiếm</h6>
+  <div class="table_search">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Tên thuốc</th>
+          <th>Số lượng</th>
+          <th>Giá bán (VNĐ)</th>
+          <th>Giá mua (VNĐ)</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for drug in medicine_list %}
+        <tr>
+          <td scope="row">
+            <a
+              class="page-link-mix"
+              href="{% url 'take_drug' pk_doctor pk_mrecord pk_history drug.pk %}"
+              >{{ drug.full_name }}</a
+            >
+          </td>
+          <td>{{ drug.quantity }}</td>
+          <td class="sale_price">{{ drug.sale_price }}</td>
+          <td class="import_price">{{ drug.import_price }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %} {% if history.prescriptiondrug_set.all %}
   <h6>Danh sách thuốc đã thêm vào toa</h6>
 
   <table class="table text-center">
@@ -98,21 +106,16 @@
 
 <script>
   $(document).ready(function() {
-
-
     $(".sale_price").each(function() {
-        
-        let cost = parseInt($(this).text());
-        $(this).text(cost.toLocaleString());
+      let cost = parseInt($(this).text());
+      $(this).text(cost.toLocaleString());
     }); // end each
     $(".import_price").each(function() {
-    
-        let cost = parseInt($(this).text());
-        $(this).text(cost.toLocaleString());
+      let cost = parseInt($(this).text());
+      $(this).text(cost.toLocaleString());
     }); // end each
 
     $(".cost_drug").each(function() {
-      
       let cost = parseInt($(this).text());
       $(this).text(cost.toLocaleString() + " VNĐ");
     }); // end each
@@ -131,48 +134,49 @@
         $(this).keyup(function() {
           let value_search = $(this)
             .val()
-            .trim();
-        console.log(value_search);
+            .trim()
+            .toString();
+          console.log(value_search);
+
           if (value_search === "") {
             table_search.hide();
             artical_search.hide();
-          }
-          else {
-            // value_array = value_search.split(" ");
+          } else {
             artical_search.show();
             table_search.show();
             medicine_list.hide();
             let show_hide = false;
-              medicine_list.each(function(){
-                let full_name = $(this)
-                  .find("td")
-                  .eq(0);
-                  
-                    if (
-                      full_name
-                        .text()
-                        .toLowerCase()
-                        .includes(value_search.toLowerCase())
-                    ){
-                      $(this).show();
-                      show_hide = true;
-                    } else{
-                      $(this).hide();
-                      
-                    }
-                    if(!show_hide){
-                      artical_search.hide();
-                      table_search.hide();
-                    }
-                      
-                  
-              }); //end each
-            
+            medicine_list.each(function() {
+              let full_name = $(this)
+                .find("td a")
+                .eq(0);
+              console.log(full_name.text());
+
+              if (
+                full_name
+                  .text()
+                  .toLowerCase()
+                  .includes(value_search.toLowerCase())
+              ) {
+                $(this).show();
+                show_hide = true;
+                console.log("true");
+              } else {
+                $(this).hide();
+              }
+              if (!show_hide) {
+                artical_search.hide();
+                table_search.hide();
+                console.log("hide");
+              }else{
+                artical_search.show();
+                table_search.show();
+              }
+            }); //end each
           }
         }); // end keyup
       }); // end focus
-    };// end func
-
+    } // end func
   }); // end ready
 </script>
 

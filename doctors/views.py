@@ -1,5 +1,5 @@
 import xlsxwriter, io
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponse
@@ -9,7 +9,42 @@ from django.db.models import Q
 from user.models import User
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug
 from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin
-from .forms import MedicalHistoryForm, SearchDrugForm, TakeDrugForm, MedicalRecordForm, SearchNavBarForm, MedicineForm
+from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, MedicalRecordForm, SearchNavBarForm, MedicineForm, CalculateBenefitForm
+
+
+# calculate benefit
+
+def cal_benefit(request,pk_doctor):
+    user = User.objects.get(pk=pk_doctor)
+    if user.doctor:
+        form = CalculateBenefitForm(request.GET)
+        if form.is_valid():
+            print("valid")
+            from_date = form.cleaned_data['from_date']
+            to_date = form.cleaned_data['to_date']
+            histories = MedicalHistory.objects.filter(medical_record__doctor = user).filter(date__gte=from_date).filter(date__lte=to_date+timedelta(days=1))
+            histories_object = []
+            gross_revenue = 0
+            accrued_expenses = 0
+            for history in histories:
+                his = {"history":history,"revenue":0,"expense":0,"benefit":0}
+                if history.prescriptiondrug_set.all():
+                    for pres_drug in history.prescriptiondrug_set.all():
+                        gross_revenue += int(pres_drug.cost)
+                        accrued_expenses += int(pres_drug.quantity)*int(pres_drug.medicine.import_price)
+                        his['revenue'] += int(pres_drug.cost)
+                        his['expense'] += int(pres_drug.quantity)*int(pres_drug.medicine.import_price)
+                    his['benefit'] = his['revenue'] - his['expense']
+
+                histories_object.append(his)
+            gross_profit = gross_revenue - accrued_expenses
+            return render(request,'doctors/doctor_cal_benefit.html',{"histories_object":histories_object,"gross_revenue":gross_revenue,"accrued_expense":accrued_expenses,"gross_profit":gross_profit,"pk_doctor":pk_doctor,"form":form})
+        else:
+            print("invalid")
+            return render(request,'doctors/doctor_cal_benefit.html',{"pk_doctor":pk_doctor,"form":form})
+
+
+
 
 # search on navbar
 
@@ -18,7 +53,20 @@ def search_navbar(request,pk_doctor):
     if user.doctor:
         form = SearchNavBarForm(request.GET)
         if form.is_valid():
-            results = MedicalRecord.objects.filter(Q(doctor=user),Q (full_name__icontains=form.cleaned_data['search_navbar']) | Q(identity_card__icontains=form.cleaned_data["search_navbar"]))
+            results = MedicalRecord.objects.filter(Q(doctor=user),Q (full_name__icontains=form.cleaned_data['search_navbar']))
+            object_list = []
+            for ob in results:
+                    o = {"ob":ob}
+                    if ob.medicalhistory_set.all():
+                        for history in ob.medicalhistory_set.all():
+                            if history.service == "khám phụ sản":
+                                o['ps']  = True
+                            else:
+                                o['pk'] = True
+                    else:
+                        o['ck'] = True
+                    object_list.append(o)
+            results = object_list
 
             return render(request,'doctors/doctor_search_navbar.html',{"results":results,"pk_doctor":pk_doctor})
 
@@ -117,12 +165,10 @@ def medical_record_edit(request,pk_doctor,pk_mrecord):
                 mrecord.address = form.address
                 mrecord.sex = form.sex
                 print(form.sex)
-                mrecord.height = form.height
-                mrecord.identity_card = form.identity_card
                 mrecord.save()
                 return redirect(reverse('medical_record_view',kwargs={"pk_doctor":pk_doctor,"pk_mrecord":pk_mrecord}))
         else:
-            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":mrecord.birth_date.strftime("%d/%m/%Y"),"address":mrecord.address,"height":mrecord.height,"identity_card":mrecord.identity_card})
+            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":mrecord.birth_date.strftime("%d/%m/%Y"),"address":mrecord.address})
             return render(request,"doctors/doctor_medical_record_edit.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord})
 
 # Medical record delete view
@@ -142,15 +188,38 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
     if request.user == doctor:
         mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
         if request.method == "POST":
-            form = MedicalHistoryForm(request.POST)
+            form = MedicalHistoryFormMix(request.POST)
             if form.is_valid():
                 form = form.save(commit=False)
+                
+                if form.service == 'khám phụ khoa':
+                    # if form.cleaned_data['co_tu_cung_pk']:
+                    #     form.co_tu_cung_pk = True
+                    # if form.cleaned_data['am_dao_pk']:
+                    #     form.am_dao_pk = True
+                    # if form.cleaned_data['chuan_doan_khac_pk']:
+                    #     form.chuan_doan_khac_pk = True
+                    form.co_tu_cung_ps = False
+                    form.tim_thai_ps = False
+                    form.can_go_ps = False
+                else:
+                    # if form.cleaned_data['co_tu_cung_ps']:
+                    #     form.co_tu_cung_ps = True
+                    # if form.cleaned_data['tim_thai_ps']:
+                    #     form.tim_thai_ps = True
+                    # if form.cleaned_data['can_go_ps']:
+                    #     form.can_go_ps = True
+                    form.co_tu_cung_pk = False
+                    form.am_dao_pk = False
+                    form.chuan_doan_khac_pk = False
                 form.medical_record = mrecord
                 form.save()
-                print(form)
+                # history = MedicalHistory.objects.create(disease_symptom=disease_symptom,diagnostis=diagnostis,
+                # service=service,service_detail=service_detail,PARA=PARA,contraceptive=contraceptive,last_menstrual_period=last_menstrual_period,note=note,medical_record = mrecord,co_tu_cung_pk=co_tu_cung_pk,am_dao_pk=am_dao_pk,chuan_doan_khac_pk=chuan_doan_khac_pk,co_tu_cung_ps=co_tu_cung_ps,tim_thai_ps=tim_thai_ps,can_go_ps=can_go_ps)
+
                 return redirect(reverse("prescription_drug", kwargs={"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": form.pk}))
         else:
-            form = MedicalHistoryForm()
+            form = MedicalHistoryFormMix()
             return render(request, "doctors/doctor_medical_record.html", {"mrecord": mrecord, "doctor": doctor, "form": form})
 
 # Medical record back view
@@ -160,11 +229,55 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
         if request.method == "POST":
-            form = MedicalHistoryForm(request.POST)
+            form = MedicalHistoryFormMix(request.POST)
             if form.is_valid():
                 history_edit = MedicalHistory.objects.get(pk=pk_history)
+
+
                 history_edit.disease_symptom = form.cleaned_data["disease_symptom"]
                 history_edit.diagnostis =form.cleaned_data["diagnostis"]
+                history_edit.service = form.cleaned_data['service']
+                
+                if form.cleaned_data['service']== 'khám phụ khoa':
+                    if form.cleaned_data['co_tu_cung_pk']:
+                        history_edit.co_tu_cung_pk = True
+                    else:
+                        history_edit.co_tu_cung_pk = False
+                    if form.cleaned_data['am_dao_pk']:
+                        history_edit.am_dao_pk = True
+                    else:
+                        history_edit.am_dao_pk = False
+                    if form.cleaned_data['chuan_doan_khac_pk']:
+                        history_edit.chuan_doan_khac_pk = True
+                    else:
+                        history_edit.chuan_doan_khac_pk = False
+
+                    history_edit.co_tu_cung_ps = False
+                    history_edit.tim_thai_ps = False
+                    history_edit.can_go_ps = False
+                else:
+                    if form.cleaned_data['co_tu_cung_ps']:
+                        history_edit.co_tu_cung_ps = True
+                    else:
+                        history_edit.co_tu_cung_ps = False
+                    if form.cleaned_data['tim_thai_ps']:
+                        history_edit.tim_thai_ps = True
+                    else:
+                        history_edit.tim_thai_ps = False
+                    if form.cleaned_data['can_go_ps']:
+                        history_edit.can_go_ps = True
+                    else:
+                        history_edit.can_go_ps = False
+                    history_edit.co_tu_cung_pk = False
+                    history_edit.am_dao_pk = False
+                    history_edit.chuan_doan_khac_pk = False
+
+
+                history_edit.PARA = form.cleaned_data['PARA']
+                history_edit.contraceptive = form.cleaned_data['contraceptive']
+                history_edit.last_menstrual_period = form.cleaned_data['last_menstrual_period']
+                history_edit.note = form.cleaned_data['note']
+                
                 history_edit.save()
 
                 return redirect(reverse("prescription_drug", kwargs={"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": history_edit.pk}))
@@ -172,10 +285,10 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
         else:
             mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
             history_edit = MedicalHistory.objects.get(pk=pk_history)
-            print(history_edit.disease_symptom)
+
             histories = mrecord.medicalhistory_set.exclude(pk=pk_history)
-            form = MedicalHistoryForm(initial={
-                                    "disease_symptom": history_edit.disease_symptom, "diagnostis": history_edit.diagnostis})
+            form = MedicalHistoryFormMix(initial={
+                                    "disease_symptom": history_edit.disease_symptom, "diagnostis": history_edit.diagnostis,"service":history_edit.service,"PARA":history_edit.PARA,"contraceptive":history_edit.contraceptive,"last_menstrual_period":history_edit.last_menstrual_period.strftime("%d/%m/%Y"),"note":history_edit.note})
             
             return render(request, 'doctors/doctor_medical_record_back_view.html', {"histories": histories, "history_edit": history_edit, "form": form,"mrecord":mrecord,"doctor":doctor})
 

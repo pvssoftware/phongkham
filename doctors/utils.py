@@ -61,18 +61,69 @@ class DoctorProfileMixin:
         #     doctor = doctor
 
             page = request.GET.get('page')
-            sex = request.GET.get('sex')
-            if sex=="male":
-                self.object_list=self.object_list.filter(sex=False)
-                print("male")
-            elif sex=="female":
-                self.object_list=self.object_list.filter(sex=True)
+            service = request.GET.get('service')
+            # if sex=="male":
+            #     self.object_list=self.object_list.filter(sex=False)
+            #     print("male")
+            # elif sex=="female":
+            #     self.object_list=self.object_list.filter(sex=True)
 
+            object_list = []
+            if service == 'chua_kham':
+                for ob in self.object_list:
+                    if not ob.medicalhistory_set.all():
+                        o = {"ob":ob,"ck":True}
+                        object_list.append(o)
+            
+            elif service == 'san_khoa':
+                for ob in self.object_list:
+                    o = {"ob":ob,"ps":False,"pk":False}
+                    if ob.medicalhistory_set.all():
+                        for history in ob.medicalhistory_set.all():
+                            if history.service == "khám phụ sản":
+                                o['ps']  = True
+                            else:
+                                o['pk'] = True
+                    if o['ps'] and o['pk']:                       
+                        object_list.append(o)
+            elif service == 'phu_san':
+                for ob in self.object_list:
+                    if ob.medicalhistory_set.all():
+                        for history in ob.medicalhistory_set.all():
+                            if history.service == "khám phụ sản":
+                                o = {"ob":ob,"ps":True}
+                                object_list.append(o)
+                                break
+                    
+            elif service == 'phu_khoa':
+                for ob in self.object_list:
+                    if ob.medicalhistory_set.all():
+                        for history in ob.medicalhistory_set.all():
+                            if history.service == "khám phụ khoa":
+                                o = {"ob":ob,"pk":True}
+                                object_list.append(o)
+                                break
+                    
+            else:
 
+                for ob in self.object_list:
+                    o = {"ob":ob}
+                    if ob.medicalhistory_set.all():
+                        for history in ob.medicalhistory_set.all():
+                            if history.service == "khám phụ sản":
+                                o['ps']  = True
+                            else:
+                                o['pk'] = True
+                    else:
+                        o['ck'] = True
+                    object_list.append(o)           
+
+            
+            self.object_list = object_list
             
 
             context = self.get_context_data()
-            context.update({"doctor":doctor,"page":page,"sex":sex})
+            context.update({"doctor":doctor,"page":page,"service":service})
             
             return self.render_to_response(context)
         

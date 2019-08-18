@@ -5,39 +5,49 @@
 
 <div class="my-3">
   <h3>Bác sĩ {{ doctor.doctor.full_name }}</h3>
+  <div class="basic_info_doctor">
+    <p>Chuyên nghành: <span>{{ doctor.doctor.get_kind_display }}</span></p>
+    <p>ĐC phòng khám: <span>{{ doctor.doctor.clinic_address }}</span></p>
+    <p>Điện thoại: <span>{{ doctor.doctor.phone }}</span></p>
+  </div>
   
 </div>
 {% if object_list %}
 <div class="my-3 p-3 bg-light rounded box-shadow">
   <div class="d-flex justify-content-between align-items-center border-bottom border-gray">
     <h4 class="pb-2 mb-0">Danh sách bệnh nhân</h4>
-    <span style="font-weight: bold"><a href="?sex=None" class="page-link-mix">Giới tính</a></span>
+    <span style="font-weight: bold"><a href="?service=none" class="page-link-mix">Dịch vụ khám</a></span>
   </div>
   
   {% for ob in object_list %}
 <div class="media text-muted pt-3">
     <i class="fa fa-square mr-2"
-     {% if ob.sex %}
+     {% if ob.ob.sex %}
       style="font-size: 47px;color: #ff4081 "
       {% else %}
       style="font-size: 47px;color: #304ffe"
       {% endif %}></i>
     <div class="media-body pb-3 mb-0 lh-125 border-bottom border-gray">
       <div class="d-flex justify-content-between align-items-center w-100">
-        <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_view' doctor.pk ob.pk %}">{{ ob.full_name }}</a></strong>
-        {% if ob.sex %}
-      <a href="?sex=female" class="page-link-mix">Nữ</a>
+        <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_view' doctor.pk ob.ob.pk %}">{{ ob.ob.full_name }}</a>
+        </strong>
+        {% if ob.ps and ob.pk %}
+      <a href="?service=san_khoa" class="page-link-mix">Phụ sản / Phụ khoa</a>
+      {% elif ob.ps %}
+      <a href="?service=phu_san" class="page-link-mix">Phụ sản</a>
+      {% elif ob.pk %}
+      <a href="?service=phu_khoa" class="page-link-mix">Phụ khoa</a>
       {% else %}
-      <a href="?sex=male" class="page-link-mix">Nam</a>
+      <a href="?service=chua_kham" class="page-link-mix">Chưa khám</a>
       {% endif %}
       </div>
       <div>
-          {% if ob.sex %}
+          {% if ob.ob.sex %}
           <i class="fa fa-female"></i>
           {% else %}
           <i class="fa fa-male"></i>
           {% endif %}
-      <span >{{ ob.identity_card }}</span>
+      <span >{{ ob.ob.birth_date |date:"d-m-Y"}}</span>
       </div>
     </div>
 </div>
@@ -51,14 +61,14 @@
     <li class="page-item
         {% if not first_page_url %}
            disabled
-       {% endif %}"><a class="page-link page-link-mix" href="{{ first_page_url }}&sex={{ sex }}">First</a></li>         
+       {% endif %}"><a class="page-link page-link-mix" href="{{ first_page_url }}&service={{ service }}">First</a></li>         
     
     
     <li class="page-item 
     {% if not previous_page_url %}
         disabled
     {% endif %}">
-      <a class="page-link page-link-mix" href="{{ previous_page_url }}&sex={{ sex }}" aria-label="Previous">
+      <a class="page-link page-link-mix" href="{{ previous_page_url }}&service={{ service }}" aria-label="Previous">
         <span aria-hidden="true">&laquo;</span>
         <span class="sr-only">Previous</span>
       </a>
@@ -70,7 +80,7 @@
     {% if page_obj.number == i %}
       active
     {% endif %}">
-        <a href="?page={{ i }}&sex={{ sex }}" class="page-link page-link-mix">{{ i }}</a>
+        <a href="?page={{ i }}&service={{ service }}" class="page-link page-link-mix">{{ i }}</a>
     </li>
     {% endfor %}
 
@@ -80,7 +90,7 @@
     {% if not next_page_url %}
         disabled
     {% endif %}">
-    <a class="page-link page-link-mix" href="{{ next_page_url }}&sex={{ sex }}" aria-label="Next">
+    <a class="page-link page-link-mix" href="{{ next_page_url }}&service={{ service }}" aria-label="Next">
         <span aria-hidden="true">&raquo;</span>
         <span class="sr-only">Next</span>
     </a>
@@ -90,7 +100,7 @@
     <li class="page-item
      {% if not last_page_url %}
         disabled
-    {% endif %}"><a class="page-link page-link-mix" href="{{ last_page_url }}&sex={{ sex }}">Last</a></li>
+    {% endif %}"><a class="page-link page-link-mix" href="{{ last_page_url }}&service={{ service }}">Last</a></li>
   </ul>
 </nav>
 {% endif %}

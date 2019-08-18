@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit, search_drugs
+from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit, search_drugs, cal_benefit
 
 
 
@@ -7,6 +7,7 @@ from .views import search_navbar,DoctorProfileView, medical_record_create, medic
 urlpatterns = [
 
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/search/$",search_navbar,name="search_navbar"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/cal-benefit/$",cal_benefit,name="cal_benefit"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/$",DoctorProfileView.as_view(),name="doctor_profile"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medicine-list/$",MedicineList.as_view(),name="medicine_list"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/search-drugs/$",search_drugs,name="search_drugs"),

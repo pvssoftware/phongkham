@@ -6,13 +6,18 @@ from django.contrib.auth.models import (
 
 class DoctorProfile(models.Model):
     
+    KIND_DOCTOR = [
+        ("gynecologist","bác sĩ phụ khoa"),
+        ("Oral maxillofacial surgeon","bác sĩ ngoại răng hàm mặt"),
+    ]
+
     phone = models.CharField(max_length=14)
     full_name = models.CharField(max_length=30, unique=True)
     clinic_address = models.CharField(max_length=70)
-    kind = models.CharField(max_length=30)
+    kind = models.CharField(max_length=30, choices=KIND_DOCTOR)
 
     def __str__(self):
-        return self.full_name
+        return "{}-{}".format(self.full_name,self.get_kind_display())
 
 class UserManager(BaseUserManager):
     use_in_migrations = True

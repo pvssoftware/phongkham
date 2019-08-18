@@ -8,33 +8,37 @@
      <div class="my-3 p-3 bg-light rounded box-shadow">
       <div class="d-flex justify-content-between align-items-center border-bottom border-gray">
         <h4 class="pb-2 mb-0">Kết quả tìm kiếm</h4>
-        <span class="page-link-mix" style="font-weight: bold">Giới tính</span>
+        <span class="page-link-mix" style="font-weight: bold">Dịch vụ khám</span>
       </div>
       
       {% for result in results %}
     <div class="media text-muted pt-3">
         <i class="fa fa-square mr-2"
-         {% if result.sex %}
+         {% if result.ob.sex %}
           style="font-size: 47px;color: #ff4081 "
           {% else %}
           style="font-size: 47px;color: #304ffe"
           {% endif %}></i>
         <div class="media-body pb-3 mb-0 lh-125 border-bottom border-gray">
           <div class="d-flex justify-content-between align-items-center w-100">
-            <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_view' pk_doctor result.pk %}">{{ result.full_name }}</a></strong>
-            {% if result.sex %}
-          <span  class="page-link-mix">Nữ</span>
-          {% else %}
-          <span class="page-link-mix">Nam</span>
-          {% endif %}
+            <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_view' pk_doctor result.ob.pk %}">{{ result.ob.full_name }}</a></strong>
+            {% if result.ps and result.pk %}
+            <span class="page-link-mix">Phụ sản / Phụ khoa</span>
+            {% elif result.ps %}
+            <span class="page-link-mix">Phụ sản</span>
+            {% elif result.pk %}
+            <span class="page-link-mix">Phụ khoa</span>
+            {% else %}
+            <span class="page-link-mix">Chưa khám</span>
+      {% endif %}
           </div>
           <div>
-              {% if result.sex %}
+              {% if result.ob.sex %}
               <i class="fa fa-female"></i>
               {% else %}
               <i class="fa fa-male"></i>
               {% endif %}
-          <span >{{ result.identity_card }}</span>
+          <span >{{ result.ob.birth_date |date:"d-m-Y"}}</span>
           </div>
         </div>
     </div>
