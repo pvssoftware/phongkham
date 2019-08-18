@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+ {% block content %}
+<div class="container">
+    <h3 class="my-3">Tính doanh thu</h3>
+    <form action="{% url 'cal_benefit' pk_doctor %}" id="cal_benefit_form" method="get">
+        {% csrf_token %}
+        <div class="form-row align-items-end">
+            <div class="col-md-4 mb-3">
+                <label for="from_date">Từ ngày<span class="required-input">*</span></label>
+                <input type="text" name="from_date" class="form-control" placeholder="ngày / tháng / năm" id="from_date">
+                <span id="alert_from_date" style="color: #d9534f;font-size:15px"></span>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="to_date">Đến ngày<span class="required-input">*</span></label>
+                <input type="text" id="to_date" name="to_date" class="form-control" placeholder="ngày / tháng / năm" id="to_date">
+                <span id="alert_to_date" style="color: #d9534f;font-size:15px"></span>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-submit mb-3" type="button">Xác nhận</button>
+            </div>
+        </div>
+    </form>
+
+    
+    {% if histories_object %}
+    <h5 class="my-3">Danh sách bệnh nhân đã khám</h5>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Họ và tên</th>
+                <th>Ngày khám</th>
+                <th>Nội dung khám</th>
+                <th>Tiền bán thuốc (VNĐ)</th>
+                <th>Tiền nhập thuốc (VNĐ)</th>
+                <th>Lợi nhuận (VNĐ)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for history in histories_object %}
+            <tr>
+                <td scope="row">{{ history.history.medical_record.full_name }}</td>
+                <td>{{ history.history.date |date:"P  d-m-Y"}}</td>
+                <td>{{ history.history.service }}</td>
+                <td class="convert_number">{{ history.revenue }}</td>
+                <td class="convert_number">{{ history.expense }}</td>
+                <td class="convert_number"> {{ history.benefit }}</td>
+            </tr>
+            {% endfor %}
+            
+        </tbody>
+        
+    </table>
+    <h5 class="my-3">Tổng doanh thu (VNĐ): <span class="convert_number" style="color: #d9534f">{{gross_revenue }}</span> </h5>
+    <h5 class="my-3">Tổng lợi nhuận(VNĐ): <span class="convert_number"  style="color: #00796B">{{ gross_profit }}</span> </h5>
+        
+    {% endif %}
+        
+</div>
+
+<script>
+$(document).ready(function(){
+
+    $(".convert_number").each(function() {
+      let cost = parseInt($(this).text());
+      $(this).text(cost.toLocaleString());
+    }); // end each
+    // validate datetime format dd/mm/Y
+    function ValidateDate(value){
+      regex = new RegExp("^([0-2]\\d{1}|3[0-1])\\/(0\\d{1}|1[0-2])\\/(19|20)\\d{2}$");
+      var isValid = regex.test(value);
+      return isValid;
+    }
+    // date picker
+    $("#from_date").datepicker({
+    dateFormat: "dd/mm/yy",
+    changeMonth: true,
+    changeYear: true,
+    yearRange:"-90:+0",
+    monthNames: ["1","2","3","4","5","6","7","8","9","10","11","12"],
+    monthNamesShort: ["1","2","3","4","5","6","7","8","9","10","11","12"]
+    });// end datepicker
+    $("#to_date").datepicker({
+    dateFormat: "dd/mm/yy",
+    changeMonth: true,
+    changeYear: true,
+    yearRange:"-90:+0",
+    monthNames: ["1","2","3","4","5","6","7","8","9","10","11","12"],
+    monthNamesShort: ["1","2","3","4","5","6","7","8","9","10","11","12"]
+    });// end datepicker
+
+    $(".btn-submit").click(function(){
+        var from_date = $("#from_date").val();
+        var to_date = $("#to_date").val();
+
+        var valid = true;
+
+        if(!ValidateDate(from_date)){
+            $("#alert_from_date").text("Chọn ngày không hợp lệ");
+            valid &= false;
+        } else{
+            $("#alert_from_date").text("");
+        }
+        if(!ValidateDate(to_date)){
+            $("#alert_to_date").text("Chọn ngày không hợp lệ");
+            valid &= false;
+        } else{
+            $("#alert_to_date").text("");
+        }
+
+        if(valid){
+            $("#cal_benefit_form").submit();
+        }
+    }); // end click
+}); // end ready
+</script>
+
+ {% endblock %}
