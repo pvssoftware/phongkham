@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit, search_drugs, cal_benefit
+from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit, medicine_del, upload_medicine_excel, search_drugs, cal_benefit
 
 
 
@@ -13,6 +13,8 @@ urlpatterns = [
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/search-drugs/$",search_drugs,name="search_drugs"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medicine-create/$",medicine_create,name="medicine_create"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medicine-edit/(?P<pk_medicine>\d+)/$",medicine_edit,name="medicine_edit"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medicine-del/(?P<pk_medicine>\d+)/$",medicine_del,name="medicine_del"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medicine-upload-file-excel/$",upload_medicine_excel,name="upload_medicine_excel"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record-create/$",medical_record_create,name="medical_record_create"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record/(?P<pk_mrecord>\d+)/$",medical_record_view,name="medical_record_view"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record-edit/(?P<pk_mrecord>\d+)/$",medical_record_edit,name="medical_record_edit"),

@@ -4,7 +4,11 @@
 <div class="container">
 
 <div class="my-3">
-  <h3>Bác sĩ {{ doctor.doctor.full_name }}</h3>
+  <div class="d-flex justify-content-between align-items-center">
+    <h3>Bác sĩ {{ doctor.doctor.full_name }}</h3>
+    <button class="btn btn-back"><a href="{% url 'pw_change' %}">Đổi Password</a></button>
+  </div>
+  
   <div class="basic_info_doctor">
     <p>Chuyên nghành: <span>{{ doctor.doctor.get_kind_display }}</span></p>
     <p>ĐC phòng khám: <span>{{ doctor.doctor.clinic_address }}</span></p>

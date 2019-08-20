@@ -59,9 +59,9 @@
             <tbody>
                 <tr>
                     <td scope="row"><a class="page-link-mix" href="{% url 'medicine_edit' doctor.pk ob.pk %}">{{ ob.full_name }}</a></td>
-                    <td>{{ ob.quantity }}</td>
-                    <td class="sale_price">{{ ob.sale_price }}</td>
-                    <td class="import_price">{{ ob.import_price }}</td>
+                    <td class="number">{{ ob.quantity }}</td>
+                    <td class="number">{{ ob.sale_price }}</td>
+                    <td class="number">{{ ob.import_price }}</td>
                 </tr>
             
             </tbody>
@@ -125,16 +125,16 @@
 </div>
 <script>
     $(document).ready(function(){
-        $(".sale_price").each(function() {
+        $(".number").each(function() {
       
             let cost = parseInt($(this).text());
             $(this).text(cost.toLocaleString());
         }); // end each
-        $(".import_price").each(function() {
+        // $(".import_price").each(function() {
       
-            let cost = parseInt($(this).text());
-            $(this).text(cost.toLocaleString());
-        }); // end each
+        //     let cost = parseInt($(this).text());
+        //     $(this).text(cost.toLocaleString());
+        // }); // end each
 
         $(".btn-finished").click(function(){
             var search_drug = $("#search_drug").val();

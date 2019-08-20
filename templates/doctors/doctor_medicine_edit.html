@@ -2,6 +2,12 @@
  {% block content %}
 
 <div class="container">
+        {% if error %}
+        <h5 class="my-4" style="color: #d9534f">
+          Thuốc vừa thay đổi thông tin đã có tên đầy đủ trong kho thuốc, hãy kiểm tra và nhập lại tên đầy đủ
+          của thuốc.
+        </h5>
+        {% endif %}
     <h3 class="my-3">Sửa thông tin thuốc</h3>
 
     <form action="{% url 'medicine_edit' pk_doctor pk_medicine %}" id="medicine_edit_form" method="post">
@@ -34,6 +40,7 @@
             </div>
         </div>
         <button class="btn btn-submit mt-3" type="button">Sửa thuốc</button>
+        <button class="btn btn-del mt-3 float-right" type="button"><a href="{% url 'medicine_del' pk_doctor pk_medicine %}">Xoá thuốc</a></button>
     </form>
     
 </div>
@@ -41,7 +48,7 @@
 $(document).ready(function(){
     // validate digital
     function ValidateDigit(value){
-        regex = new RegExp("^\\d+$");
+        regex = new RegExp("^[1-9][0-9]*$");
         var isValid =  regex.test(value);
         return isValid;
     }

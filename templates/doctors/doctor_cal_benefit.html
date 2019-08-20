@@ -7,12 +7,18 @@
         <div class="form-row align-items-end">
             <div class="col-md-4 mb-3">
                 <label for="from_date">Từ ngày<span class="required-input">*</span></label>
-                <input type="text" name="from_date" class="form-control" placeholder="ngày / tháng / năm" id="from_date">
+                <input type="text" name="from_date" class="form-control" placeholder="ngày / tháng / năm" id="from_date" 
+                {% if form.from_date.value %}
+                value="{{ form.from_date.value }}"
+                {% endif %}>
                 <span id="alert_from_date" style="color: #d9534f;font-size:15px"></span>
             </div>
             <div class="col-md-4 mb-3">
                 <label for="to_date">Đến ngày<span class="required-input">*</span></label>
-                <input type="text" id="to_date" name="to_date" class="form-control" placeholder="ngày / tháng / năm" id="to_date">
+                <input type="text" id="to_date" name="to_date" class="form-control" placeholder="ngày / tháng / năm" id="to_date" 
+                {% if form.from_date.value %}
+                value="{{ form.to_date.value }}"
+                {% endif %}>
                 <span id="alert_to_date" style="color: #d9534f;font-size:15px"></span>
             </div>
             <div class="col-md-4">

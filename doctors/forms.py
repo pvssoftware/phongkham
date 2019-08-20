@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 
 from .models import MedicalRecord, MedicalHistory, PrescriptionDrug, Medicine
 
@@ -58,6 +59,21 @@ class MedicineForm(forms.ModelForm):
         model = Medicine
         fields = ["name", 'full_name', 'quantity',
                   'sale_price', 'import_price']
+
+class UploadMedicineForm(forms.Form):
+    file_excel = forms.FileField(help_text="chưa chọn file")
+
+    class Meta:
+        fields = ["file_excel"]
+
+    def clean_file_excel(self):
+        file_excel = self.cleaned_data.get("file_excel")
+        if file_excel:
+            if file_excel.name.endswith((".xls",".xlsx")):
+                print("excel")
+                return file_excel
+            else:
+                raise ValidationError("The File is not a excel file. Please upload only excel file.")
 
 
 class SearchDrugForm(forms.Form):

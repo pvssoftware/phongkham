@@ -1,4 +1,4 @@
-import xlsxwriter, io
+import xlsxwriter, xlrd, io
 from datetime import datetime, timedelta
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
@@ -9,7 +9,7 @@ from django.db.models import Q
 from user.models import User
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug
 from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin
-from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, MedicalRecordForm, SearchNavBarForm, MedicineForm, CalculateBenefitForm
+from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, CalculateBenefitForm
 
 
 # calculate benefit
@@ -40,7 +40,7 @@ def cal_benefit(request,pk_doctor):
             gross_profit = gross_revenue - accrued_expenses
             return render(request,'doctors/doctor_cal_benefit.html',{"histories_object":histories_object,"gross_revenue":gross_revenue,"accrued_expense":accrued_expenses,"gross_profit":gross_profit,"pk_doctor":pk_doctor,"form":form})
         else:
-            print("invalid")
+            form = CalculateBenefitForm()
             return render(request,'doctors/doctor_cal_benefit.html',{"pk_doctor":pk_doctor,"form":form})
 
 
@@ -93,16 +93,28 @@ def search_drugs(request,pk_doctor):
 def medicine_create(request,pk_doctor):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        form_upload_excel = UploadMedicineForm()
         if request.method == "POST":
             form = MedicineForm(request.POST)
             if form.is_valid():
-                form = form.save(commit=False)
-                form.doctor = doctor
-                form.save()
-                return redirect(reverse('medicine_list',kwargs={'pk_doctor':pk_doctor}))
+                full_name = form.cleaned_data['full_name']
+                
+                try:
+                    Medicine.objects.get(full_name__iexact=full_name)
+                    error = True
+
+                    # form = MedicineForm(initial={"name":form.cleaned_data['name'],'full_name':form.cleaned_data['full_name'],'sale_price':form.cleaned_data['sale_price'],'import_price':form.cleaned_data['import_price'],'quantity':form.cleaned_data['quantity']})
+
+                    return render(request,'doctors/doctor_medicine_create.html',{'form':form, "form_upload_excel":form_upload_excel,'pk_doctor':pk_doctor,"error":error})
+                except:
+
+                    form = form.save(commit=False)
+                    form.doctor = doctor
+                    form.save()
+                    return redirect(reverse('medicine_list',kwargs={'pk_doctor':pk_doctor}))
         else:
             form = MedicineForm()
-            return render(request,'doctors/doctor_medicine_create.html',{'form':form,'pk_doctor':pk_doctor})
+            return render(request,'doctors/doctor_medicine_create.html',{'form':form, "form_upload_excel":form_upload_excel,'pk_doctor':pk_doctor})
 
 # Medicine edit view
 def medicine_edit(request,pk_doctor,pk_medicine):
@@ -112,16 +124,92 @@ def medicine_edit(request,pk_doctor,pk_medicine):
         if request.method == "POST":
             form = MedicineForm(request.POST)
             if form.is_valid():
-                medicine.name = form.cleaned_data['name']
-                medicine.full_name = form.cleaned_data['full_name']
-                medicine.sale_price = form.cleaned_data['sale_price']
-                medicine.import_price = form.cleaned_data['import_price']
-                medicine.quantity = form.cleaned_data['quantity']
-                medicine.save()
+                all_medicine = Medicine.objects.exclude(pk=pk_medicine)
+
+                try:
+                    all_medicine.get(full_name__iexact=form.cleaned_data['full_name'])
+                    error = True
+
+                    return render(request,'doctors/doctor_medicine_edit.html',{'form':form,'pk_doctor':pk_doctor,'pk_medicine':pk_medicine, "error":error})
+                except:
+
+                    medicine.name = form.cleaned_data['name']
+                    medicine.full_name = form.cleaned_data['full_name']
+                    medicine.sale_price = form.cleaned_data['sale_price']
+                    medicine.import_price = form.cleaned_data['import_price']
+                    medicine.quantity = form.cleaned_data['quantity']
+                    medicine.save()
+
                 return redirect(reverse('medicine_list',kwargs={'pk_doctor':pk_doctor}))
         else:
             form = MedicineForm(initial={"name":medicine.name,'full_name':medicine.full_name,'sale_price':medicine.sale_price,'import_price':medicine.import_price,'quantity':medicine.quantity})
             return render(request,'doctors/doctor_medicine_edit.html',{'form':form,'pk_doctor':pk_doctor,'pk_medicine':pk_medicine})
+
+# Medicine del view
+def medicine_del(request,pk_doctor,pk_medicine):
+    doctor = User.objects.get(pk=pk_doctor)
+    if doctor == request.user:
+        medicine_del = Medicine.objects.get(pk=pk_medicine)
+        medicine_del.delete()
+
+        return redirect(reverse('medicine_list',kwargs={'pk_doctor':pk_doctor}))
+
+# upload medicine from excel file
+def upload_medicine_excel(request,pk_doctor):
+    doctor = User.objects.get(pk=pk_doctor)
+    if doctor == request.user:
+        if request.method == "POST":
+            form = UploadMedicineForm(request.POST,request.FILES)
+            if form.is_valid():
+                file_excel = form.cleaned_data['file_excel']
+
+                wb = xlrd.open_workbook(filename=None,file_contents = file_excel.read())
+
+                # number of sheets
+                sheets = wb.nsheets
+                data_error = []
+                for s in range(sheets):
+                    # get sheets by index
+                    sheet = wb.sheet_by_index(s)
+                    # number of rows and columns
+                    num_rows = sheet.nrows
+                    num_columns = sheet.ncols
+
+                    for r in range(1,num_rows):
+                        row = []
+                        
+                        for c in range(num_columns):
+                            row.append(sheet.cell(r,c).value)
+
+                        if (type(row[2])==str or row[2]=="") or (type(row[3])==str or row[3]=="") or (type(row[4])==str or row[4]==0 or row[4]==""):
+                            data_error.append(row)
+                            continue
+                        
+                        row[2] = int(row[2]) 
+                        row[3] = int(row[3]) 
+                        row[4] = int(row[4]) 
+
+                        try:
+                            medicine = Medicine.objects.get(full_name__iexact=str(row[1]),doctor=doctor)
+                            medicine.name = str(row[0])
+                            medicine.sale_price = str(row[2])
+                            medicine.import_price = str(row[3])
+                            medicine.quantity = str(row[4])
+                            medicine.save()
+                        except:
+                            Medicine.objects.create(name=str(row[0]),full_name=str(row[1]),sale_price=str(row[2]),import_price=str(row[3]),quantity=str(row[4]),doctor=doctor)
+
+                if data_error:
+                    return render(request,'doctors/doctor_alert_upload.html',{"pk_doctor":pk_doctor,"data_error":data_error})
+                return redirect(reverse("medicine_list",kwargs={"pk_doctor":pk_doctor}))
+
+        # form = UploadMedicineForm()
+        # return render(request,'doctors/doctor_upload_medicine_excel.html',{"pk_doctor":pk_doctor,'form':form})
+
+
+
+
+
 # doctor profile view
 class DoctorProfileView(DoctorProfileMixin,PageLinksMixin):
     model = MedicalRecord
@@ -393,6 +481,7 @@ def final_info(request,pk_doctor,pk_mrecord,pk_history):
 
         return render(request,'doctors/doctor_final_info.html',{"doctor":doctor,"mrecord":mrecord,"history":history,"total_cost":total_cost})
 
+# export to excel file
 def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
