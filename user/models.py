@@ -55,7 +55,7 @@ class UserManager(BaseUserManager):
 
     def update_pw_user(self,email,password):
         email = self.normalize_email(email)
-        user = get_user_model.objects().get(email=email)
+        user = get_user_model().objects().get(email=email)
         user.set_password(password)
         user.save()
         return user
