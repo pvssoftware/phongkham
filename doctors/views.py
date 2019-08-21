@@ -100,7 +100,7 @@ def medicine_create(request,pk_doctor):
                 full_name = form.cleaned_data['full_name']
                 
                 try:
-                    Medicine.objects.get(full_name__iexact=full_name)
+                    Medicine.objects.filter(doctor=doctor).get(full_name__iexact=full_name)
                     error = True
 
                     # form = MedicineForm(initial={"name":form.cleaned_data['name'],'full_name':form.cleaned_data['full_name'],'sale_price':form.cleaned_data['sale_price'],'import_price':form.cleaned_data['import_price'],'quantity':form.cleaned_data['quantity']})
@@ -124,7 +124,8 @@ def medicine_edit(request,pk_doctor,pk_medicine):
         if request.method == "POST":
             form = MedicineForm(request.POST)
             if form.is_valid():
-                all_medicine = Medicine.objects.exclude(pk=pk_medicine)
+                print("valid")
+                all_medicine = Medicine.objects.filter(doctor=doctor).exclude(pk=pk_medicine)
 
                 try:
                     all_medicine.get(full_name__iexact=form.cleaned_data['full_name'])

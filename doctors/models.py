@@ -42,7 +42,7 @@ class MedicalHistory(models.Model):
 
 class Medicine(models.Model):
     name = models.CharField(max_length=20)
-    full_name = models.CharField(max_length=50,unique=True)
+    full_name = models.CharField(max_length=50)
     quantity = models.CharField(max_length=10)
     sale_price = models.CharField(max_length=50)
     import_price = models.CharField(max_length=50)
