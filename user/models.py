@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin)
 # Create your models here.
@@ -54,7 +55,7 @@ class UserManager(BaseUserManager):
 
     def update_pw_user(self,email,password):
         email = self.normalize_email(email)
-        user = settings.AUTH_USER_MODEL.objects.get(email=email)
+        user = get_user_model.objects().get(email=email)
         user.set_password(password)
         user.save()
         return user
