@@ -13,8 +13,8 @@
                 <span id="alert_full_name" style="color: #d9534f;font-size:15px"></span>
             </div>
             <div class="col-md-6 mb-3">
-                <label for="birth_date">Ngày sinh<span class="required-input">*</span></label>
-                <input type="text" id="birth_date" name="birth_date" class="form-control" placeholder="ngày / tháng / năm" id="birth_date">
+                <label for="birth_date">Năm sinh<span class="required-input">*</span></label>
+                <input type="text" id="birth_date" name="birth_date" class="form-control" placeholder="Chọn năm sinh" id="birth_date">
                 <span id="alert_birth_date" style="color: #d9534f;font-size:15px"></span>
             </div>
         </div>
@@ -46,8 +46,13 @@
 <script>
 $(document).ready(function(){
     // validate datetime format dd/mm/Y
+    // function ValidateDate(value){
+    //   regex = new RegExp("^([0-2]\\d{1}|3[0-1])\\/(0\\d{1}|1[0-2])\\/(19|20)\\d{2}$");
+    //   var isValid = regex.test(value);
+    //   return isValid;
+    // }
     function ValidateDate(value){
-      regex = new RegExp("^([0-2]\\d{1}|3[0-1])\\/(0\\d{1}|1[0-2])\\/(19|20)\\d{2}$");
+      regex = new RegExp("^(19|20)\\d{2}$");
       var isValid = regex.test(value);
       return isValid;
     }
@@ -59,14 +64,14 @@ $(document).ready(function(){
         return isValid;
     }
     // date picker
-    $("#birth_date").datepicker({
-    dateFormat: "dd/mm/yy",
-    changeMonth: true,
-    changeYear: true,
-    yearRange:"-90:+0",
-    monthNames: ["1","2","3","4","5","6","7","8","9","10","11","12"],
-    monthNamesShort: ["1","2","3","4","5","6","7","8","9","10","11","12"]
-    });// end datepicker
+    // $("#birth_date").datepicker({
+    // dateFormat: "dd/mm/yy",
+    // changeMonth: true,
+    // changeYear: true,
+    // yearRange:"-90:+0",
+    // monthNames: ["1","2","3","4","5","6","7","8","9","10","11","12"],
+    // monthNamesShort: ["1","2","3","4","5","6","7","8","9","10","11","12"]
+    // });// end datepicker
 
     $(".btn-submit").click(function(){
         var full_name = $("#full_name").val();
@@ -89,7 +94,7 @@ $(document).ready(function(){
         }
 
         if(!ValidateDate(birth_date)){
-            $("#alert_birth_date").text("Ngày sinh không hợp lệ");
+            $("#alert_birth_date").text("Năm sinh không hợp lệ");
             valid &= false;
         } else{
             $("#alert_birth_date").text("");

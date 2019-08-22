@@ -18,28 +18,35 @@
             <span id="alert_name" style="color: #d9534f;font-size:15px"></span>
         </div>
         <div class="form-group">
-            <label  for="full_name">Nhập tên đầy đủ thuốc<span class="required-input">*</span></label>
+            <label  for="full_name">Sửa tên đầy đủ thuốc<span class="required-input">*</span></label>
             <input name="full_name" id="full_name" type="text" class="form-control" value="{{ form.full_name.value }}" placeholder="Sửa tên đầy đủ của thuốc">
             <span id="alert_full_name" style="color: #d9534f;font-size:15px"></span>
         </div>
         <div class="row">
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <label for="sale_price">Giá bán<span class="required-input">*</span></label>
                 <input class="form-control" value="{{ form.sale_price.value }}" type="text" name="sale_price" id="sale_price" placeholder="Sửa giá bán">
                 <span id="alert_sale_price" style="color: #d9534f;font-size:15px"></span>
             </div>
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <label for="import_price">Giá mua<span class="required-input">*</span></label>
                 <input class="form-control" value="{{ form.import_price.value }}" type="text" name="import_price" id="import_price" placeholder="Sửa giá mua">
                 <span id="alert_import_price" style="color: #d9534f;font-size:15px"></span>
             </div>
             <div class="col-md-2">
-                <label for="quantity">Số lượng<span class="required-input">*</span></label>
-                <input class="form-control" value="{{ form.quantity.value }}" type="text" name="quantity" id="quantity" placeholder="Sửa số lượng">
-                <span id="alert_quantity" style="color: #d9534f;font-size:15px"></span>
+                <label for="quantity">Số lượng trong kho</label>
+                <input class="form-control" type="text" value="{{ medicine.quantity }}" id="quantity" disabled>
+            </div>
+            <div class="col-md-2">
+                <label for="add_quantity">Số lượng thêm vào<span class="required-input">*</span></label>
+                <input class="form-control" type="text" name="add_quantity" id="add_quantity" placeholder="Sửa số lượng"
+                {% if form.add_quantity.value  %}
+                value="{{ form.add_quantity.value }}"
+                {% endif %} >
+                <span id="alert_add_quantity" style="color: #d9534f;font-size:15px"></span>
             </div>
         </div>
-        <button class="btn btn-submit mt-3" type="button">Sửa thuốc</button>
+        <button class="btn btn-submit mt-3" type="button">Cập nhật</button>
         <button class="btn btn-del mt-3 float-right" type="button"><a href="{% url 'medicine_del' pk_doctor pk_medicine %}">Xoá thuốc</a></button>
     </form>
     
@@ -52,6 +59,11 @@ $(document).ready(function(){
         var isValid =  regex.test(value);
         return isValid;
     }
+    function ValidateQuantityDigit(value){
+        regex = new RegExp("^(-\\d*|\\d*)$");
+        var isValid =  regex.test(value);
+        return isValid;
+    }
 
     $(".btn-submit").click(function(){
         var name = $("#name").val();
@@ -59,7 +71,7 @@ $(document).ready(function(){
         console.log(full_name);
         var sale_price = $("#sale_price").val();
         var import_price = $("#import_price").val();
-        var quantity = $("#quantity").val();
+        var add_quantity = $("#add_quantity").val();
         var valid = true;
 
         if(name ===""){
@@ -86,11 +98,11 @@ $(document).ready(function(){
         } else{
             $("#alert_import_price").text("");
         }
-        if(!ValidateDigit(quantity)){
-            $("#alert_quantity").text("Bạn nên nhập số lượng thuốc");
+        if(!ValidateQuantityDigit(add_quantity)){
+            $("#alert_add_quantity").text("Giá trị không hợp lệ");
             valid &= false;
         } else{
-            $("#alert_quantity").text("");
+            $("#alert_add_quantity").text("");
         }
 
         if(valid){

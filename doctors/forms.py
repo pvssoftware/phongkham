@@ -19,7 +19,7 @@ class SearchNavBarForm(forms.Form):
 
 class MedicalRecordForm(forms.ModelForm):
     sex = forms.CharField()
-    birth_date = forms.DateField(input_formats=["%d/%m/%Y", ])
+    birth_date = forms.DateField(input_formats=["%Y"])
 
     class Meta:
         model = MedicalRecord
@@ -58,6 +58,17 @@ class MedicineForm(forms.ModelForm):
     class Meta:
         model = Medicine
         fields = ["name", 'full_name', 'quantity',
+                  'sale_price', 'import_price']
+
+class MedicineEditForm(forms.Form):
+    name  = forms.CharField()
+    full_name  = forms.CharField()
+    add_quantity = forms.CharField(required=False)
+    sale_price = forms.CharField()
+    import_price = forms.CharField()
+
+    class Meta:
+        fields = ["name", 'full_name', 'add_quantity',
                   'sale_price', 'import_price']
 
 class UploadMedicineForm(forms.Form):

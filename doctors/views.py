@@ -9,7 +9,7 @@ from django.db.models import Q
 from user.models import User
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug
 from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin
-from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, CalculateBenefitForm
+from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm
 
 
 # calculate benefit
@@ -122,7 +122,7 @@ def medicine_edit(request,pk_doctor,pk_medicine):
     if doctor == request.user:
         medicine = Medicine.objects.get(pk=pk_medicine)
         if request.method == "POST":
-            form = MedicineForm(request.POST)
+            form = MedicineEditForm(request.POST)
             if form.is_valid():
                 print("valid")
                 all_medicine = Medicine.objects.filter(doctor=doctor).exclude(pk=pk_medicine)
@@ -131,20 +131,21 @@ def medicine_edit(request,pk_doctor,pk_medicine):
                     all_medicine.get(full_name__iexact=form.cleaned_data['full_name'])
                     error = True
 
-                    return render(request,'doctors/doctor_medicine_edit.html',{'form':form,'pk_doctor':pk_doctor,'pk_medicine':pk_medicine, "error":error})
+                    return render(request,'doctors/doctor_medicine_edit.html',{'form':form,'pk_doctor':pk_doctor,'pk_medicine':pk_medicine, "error":error,"medicine":medicine})
                 except:
 
                     medicine.name = form.cleaned_data['name']
                     medicine.full_name = form.cleaned_data['full_name']
                     medicine.sale_price = form.cleaned_data['sale_price']
                     medicine.import_price = form.cleaned_data['import_price']
-                    medicine.quantity = form.cleaned_data['quantity']
+                    if form.cleaned_data['add_quantity']:
+                        medicine.quantity = str(int(form.cleaned_data['add_quantity'])+int(medicine.quantity))
                     medicine.save()
 
-                return redirect(reverse('medicine_list',kwargs={'pk_doctor':pk_doctor}))
+                return redirect(reverse('medicine_edit',kwargs={'pk_doctor':pk_doctor,'pk_medicine':pk_medicine}))
         else:
-            form = MedicineForm(initial={"name":medicine.name,'full_name':medicine.full_name,'sale_price':medicine.sale_price,'import_price':medicine.import_price,'quantity':medicine.quantity})
-            return render(request,'doctors/doctor_medicine_edit.html',{'form':form,'pk_doctor':pk_doctor,'pk_medicine':pk_medicine})
+            form = MedicineEditForm(initial={"name":medicine.name,'full_name':medicine.full_name,'sale_price':medicine.sale_price,'import_price':medicine.import_price})
+            return render(request,'doctors/doctor_medicine_edit.html',{'form':form,'pk_doctor':pk_doctor,'pk_medicine':pk_medicine,"medicine":medicine})
 
 # Medicine del view
 def medicine_del(request,pk_doctor,pk_medicine):
@@ -257,7 +258,7 @@ def medical_record_edit(request,pk_doctor,pk_mrecord):
                 mrecord.save()
                 return redirect(reverse('medical_record_view',kwargs={"pk_doctor":pk_doctor,"pk_mrecord":pk_mrecord}))
         else:
-            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":mrecord.birth_date.strftime("%d/%m/%Y"),"address":mrecord.address})
+            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":mrecord.birth_date.year,"address":mrecord.address})
             return render(request,"doctors/doctor_medical_record_edit.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord})
 
 # Medical record delete view
@@ -503,11 +504,11 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
         number_style = wb.add_format({"font_name":'Times New Roman','font_size':13,"border":1,'text_wrap':True,"align":"center","valign":"vcenter","num_format":'#,##0 ;[Red]General'})
 
         # information doctor at worksheet patient #
-        ws.merge_range('A2:I2',"Phòng Khám "+doctor.doctor.kind.upper()+" - "+doctor.doctor.full_name.upper(),header_style)
+        ws.merge_range('A2:I2',"Phòng Khám "+(doctor.doctor.get_kind_display()).upper()+" - "+doctor.doctor.full_name.upper(),header_style)
         ws.merge_range("A3:K3","Địa chỉ: "+doctor.doctor.clinic_address,normal_style)
         ws.merge_range("A4:I4","Điện thoại đăng ký khám bệnh: "+doctor.doctor.phone,normal_style)
         # information doctor at worksheet doctor #
-        ws1.merge_range('A2:I2',"Phòng Khám "+doctor.doctor.kind.upper()+" - "+doctor.doctor.full_name.upper(),header_style)
+        ws1.merge_range('A2:I2',"Phòng Khám "+(doctor.doctor.get_kind_display()).upper()+" - "+doctor.doctor.full_name.upper(),header_style)
         ws1.merge_range("A3:K3","Địa chỉ: "+doctor.doctor.clinic_address,normal_style)
         ws1.merge_range("A4:I4","Điện thoại đăng ký khám bệnh: "+doctor.doctor.phone,normal_style)
 
@@ -519,12 +520,12 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
 
         # information patient at worksheet patient #
         ws.merge_range("A9:G9","Họ và tên: "+mrecord.full_name.upper(),header_style)
-        ws.merge_range("I9:K9","Năm sinh: "+mrecord.birth_date.strftime("%d/%m/%Y"),header_style)
+        ws.merge_range("I9:K9","Năm sinh: "+str(mrecord.birth_date.year),header_style)
         ws.merge_range("A11:H11","Địa chỉ: "+mrecord.address,normal_style)
         ws.merge_range("A12:H12","Chẩn đoán: "+history.diagnostis,normal_style)
         # information patient at worksheet doctor #
         ws1.merge_range("A9:G9","Họ và tên: "+mrecord.full_name.upper(),header_style)
-        ws1.merge_range("I9:K9","Năm sinh: "+mrecord.birth_date.strftime("%d/%m/%Y"),header_style)
+        ws1.merge_range("I9:K9","Năm sinh: "+str(mrecord.birth_date.year),header_style)
         ws1.merge_range("A11:H11","Địa chỉ: "+mrecord.address,normal_style)
         ws1.merge_range("A12:H12","Chẩn đoán: "+history.diagnostis,normal_style)
 
@@ -548,6 +549,7 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
 
         row_drug1 = 14
         total_import_price = 0
+        index = 1
 
         for drug in history.prescriptiondrug_set.all():
             ws1.merge_range("B{}:F{}".format(str(row_drug1),str(row_drug1)),str(index)+". "+drug.medicine.full_name,header_style)
