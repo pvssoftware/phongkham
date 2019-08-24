@@ -4,7 +4,10 @@
     <form action="{% url 'search_drugs' pk_doctor %}" class="search_drug_form" method="get">
             
             <div class="input-group my-3">
-            <input type="text" class="form-control" placeholder="Nhập tên thuốc cần tìm" id="search_drug" name="search_drug">
+            <input type="text" class="form-control" placeholder="Nhập tên thuốc cần tìm" id="search_drug" name="search_drug"
+            {% if search_drug_value %}
+            value="{{ search_drug_value }}"
+            {% endif %}>
             <div class="input-group-append">
                 <button class="btn btn-outline-secondary btn-finished" type="button">Tìm thuốc</button>
             </div>
@@ -17,7 +20,7 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Tên thuốc</th>
+                        <th>Tên biệt dược</th>
                         <th>Số lượng</th>
                         <th>Giá bán (VNĐ)</th>
                         <th>Giá mua (VNĐ)</th>

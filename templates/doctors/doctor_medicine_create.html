@@ -12,7 +12,7 @@
   <form action="{% url 'medicine_create' pk_doctor %}" id="medicine_create_form" method="post">
     {% csrf_token %}
     <div class="form-group">
-      <label for="name">Nhập tên thuốc<span class="required-input">*</span></label>
+      <label for="name">Nhập tên của thuốc<span class="required-input">*</span></label>
       <input name="name" type="text" class="form-control" id="name" placeholder="Tên của thuốc" 
       {% if form.name.value %} 
       value="{{ form.name.value }}" 
@@ -20,8 +20,8 @@
       <span id="alert_name" style="color: #d9534f;font-size:15px"></span>
     </div>
     <div class="form-group">
-      <label for="full_name">Nhập tên đầy đủ thuốc<span class="required-input">*</span></label>
-      <input name="full_name" id="full_name" type="text" class="form-control" placeholder="Tên đầy đủ của thuốc" 
+      <label for="full_name">Nhập tên biệt dược của thuốc<span class="required-input">*</span></label>
+      <input name="full_name" id="full_name" type="text" class="form-control" placeholder="Tên biệt dược của thuốc" 
       {% if form.full_name.value %}
        value="{{ form.full_name.value }}"
         {% endif %} />

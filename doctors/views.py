@@ -87,7 +87,7 @@ def search_drugs(request,pk_doctor):
 
             drug_results = Medicine.objects.filter(Q(name__icontains=search_drug_value)| Q(full_name__icontains=search_drug_value))
 
-            return render(request,'doctors/doctor_search_drugs.html',{"pk_doctor":pk_doctor,"drug_results":drug_results})
+            return render(request,'doctors/doctor_search_drugs.html',{"pk_doctor":pk_doctor,"drug_results":drug_results,"search_drug_value":search_drug_value})
 
 # Medicine create view
 def medicine_create(request,pk_doctor):
@@ -290,8 +290,12 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
                     # if form.cleaned_data['chuan_doan_khac_pk']:
                     #     form.chuan_doan_khac_pk = True
                     form.co_tu_cung_ps = False
+                    form.note_co_tu_cung_ps = ''
                     form.tim_thai_ps = False
+                    form.note_tim_thai_ps = ''
                     form.can_go_ps = False
+                    form.note_con_go_ps = ''
+
                 else:
                     # if form.cleaned_data['co_tu_cung_ps']:
                     #     form.co_tu_cung_ps = True
@@ -300,8 +304,10 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
                     # if form.cleaned_data['can_go_ps']:
                     #     form.can_go_ps = True
                     form.co_tu_cung_pk = False
+                    form.note_co_tu_cung_pk = ''
                     form.am_dao_pk = False
-                    form.chuan_doan_khac_pk = False
+                    form.note_am_dao_pk = ''
+                    
                 form.medical_record = mrecord
                 form.save()
                 # history = MedicalHistory.objects.create(disease_symptom=disease_symptom,diagnostis=diagnostis,
@@ -331,42 +337,53 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                 if form.cleaned_data['service']== 'khám phụ khoa':
                     if form.cleaned_data['co_tu_cung_pk']:
                         history_edit.co_tu_cung_pk = True
+                        history_edit.note_co_tu_cung_pk = form.cleaned_data['note_co_tu_cung_pk']
                     else:
                         history_edit.co_tu_cung_pk = False
+                        history_edit.note_co_tu_cung_pk = ''
                     if form.cleaned_data['am_dao_pk']:
                         history_edit.am_dao_pk = True
+                        history_edit.note_am_dao_pk = form.cleaned_data['note_am_dao_pk']
                     else:
                         history_edit.am_dao_pk = False
-                    if form.cleaned_data['chuan_doan_khac_pk']:
-                        history_edit.chuan_doan_khac_pk = True
-                    else:
-                        history_edit.chuan_doan_khac_pk = False
+                        history_edit.note_am_dao_pk = ''
 
                     history_edit.co_tu_cung_ps = False
+                    history_edit.note_co_tu_cung_ps = ''
                     history_edit.tim_thai_ps = False
+                    history_edit.note_tim_thai_ps = ''
                     history_edit.can_go_ps = False
+                    history_edit.note_con_go_ps = ''
                 else:
                     if form.cleaned_data['co_tu_cung_ps']:
                         history_edit.co_tu_cung_ps = True
+                        history_edit.note_co_tu_cung_ps = form.cleaned_data['note_co_tu_cung_ps']
                     else:
                         history_edit.co_tu_cung_ps = False
+                        history_edit.note_co_tu_cung_ps = ''
                     if form.cleaned_data['tim_thai_ps']:
                         history_edit.tim_thai_ps = True
+                        history_edit.note_tim_thai_ps = form.cleaned_data['note_tim_thai_ps']
                     else:
                         history_edit.tim_thai_ps = False
+                        history_edit.note_tim_thai_ps = ''
                     if form.cleaned_data['can_go_ps']:
                         history_edit.can_go_ps = True
+                        history_edit.note_con_go_ps = form.cleaned_data['note_con_go_ps']
                     else:
                         history_edit.can_go_ps = False
+                        history_edit.note_can_go_ps = ''
+
                     history_edit.co_tu_cung_pk = False
+                    history_edit.note_co_tu_cung_pk = ''
                     history_edit.am_dao_pk = False
-                    history_edit.chuan_doan_khac_pk = False
+                    history_edit.note_am_dao_pk = ''
+                    
 
 
                 history_edit.PARA = form.cleaned_data['PARA']
                 history_edit.contraceptive = form.cleaned_data['contraceptive']
                 history_edit.last_menstrual_period = form.cleaned_data['last_menstrual_period']
-                history_edit.note = form.cleaned_data['note']
                 
                 history_edit.save()
 
@@ -378,7 +395,7 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
 
             histories = mrecord.medicalhistory_set.exclude(pk=pk_history)
             form = MedicalHistoryFormMix(initial={
-                                    "disease_symptom": history_edit.disease_symptom, "diagnostis": history_edit.diagnostis,"service":history_edit.service,"PARA":history_edit.PARA,"contraceptive":history_edit.contraceptive,"last_menstrual_period":history_edit.last_menstrual_period.strftime("%d/%m/%Y"),"note":history_edit.note})
+                                    "disease_symptom": history_edit.disease_symptom, "diagnostis": history_edit.diagnostis,"service":history_edit.service,"PARA":history_edit.PARA,"contraceptive":history_edit.contraceptive,"last_menstrual_period":history_edit.last_menstrual_period.strftime("%d/%m/%Y")})
             
             return render(request, 'doctors/doctor_medical_record_back_view.html', {"histories": histories, "history_edit": history_edit, "form": form,"mrecord":mrecord,"doctor":doctor})
 

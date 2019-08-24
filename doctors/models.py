@@ -27,13 +27,22 @@ class MedicalHistory(models.Model):
     # Biện pháp tránh thai
     contraceptive = models.CharField(max_length=12,default="Khong")
     date = models.DateTimeField(auto_now_add=True)
-    note = models.CharField(max_length=40,blank=True,null=True)
+    
     co_tu_cung_ps = models.BooleanField(default=False,help_text='chỉ check khi khám phụ sản')
+    note_co_tu_cung_ps = models.CharField(max_length=100,blank=True,default="",help_text='chỉ check khi khám cổ tử cung phụ sản')
+
     tim_thai_ps = models.BooleanField(default=False,help_text='chỉ check khi khám phụ sản')
+    note_tim_thai_ps = models.CharField(max_length=100,blank=True,default="",help_text='chỉ check khi khám tim thai phụ sản')
+
     can_go_ps = models.BooleanField(default=False,help_text='chỉ check khi khám phụ sản')
+    note_con_go_ps = models.CharField(max_length=100,blank=True,default="",help_text='chỉ check khi khám cơn gò phụ sản')
+
     co_tu_cung_pk = models.BooleanField(default=False,help_text='chỉ check khi khám phụ khoa')
+    note_co_tu_cung_pk = models.CharField(max_length=100,blank=True,default="",help_text='chỉ check khi khám cổ tử cung phụ khoa')
+
     am_dao_pk = models.BooleanField(default=False,help_text='chỉ check khi khám phụ khoa')
-    chuan_doan_khac_pk = models.BooleanField(default=False,help_text='chỉ check khi khám phụ khoa')
+    note_am_dao_pk = models.CharField(max_length=100,blank=True,default="",help_text='chỉ check khi khám âm đạo phụ khoa')
+    
 
     medical_record = models.ForeignKey(MedicalRecord, on_delete=models.CASCADE)
 

@@ -87,50 +87,71 @@
         </div>
 
         <div class="mb-3 ml-3" id="phu_san">
-            <div class="form-check">
+            <div>
+                <div class="form-check check_service">
                 <input class="form-check-input" type="checkbox" value="Cổ tử cung" id="co_tu_cung_ps" name="co_tu_cung_ps">
                 <label class="form-check-label" for="co_tu_cung_ps">
-                    Cổ tử cung
+                Cổ tử cung
                 </label>
+                </div>
+                <div class="form-group ml-4 mt-1">
+                <input type="text" class="form-control" name="note_co_tu_cung_ps" placeholder="Ghi chú về cổ tử cung...">
+                </div>
             </div>
-            <div class="form-check">
+
+            <div>
+                <div class="form-check check_service">
                 <input class="form-check-input" type="checkbox" value="Tim thai" id="tim_thai_ps" name="tim_thai_ps">
                 <label class="form-check-label" for="tim_thai_ps">
-                    Tim thai
+                Tim thai
                 </label>
+                </div>
+                <div class="form-group ml-4 mt-1">
+                <input type="text" class="form-control" name="note_tim_thai_ps" placeholder="Ghi chú về tim thai...">
+                </div>
             </div>
-            <div class="form-check">
+            <div>
+                <div class="form-check check_service">
                 <input class="form-check-input" type="checkbox" value="Cân go" id="can_go_ps" name="can_go_ps">
                 <label class="form-check-label" for="can_go_ps">
-                   Cân gò
+                Cơn gò
                 </label>
+                </div>
+                <div class="form-group ml-4 mt-1">
+                    <input type="text" class="form-control" name="note_con_go_ps" placeholder="Ghi chú về cơn gò...">
+                </div>
             </div>
         </div>
 
         <div class="mb-3 ml-3" id="phu_khoa">
-                <div class="form-check">
+            <div>
+                <div class="form-check check_service">
                     <input class="form-check-input" type="checkbox" value="Cổ tử cung" id="co_tu_cung_pk" name="co_tu_cung_pk">
                     <label class="form-check-label" for="co_tu_cung_pk">
-                        Cổ tử cung
+                    Cổ tử cung
                     </label>
                 </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="Âm đạo" id="am_dao_pk" name="am_dao_pk">
-                    <label class="form-check-label" for="am_dao_pk">
-                        Âm đạo
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="Chuẩn đoán khác" id="chuan_doan_khac_pk" name="chuan_doan_khac_pk">
-                    <label class="form-check-label" for="chuan_doan_khac_pk">
-                       Chuẩn đoán khác
-                    </label>
+                <div class="form-group ml-4 mt-1">
+                    <input type="text" class="form-control" name="note_co_tu_cung_pk" placeholder="Ghi chú về cổ tử cung...">
                 </div>
             </div>
-        <div class="form-group">
+            <div>
+                <div class="form-check check_service">
+                    <input class="form-check-input" type="checkbox" value="Âm đạo" id="am_dao_pk" name="am_dao_pk">
+                    <label class="form-check-label" for="am_dao_pk">
+                    Âm đạo
+                    </label>
+                    </div>
+                <div class="form-group ml-4 mt-1">
+                    <input type="text" class="form-control" name="note_am_dao_pk" placeholder="Ghi chú về âm đạo...">
+                </div>
+            </div>
+                
+        </div>
+        <!-- <div class="form-group">
             <label for="inputAddress">Ghi chú</label>
             <input type="text" class="form-control" id="note" placeholder="" name="note">
-        </div>
+        </div> -->
         <div class="form-group">
             <label for="disease_symptom">Triệu chứng<span class="required-input">*</span></label>
             <textarea class="form-control" id="disease_symptom" name="disease_symptom" rows="3"></textarea>
@@ -167,34 +188,26 @@
         </div>
 
          <div class="media pt-3 info_service" >
-             <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-                <strong class="d-block text-gray-dark">{{ history.service|title }}</strong>
+             <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                <strong class="d-block text-gray-dark mb-2">{{ history.service|title }}</strong>
                 {% if history.co_tu_cung_ps %}
-                cổ tử cung,
+                <p class="mb-1">-Cổ tử cung: {{ history.note_co_tu_cung_ps }}</p>                
                 {% endif %}
                 {% if history.tim_thai_ps %}
-                tim thai,
+                <p class="mb-1">-Tim thai: {{ history.note_tim_thai_ps }}</p> 
                 {% endif %}
                 {% if history.can_go_ps %}
-                cần go,
+                <p class="mb-1">-Cơn gò: {{ history.note_con_go_ps }}</p>
                 {% endif %}
                 {% if history.co_tu_cung_pk %}
-                cổ tử cung,
+                <p class="mb-1">-Cổ tử cung: {{ history.note_co_tu_cung_pk }}</p>
                 {% endif %}
                 {% if history.am_dao_pk %}
-                âm đạo,
+                <p class="mb-1">-Âm đạo: {{ history.note_am_dao_pk }}</p>
                 {% endif %}
-                {% if history.chuan_doan_khac_pk %}
-                chuẩn đoán khác,
-                {% endif %}
-             </p>
+             </div>
          </div>
-         <div class="media pt-3 info_note">
-             <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-                <strong class="d-block text-gray-dark">Ghi chú</strong>
-                {{ history.note }}
-             </p>
-         </div>
+    
          <div class="media pt-3 info_disease_symptom ">
              <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
                 <strong class="d-block text-gray-dark">Triệu chứng</strong>
@@ -234,7 +247,6 @@
         
         var info_basic = $(".info_basic");
         var info_service = $(".info_service");
-        var info_note = $(".info_note");
         var info_disease_symptom = $(".info_disease_symptom");
         var info_diagnostis = $(".info_diagnostis");
         var info_bt = $(".info_bt");
@@ -242,7 +254,6 @@
         $(".fa-minus").hide();
         info_basic.hide();
         info_service.hide();
-        info_note.hide();
         info_disease_symptom.hide();
         info_diagnostis.hide();
         info_bt.hide();
@@ -253,8 +264,7 @@
             var fa_plus = $(this).children(".fa-plus");
             var info_basic = $(this).next();
             var info_service = info_basic.next();
-            var info_note = info_service.next();
-            var info_disease_symptom = info_note.next();
+            var info_disease_symptom = info_service.next();
             var info_diagnostis = info_disease_symptom.next();
             var info_bt = info_diagnostis.next();
 
@@ -264,7 +274,6 @@
 			fa_plus.hide();
 			info_basic.show();
             info_service.show();
-            info_note.show();
             info_disease_symptom.show();
             info_diagnostis.show();
             info_bt.show();
@@ -275,7 +284,6 @@
 			fa_plus.show();
 			info_basic.hide();
             info_service.hide();
-            info_note.hide();
             info_disease_symptom.hide();
             info_diagnostis.hide();
             info_bt.hide();
@@ -283,9 +291,9 @@
         }); // end click
 
         
-
-        $("#phu_khoa").hide();
         // choose phu san or phu khoa
+        $("#phu_khoa").hide();
+        
         $("#phu_san_radio,#phu_khoa_radio").click(function(){
             if($("#phu_san_radio").prop("checked")){
                 $("#phu_san").show();
@@ -296,6 +304,16 @@
             }
         });// end click
 
+        $(".check_service").next().hide();
+        // check check_service
+
+        $(".check_service input:first-child").click(function(){
+            if($(this).prop("checked")){
+                $(this).parent().next().show();
+            } else{
+                $(this).parent().next().hide();
+            }
+        }); // end click
         // date picker
         $("#last_menstrual_period").datepicker({
         dateFormat: "dd/mm/yy",

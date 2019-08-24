@@ -8,7 +8,7 @@ from django.contrib.auth.models import (
 class DoctorProfile(models.Model):
     
     KIND_DOCTOR = [
-        ("gynecologist","bác sĩ phụ khoa"),
+        ("obstetrician-gynecologist","bác sĩ sản phụ khoa"),
         ("Oral maxillofacial surgeon","bác sĩ ngoại răng hàm mặt"),
     ]
 

@@ -50,7 +50,7 @@ class MedicalHistoryFormMix(forms.ModelForm):
 
     class Meta:
         model = MedicalHistory
-        fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","note","last_menstrual_period","co_tu_cung_ps","tim_thai_ps","can_go_ps","co_tu_cung_pk","am_dao_pk","chuan_doan_khac_pk"]
+        fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","last_menstrual_period","co_tu_cung_ps","note_co_tu_cung_ps","tim_thai_ps","note_tim_thai_ps","can_go_ps","note_con_go_ps","co_tu_cung_pk","note_co_tu_cung_pk","am_dao_pk","note_am_dao_pk"]
 
 
 class MedicineForm(forms.ModelForm):
