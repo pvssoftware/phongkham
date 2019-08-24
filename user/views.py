@@ -14,7 +14,7 @@ class LoginViewMix(LoginView):
     def get_success_url(self):
         user = self.request.user
         # return reverse_lazy("doctor_profile",kwargs={"pk_doctor":user.pk})
-        if user.doctor.kind == "gynecologist":
+        if user.doctor.kind == "obstetrician-gynecologist":
             return reverse_lazy("doctor_profile",kwargs={"pk_doctor":user.pk})
     # def get(self,request, *args, **kwargs):
     #     if request.user.is_authenticated:
