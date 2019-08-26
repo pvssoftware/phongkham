@@ -34,6 +34,7 @@
       <tbody>
         {% for drug in medicine_list %}
         <tr>
+          <td style="display: none">{{ drug.name }}</td>
           <td scope="row">
             <a
               class="page-link-mix"
@@ -136,7 +137,7 @@
             .val()
             .trim()
             .toString();
-          console.log(value_search);
+          
 
           if (value_search === "") {
             table_search.hide();
@@ -147,31 +148,38 @@
             medicine_list.hide();
             let show_hide = false;
             medicine_list.each(function() {
+              let row = $(this);
               let full_name = $(this)
                 .find("td a")
                 .eq(0);
-              console.log(full_name.text());
+              let name = $(this).find("td").eq(0);
+              let array = [full_name,name]
+              // console.log(full_name.text());
+              // console.log(name.text());
 
-              if (
-                full_name
-                  .text()
-                  .toLowerCase()
-                  .includes(value_search.toLowerCase())
+              for (let i =0;i<array.length;i++){
+                if (
+                array[i].text().toLowerCase().includes(value_search.toLowerCase())
               ) {
-                $(this).show();
+                row.show();
+                console.log(value_search);
                 show_hide = true;
-                console.log("true");
+                break;
+                
               } else {
-                $(this).hide();
+                row.hide();
               }
               if (!show_hide) {
                 artical_search.hide();
                 table_search.hide();
-                console.log("hide");
+                
               }else{
                 artical_search.show();
                 table_search.show();
               }
+              } // end for
+          
+              
             }); //end each
           }
         }); // end keyup
