@@ -30,7 +30,7 @@
          </tbody>
      </table>
 
-     <h4 class="mt-3"> Nhập thông tin lần khám hiện tại</h4>
+     <h4 class="mt-3"> Nhập lại thông tin lần khám {{ history_edit.date|date:"P D. d-m-Y"  }}</h4>
      <form action="{% url 'medical_record_back_view' doctor.pk mrecord.pk history_edit.pk %}" method="post" id="history_form">
         {% csrf_token %}
 
@@ -256,6 +256,7 @@
             <div class="info_bt">
             <small class="text-right d-flex justify-content-between mt-3">
                 <a href="{% url 'export_final_info_excel' doctor.pk mrecord.pk history.pk %}" style="color: #00796B">Xuất file excel</a>
+                <a href="{% url 'medical_record_back_view' doctor.pk mrecord.pk history.pk %}" style="color: #7C4DFF">Sửa lịch sử</a>
                 <a href="{% url 'medical_history_del' doctor.pk mrecord.pk history.pk %}" style="color: #d9534f">Xoá lịch sử</a>
             </small>
            </div>

@@ -223,6 +223,7 @@
          <div class="info_bt">
          <small class="text-right d-flex justify-content-between mt-3">
              <a href="{% url 'export_final_info_excel' doctor.pk mrecord.pk history.pk %}" style="color: #00796B">Xuất file excel</a>
+             <a href="{% url 'medical_record_back_view' doctor.pk mrecord.pk history.pk %}" style="color: #7C4DFF">Sửa lịch sử</a>
              <a href="{% url 'medical_history_del' doctor.pk mrecord.pk history.pk %}" style="color: #d9534f">Xoá lịch sử</a>
          </small>
         </div>
@@ -316,6 +317,7 @@
         }); // end click
         // date picker
         $("#last_menstrual_period").datepicker({
+        // constrainInput: false,
         dateFormat: "dd/mm/yy",
         changeMonth: true,
         // changeYear: true,

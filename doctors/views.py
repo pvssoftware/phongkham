@@ -53,19 +53,31 @@ def search_navbar(request,pk_doctor):
     if user.doctor:
         form = SearchNavBarForm(request.GET)
         if form.is_valid():
-            results = MedicalRecord.objects.filter(Q(doctor=user),Q (full_name__icontains=form.cleaned_data['search_navbar']))
+            search_value = form.cleaned_data['search_navbar']
+
+            try:
+                results = []
+                date_obj = datetime.strptime(search_value,'%d/%m/%Y')
+                mrecords = MedicalRecord.objects.filter(doctor=user)
+                if mrecords.count() > 0:
+                    for mrecord in mrecords:
+                        if mrecord.medicalhistory_set.all().filter(date__date=date_obj):
+                            results.append(mrecord)
+            except ValueError:
+                results = MedicalRecord.objects.filter(Q(doctor=user),Q (full_name__icontains=form.cleaned_data['search_navbar']))
+                
             object_list = []
             for ob in results:
-                    o = {"ob":ob}
-                    if ob.medicalhistory_set.all():
-                        for history in ob.medicalhistory_set.all():
-                            if history.service == "khám phụ sản":
-                                o['ps']  = True
-                            else:
-                                o['pk'] = True
-                    else:
-                        o['ck'] = True
-                    object_list.append(o)
+                o = {"ob":ob}
+                if ob.medicalhistory_set.all():
+                    for history in ob.medicalhistory_set.all():
+                        if history.service == "khám phụ sản":
+                            o['ps']  = True
+                        else:
+                            o['pk'] = True
+                else:
+                    o['ck'] = True
+                object_list.append(o)
             results = object_list
 
             return render(request,'doctors/doctor_search_navbar.html',{"results":results,"pk_doctor":pk_doctor})
