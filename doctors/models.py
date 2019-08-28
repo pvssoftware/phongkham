@@ -48,6 +48,8 @@ class MedicalHistory(models.Model):
 
     def __str__(self):
         return self.medical_record.full_name
+    class Meta:
+        ordering = ['date']
 
 class Medicine(models.Model):
     name = models.CharField(max_length=20)
