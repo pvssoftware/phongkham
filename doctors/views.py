@@ -520,7 +520,7 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
         history = MedicalHistory.objects.get(pk=pk_history)
         output = io.BytesIO()
         wb = xlsxwriter.Workbook(output,{'remove_timezone': True})
-        
+
         ws = wb.add_worksheet("Bệnh nhân")
         ws.fit_to_pages(1,1)
         ws.set_paper(11)
@@ -539,7 +539,7 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
         number_style = wb.add_format({"font_name":'Times New Roman','font_size':13,"border":1,'text_wrap':True,"align":"center","valign":"vcenter","num_format":'#,##0 ;[Red]General'})
 
         # information doctor at worksheet patient #
-        ws.merge_range('A2:I2',"Phòng Khám "+(doctor.doctor.get_kind_display()).upper()+" - "+doctor.doctor.full_name.upper(),header_style)
+        ws.merge_range('A2:K2',"Phòng Khám "+(doctor.doctor.get_kind_display()).upper()+" - "+doctor.doctor.full_name.upper(),header_style)
         ws.merge_range("A3:K3","Địa chỉ: "+doctor.doctor.clinic_address,normal_style)
         ws.merge_range("A4:I4","Điện thoại đăng ký khám bệnh: "+doctor.doctor.phone,normal_style)
         # information doctor at worksheet doctor #
