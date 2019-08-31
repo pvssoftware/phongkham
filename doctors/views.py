@@ -520,8 +520,14 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
         history = MedicalHistory.objects.get(pk=pk_history)
         output = io.BytesIO()
         wb = xlsxwriter.Workbook(output,{'remove_timezone': True})
+        
         ws = wb.add_worksheet("Bệnh nhân")
+        ws.fit_to_pages(1,1)
+        ws.set_paper(11)
+
         ws1 = wb.add_worksheet("Bác sĩ")
+        ws1.fit_to_pages(1,1)
+        ws1.set_paper(11)
 
         # set row disease_symptom and dianostis
         # ws.set_row(8,50)
