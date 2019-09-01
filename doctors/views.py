@@ -591,7 +591,7 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
             ws1.merge_range("J{}:K{}".format(str(row_drug1),str(row_drug1)),drug.quantity+" viên",normal_style)
             index += 1
 
-            ws1.merge_range("B{}:K{}".format(str(row_drug1+1),str(row_drug1+1)),"Mỗi lần uống "+drug.dose+" viên"+", thời gian uống "+drug.time_take_medicine,normal_style)
+            ws1.merge_range("B{}:K{}".format(str(row_drug1+1),str(row_drug1+1)),"Mỗi lần uống "+drug.dose+" viên"+", "+drug.time_take_medicine,normal_style)
 
             ws1.merge_range("B{}:C{}".format(str(row_drug1+2),str(row_drug1+2)),"Giá bán (VNĐ)",normal_style)
             ws1.merge_range("D{}:F{}".format(str(row_drug1+2),str(row_drug1+2)),int(drug.cost),number_style)
