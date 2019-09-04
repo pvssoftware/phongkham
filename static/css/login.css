@@ -94,3 +94,22 @@ body {
   background-color: #3700b3;
   color: #FFFFFF;
 }
+.btn-login:hover{
+  opacity: 0.8;
+}
+
+/* .group-link{
+  margin-top: 0px;
+} */
+
+.group-link a{
+  color: white;
+  text-decoration:none;
+  display: block;
+  font-size: 13px;
+  
+}
+
+.group-link a:hover{
+  text-decoration:underline;
+}
