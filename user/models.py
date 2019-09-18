@@ -13,9 +13,11 @@ class DoctorProfile(models.Model):
     ]
 
     phone = models.CharField(max_length=14)
-    full_name = models.CharField(max_length=30, unique=True)
+    full_name = models.CharField(max_length=30)
     clinic_address = models.CharField(max_length=70)
     kind = models.CharField(max_length=30, choices=KIND_DOCTOR)
+    is_trial = models.BooleanField(default=False)
+    time_start_trial = models.DateField(blank=True,null=True)
 
     def __str__(self):
         return "{}-{}".format(self.full_name,self.get_kind_display())

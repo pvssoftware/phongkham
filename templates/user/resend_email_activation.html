@@ -1,0 +1,14 @@
+{% extends "user/base_user.html" %} 
+{% load crispy_forms_tags %}
+ 
+  {% block content %}
+
+
+<form action="{% url 'resend_activation' %}" method="post" class="form-signup">
+  <p class="lead text-center">Hãy nhập email bạn đã đăng ký và nhấn nút bên dưới để nhận lại được email xác nhận từ chúng tôi.</p>
+    {% csrf_token %} 
+    {{form|crispy}}
+    <button class="btn btn-primary">Gửi lại mail</button>
+</form>
+  
+{% endblock %}

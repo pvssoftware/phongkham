@@ -1,0 +1,14 @@
+{% extends "user/base_user.html" %}
+  
+ 
+ 
+ 
+ {% block content %}
+ <p class="lead text-center">
+     Tài khoản của bạn đã được tạo thành công! Một email đã được gửi đến email của bạn. Hãy kiểm tra email của bạn và xác nhận để hoàn tất đăng ký.
+     Nếu không nhận được email xác nhận hãy nhấn vào <a href="{% url 'resend_activation' %}">đây để gửi lại email xác nhận.</a>
+     Quay lại <a href="{% url 'login' %}">đăng nhập</a>
+
+ </p>
+
+{% endblock %}
