@@ -244,7 +244,7 @@ def medical_record_create(request,pk_doctor):
                 form.doctor = doctor
                 form.save()
 
-                return redirect(reverse("doctor_profile",kwargs={"pk_doctor":pk_doctor}))
+                return redirect(reverse("medical_record_view",kwargs={"pk_doctor":pk_doctor,"pk_mrecord":form.id}))
         else:
             form = MedicalRecordForm()
             return render(request,'doctors/doctor_medical_record_create.html',{"form":form,'pk_doctor':pk_doctor})
@@ -283,7 +283,6 @@ def medical_record_del(request,pk_doctor,pk_mrecord):
 
 
 # Medical record view
-
 def medical_record_view(request, pk_mrecord, pk_doctor):
     doctor = User.objects.get(pk=pk_doctor)
 
