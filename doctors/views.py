@@ -469,6 +469,18 @@ def medical_history_del(request,pk_doctor,pk_mrecord,pk_history):
             drug.medicine.save()
         history_del.delete()
         if is_waiting:
+            histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True)
+            html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories})
+
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                "patients",
+                {
+                    "type":"patient_update",
+                    "html_patients":html_patients,
+                }
+            )
+            
             return redirect(reverse("list_examination",kwargs={"pk_doctor": pk_doctor}))
         else:
             return redirect(reverse("medical_record_view",kwargs={"pk_doctor":pk_doctor,"pk_mrecord":pk_mrecord}))
