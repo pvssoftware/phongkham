@@ -59,7 +59,7 @@
             <tbody>
                 <tr>
                     <td scope="row"><a class="page-link-mix" href="{% url 'medicine_edit' doctor.pk ob.pk %}">{{ ob.full_name }}</a></td>
-                    <td class="number">{{ ob.quantity }}</td>
+                    <td class="number medicine_quantity">{{ ob.quantity }}</td>
                     <td class="number">{{ ob.sale_price }}</td>
                     <td class="number">{{ ob.import_price }}</td>
                 </tr>
@@ -147,6 +147,14 @@
                 $(".search_drug_form").submit();
             }
         }); // end click
+        
+        // Notify when drug lower than 10
+        $(".medicine_quantity").each(function(){
+            var quantity = $(this).text();
+            if (quantity <= 10){
+                $(this).css({"color":"#d9534f"})
+            }
+        }); // end each
 
     }); //end ready
 </script>

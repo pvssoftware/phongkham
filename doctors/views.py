@@ -1,5 +1,8 @@
 import xlsxwriter, xlrd, io
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 from datetime import datetime, timedelta
+from django.template.loader import render_to_string
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponse
@@ -292,39 +295,59 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
             form = MedicalHistoryFormMix(request.POST)
             if form.is_valid():
                 form = form.save(commit=False)
-                
-                if form.service == 'khám phụ khoa':
-                    # if form.cleaned_data['co_tu_cung_pk']:
-                    #     form.co_tu_cung_pk = True
-                    # if form.cleaned_data['am_dao_pk']:
-                    #     form.am_dao_pk = True
-                    # if form.cleaned_data['chuan_doan_khac_pk']:
-                    #     form.chuan_doan_khac_pk = True
-                    form.co_tu_cung_ps = False
-                    form.note_co_tu_cung_ps = ''
-                    form.tim_thai_ps = False
-                    form.note_tim_thai_ps = ''
-                    form.can_go_ps = False
-                    form.note_con_go_ps = ''
-
-                else:
-                    # if form.cleaned_data['co_tu_cung_ps']:
-                    #     form.co_tu_cung_ps = True
-                    # if form.cleaned_data['tim_thai_ps']:
-                    #     form.tim_thai_ps = True
-                    # if form.cleaned_data['can_go_ps']:
-                    #     form.can_go_ps = True
-                    form.co_tu_cung_pk = False
-                    form.note_co_tu_cung_pk = ''
-                    form.am_dao_pk = False
-                    form.note_am_dao_pk = ''
-                    
                 form.medical_record = mrecord
-                form.save()
+
+                if form.is_waiting:
+                    # form.is_waiting = True
+                    form.save()
+
+                    histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True)
+                    html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories})
+
+                    channel_layer = get_channel_layer()
+                    async_to_sync(channel_layer.group_send)(
+                        "patients",
+                        {
+                            "type":"patient_update",
+                            "html_patients":html_patients,
+                        }
+                    )
+
+                    return redirect(reverse("list_examination",kwargs={"pk_doctor": pk_doctor}))
+                else:
+                    # form.is_waiting = False
+                    if form.service == 'khám phụ khoa':
+                        # if form.cleaned_data['co_tu_cung_pk']:
+                        #     form.co_tu_cung_pk = True
+                        # if form.cleaned_data['am_dao_pk']:
+                        #     form.am_dao_pk = True
+                        # if form.cleaned_data['chuan_doan_khac_pk']:
+                        #     form.chuan_doan_khac_pk = True
+                        form.co_tu_cung_ps = False
+                        form.note_co_tu_cung_ps = ''
+                        form.tim_thai_ps = False
+                        form.note_tim_thai_ps = ''
+                        form.can_go_ps = False
+                        form.note_con_go_ps = ''
+
+                    else:
+                        # if form.cleaned_data['co_tu_cung_ps']:
+                        #     form.co_tu_cung_ps = True
+                        # if form.cleaned_data['tim_thai_ps']:
+                        #     form.tim_thai_ps = True
+                        # if form.cleaned_data['can_go_ps']:
+                        #     form.can_go_ps = True
+                        form.co_tu_cung_pk = False
+                        form.note_co_tu_cung_pk = ''
+                        form.am_dao_pk = False
+                        form.note_am_dao_pk = ''
+                        
+                    
+                    form.save()
                 # history = MedicalHistory.objects.create(disease_symptom=disease_symptom,diagnostis=diagnostis,
                 # service=service,service_detail=service_detail,PARA=PARA,contraceptive=contraceptive,last_menstrual_period=last_menstrual_period,note=note,medical_record = mrecord,co_tu_cung_pk=co_tu_cung_pk,am_dao_pk=am_dao_pk,chuan_doan_khac_pk=chuan_doan_khac_pk,co_tu_cung_ps=co_tu_cung_ps,tim_thai_ps=tim_thai_ps,can_go_ps=can_go_ps)
 
-                return redirect(reverse("prescription_drug", kwargs={"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": form.pk}))
+                    return redirect(reverse("prescription_drug", kwargs={"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": form.pk}))
         else:
             form = MedicalHistoryFormMix()
             return render(request, "doctors/doctor_medical_record.html", {"mrecord": mrecord, "doctor": doctor, "form": form})
@@ -340,10 +363,10 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
             if form.is_valid():
                 history_edit = MedicalHistory.objects.get(pk=pk_history)
 
-
                 history_edit.disease_symptom = form.cleaned_data["disease_symptom"]
                 history_edit.diagnostis =form.cleaned_data["diagnostis"]
                 history_edit.service = form.cleaned_data['service']
+                history_edit.is_waiting = form.cleaned_data['is_waiting']
                 
                 if form.cleaned_data['service']== 'khám phụ khoa':
                     if form.cleaned_data['co_tu_cung_pk']:
@@ -398,19 +421,37 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                 
                 history_edit.save()
 
+                histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True)
+                html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories})
+
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    "patients",
+                    {
+                        "type":"patient_update",
+                        "html_patients":html_patients,
+                    }
+                )
+
                 return redirect(reverse("prescription_drug", kwargs={"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": history_edit.pk}))
 
         else:
             mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
             history_edit = MedicalHistory.objects.get(pk=pk_history)
-
+            last_menstrual_period = lambda x: x.strftime("%d/%m/%Y") if (x) else ""
+            
             histories = mrecord.medicalhistory_set.exclude(pk=pk_history)
             form = MedicalHistoryFormMix(initial={
-                                    "disease_symptom": history_edit.disease_symptom, "diagnostis": history_edit.diagnostis,"service":history_edit.service,"PARA":history_edit.PARA,"contraceptive":history_edit.contraceptive,"last_menstrual_period":history_edit.last_menstrual_period.strftime("%d/%m/%Y")})
+                                    "disease_symptom": history_edit.disease_symptom, "diagnostis": history_edit.diagnostis,"service":history_edit.service,"PARA":history_edit.PARA,"contraceptive":history_edit.contraceptive,"last_menstrual_period":last_menstrual_period(history_edit.last_menstrual_period)})
             
             return render(request, 'doctors/doctor_medical_record_back_view.html', {"histories": histories, "history_edit": history_edit, "form": form,"mrecord":mrecord,"doctor":doctor})
 
-# Detail history medical
+# List examination
+def list_examination(request,pk_doctor):
+    doctor = User.objects.get(pk=pk_doctor)
+    histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True)
+
+    return render(request,"doctors/doctor_list_examination.html",{"pk_doctor":pk_doctor,"histories":histories})
 
 
 
@@ -421,12 +462,16 @@ def medical_history_del(request,pk_doctor,pk_mrecord,pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
         history_del = MedicalHistory.objects.get(pk=pk_history)
+        is_waiting = history_del.is_waiting
         drugs_history_del = history_del.prescriptiondrug_set.all()
         for drug in drugs_history_del:
             drug.medicine.quantity = str(int(drug.medicine.quantity)+ int(drug.quantity))
             drug.medicine.save()
         history_del.delete()
-        return redirect(reverse("medical_record_view",kwargs={"pk_doctor":pk_doctor,"pk_mrecord":pk_mrecord}))
+        if is_waiting:
+            return redirect(reverse("list_examination",kwargs={"pk_doctor": pk_doctor}))
+        else:
+            return redirect(reverse("medical_record_view",kwargs={"pk_doctor":pk_doctor,"pk_mrecord":pk_mrecord}))
 
 # Prescription Drug view
 def prescription_drug(request, pk_doctor, pk_mrecord, pk_history):

@@ -40,7 +40,8 @@ class MedicalHistoryFormMix(forms.ModelForm):
     # PARA = forms.CharField()
     # contraceptive = forms.CharField()
     # note = forms.CharField(required=False)
-    last_menstrual_period = forms.DateField(input_formats=["%d/%m/%Y", ])
+    last_menstrual_period = forms.DateField(input_formats=["%d/%m/%Y",], required=False)
+    # is_waiting = forms.CharField()
     # co_tu_cung_ps = forms.CharField(required=False)
     # tim_thai_ps = forms.CharField(required=False)
     # can_go_ps = forms.CharField(required=False)
@@ -50,7 +51,12 @@ class MedicalHistoryFormMix(forms.ModelForm):
 
     class Meta:
         model = MedicalHistory
-        fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","last_menstrual_period","co_tu_cung_ps","note_co_tu_cung_ps","tim_thai_ps","note_tim_thai_ps","can_go_ps","note_con_go_ps","co_tu_cung_pk","note_co_tu_cung_pk","am_dao_pk","note_am_dao_pk"]
+        fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","last_menstrual_period","co_tu_cung_ps","note_co_tu_cung_ps","tim_thai_ps","note_tim_thai_ps","can_go_ps","note_con_go_ps","co_tu_cung_pk","note_co_tu_cung_pk","am_dao_pk","note_am_dao_pk","is_waiting"]
+    def clean_tim_thai_ps(self):
+        c = self.cleaned_data["tim_thai_ps"]
+        print("OK")
+        print(c)
+        return c
 
 
 class MedicineForm(forms.ModelForm):

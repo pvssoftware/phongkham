@@ -1,9 +1,16 @@
 {% extends "base.html" %}
+{% load staticfiles %}
+
  {% block content %}
 
 
- <div class="container">
+ <div class="container" id="list_patients">
      
+    {% include "doctors/doctor_list_patients.html" %}
+         
  </div>
+
+ <script src="{% static 'js/channels/reconnecting-websocket.min.js' %}"></script>
+ <script src="{% static 'js/channels/doctors_list_examination.js' %}"></script>
 
  {% endblock %}

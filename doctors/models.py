@@ -17,15 +17,15 @@ class MedicalRecord(models.Model):
 
 class MedicalHistory(models.Model):
     service = models.CharField(max_length=30,default="khám phụ sản")
-    disease_symptom = models.TextField()
+    disease_symptom = models.TextField(blank=True)
     #  CHuẩn đoán
-    diagnostis = models.TextField()
+    diagnostis = models.TextField(blank=True)
     # A-B-C-D
-    PARA = models.CharField(max_length=10,default="A-B-C-D")
+    PARA = models.CharField(max_length=10,default="A-B-C-D",blank=True)
     # Chu kỳ kinh nguyệt cuối
     last_menstrual_period = models.DateField(blank=True,null=True)
     # Biện pháp tránh thai
-    contraceptive = models.CharField(max_length=12,default="Khong")
+    contraceptive = models.CharField(max_length=12,default="Khong",blank=True)
     date = models.DateTimeField(auto_now_add=True)
     
     co_tu_cung_ps = models.BooleanField(default=False,help_text='chỉ check khi khám phụ sản')
@@ -43,7 +43,7 @@ class MedicalHistory(models.Model):
     am_dao_pk = models.BooleanField(default=False,help_text='chỉ check khi khám phụ khoa')
     note_am_dao_pk = models.CharField(max_length=100,blank=True,default="",help_text='chỉ check khi khám âm đạo phụ khoa')
     
-
+    is_waiting = models.BooleanField(default=False)
     medical_record = models.ForeignKey(MedicalRecord, on_delete=models.CASCADE)
 
     def __str__(self):

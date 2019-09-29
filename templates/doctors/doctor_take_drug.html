@@ -1,7 +1,7 @@
 {% extends "base.html" %}
  {% block content %}
 <div class="container">
-    <h3 class="my-3">Them thuoc vao toa</h3>
+    <h3 class="my-3">Thêm thuốc vào toa</h3>
     <table class="table">
         <tbody>
             <tr>
@@ -10,11 +10,11 @@
             </tr>
             <tr>
                 <th>Tên biệt dược</th>
-                <td>{{ drug.full_name }}</td>
+                <td><a href="{% url 'medicine_edit' pk_doctor drug.pk %}" class="page-link-mix">{{ drug.full_name }}</a></td>
             </tr>
             <tr>
                 <th>Số lượng trong kho</th>
-                <td>{{ drug.quantity }}</td>
+                <td class="drug_quantity">{{ drug.quantity }}</td>
             </tr>
             <tr>
                 <th>Giá bán ra</th>
@@ -98,6 +98,21 @@
 
         let import_price = parseInt($(".import_price").text());
         $(".import_price").text(import_price.toLocaleString()+" VNĐ");
+
+        // Notify when drug lower than 10
+        $(".drug_quantity").each(function(){
+            var quantity = $(this).text();
+            if (quantity <= 10){
+                if (parseInt(quantity) === 0){
+                    $(this).css({"color":"#d9534f"}).append("<span> ( Thuốc trong kho đã hết! )</span>"); 
+                    $("#bt_take_drug").attr("disabled",true);
+                } else{
+                   $(this).css({"color":"#d9534f"}).append("<span> ( Thuốc trong kho sắp hết! )</span>"); 
+                }
+                
+
+            }
+        }); // end each
     }); // end ready
 </script>
 

@@ -33,7 +33,7 @@
      <h4 class="mt-3"> Nhập lại thông tin lần khám {{ history_edit.date|date:"P D. d-m-Y"  }}</h4>
      <form action="{% url 'medical_record_back_view' doctor.pk mrecord.pk history_edit.pk %}" method="post" id="history_form">
         {% csrf_token %}
-
+        <input type="checkbox" name="is_waiting" id="is_waiting" value="is_waiting">
         <div class="form-row">
             <div class="form-group col-md-4">
                 <label for="PARA">PARA<span class="required-input">*</span></label>
@@ -367,6 +367,8 @@
         monthNames: ["1","2","3","4","5","6","7","8","9","10","11","12"],
         monthNamesShort: ["1","2","3","4","5","6","7","8","9","10","11","12"]
         });// end datepicker
+
+        $("#is_waiting").hide();
 
         $(".btn_history").click(function(){
             var last_menstrual_period = $("#last_menstrual_period").val();

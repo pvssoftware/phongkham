@@ -48,7 +48,7 @@
      <h4>Nhập thông tin lần khám hiện tại</h4>
      <form action="{% url 'medical_record_view' doctor.pk mrecord.pk %}" method="post" id="history_form">
         {% csrf_token %}
-
+        <input type="checkbox" name="is_waiting" id="is_waiting" value="is_waiting">
         <div class="form-row">
             <div class="form-group col-md-4">
                 <label for="PARA">PARA<span class="required-input">*</span></label>
@@ -156,13 +156,14 @@
             <label for="disease_symptom">Triệu chứng<span class="required-input">*</span></label>
             <textarea class="form-control" id="disease_symptom" name="disease_symptom" rows="3"></textarea>
             <span id="alert_disease_symptom" style="color: #d9534f;font-size:15px"></span>
-          </div>
+        </div>
         <div class="form-group">
             <label for="diagnostis">Chẩn đoán<span class="required-input">*</span></label>
             <textarea class="form-control" id="diagnostis" name="diagnostis" rows="3"></textarea>
             <span id="alert_diagnostis" style="color: #d9534f;font-size:15px"></span>
-          </div>
+        </div>
         <button class="btn btn-submit btn_history mb-4" type="button">Kê thuốc</button>
+        <button class="btn btn-finished btn_is_waiting float-right mb-4">Lưu hồ sơ chuyển bác sĩ khám</button>
      </form>
 
      {% if mrecord.medicalhistory_set.all %}
@@ -326,6 +327,13 @@
         monthNamesShort: ["1","2","3","4","5","6","7","8","9","10","11","12"]
         });// end datepicker
 
+        $("#is_waiting").hide();
+
+        $(".btn_is_waiting").click(function(){
+            $("#is_waiting").prop("checked",true);
+            console.log($("#is_waiting").is(":checked"));
+            $("#history_form").submit();
+        }); // edn click
 
         $(".btn_history").click(function(){
             var last_menstrual_period = $("#last_menstrual_period").val();
@@ -370,6 +378,7 @@
             }
 
             if (valid){
+                
                 $("#history_form").submit();
             }
             
