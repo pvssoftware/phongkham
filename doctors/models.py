@@ -8,7 +8,7 @@ from user.models import User, DoctorProfile
 class BookedDay(models.Model):
     doctor = models.ForeignKey(DoctorProfile,on_delete=models.CASCADE)
     date = models.DateField()
-    max_patients = models.CharField(max_length=5)
+    max_patients = models.CharField(max_length=10)
     current_patients = models.CharField(max_length=5,default="0")
 
     def __str__(self):
