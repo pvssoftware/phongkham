@@ -30,6 +30,28 @@
             </tr>
          </tbody>
      </table>
+     
+     {% if settings_service.medical_ultrasonography %}
+        <table class="table">
+            <tbody>
+                <tr class="table-active">
+                    <th>Siêu âm</th>
+                    <td>{{ history.medical_ultrasonography }}</td>
+                </tr>
+            </tbody>
+        </table>
+     {% endif %}
+     {% if settings_service.endoscopy %}
+        <table class="table">
+            <tbody>
+                <tr class="table-active">
+                    <th>Nội soi</th>
+                    <td>{{ history.endoscopy }}</td>
+                </tr>
+            </tbody>
+        </table>
+     {% endif %}
+         
      <table class="table">
          <tbody>
              <tr class="table-active">

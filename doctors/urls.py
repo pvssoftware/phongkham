@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit, medicine_del, upload_medicine_excel, search_drugs, cal_benefit, list_examination
+from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit, medicine_del, upload_medicine_excel, search_drugs, cal_benefit, list_examination, settings_openingtime, settings_service, create_weekday, delete_weekday, download_medical_ultrasonography, download_endoscopy
 
 
 
@@ -7,6 +7,12 @@ from .views import search_navbar,DoctorProfileView, medical_record_create, medic
 urlpatterns = [
 
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/search/$",search_navbar,name="search_navbar"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-history-download-endoscopy/(?P<pk_history>\d+)/$",download_endoscopy,name="download_endoscopy"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-history-download-medical-ultrasonography/(?P<pk_history>\d+)/$",download_medical_ultrasonography,name="download_medical_ultrasonography"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/create-weekday/$",create_weekday,name="create_weekday"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/delete-weekday/(?P<pk_weekday>\d+)/$",delete_weekday,name="delete_weekday"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/settings-openingtime/$",settings_openingtime,name="settings_openingtime"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/settings-service/$",settings_service,name="settings_service"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/cal-benefit/$",cal_benefit,name="cal_benefit"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/list-examination/$",list_examination,name="list_examination"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/$",DoctorProfileView.as_view(),name="doctor_profile"),

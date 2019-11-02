@@ -1,7 +1,37 @@
 from django import forms
 from django.core.exceptions import ValidationError
-
+from user.models import SettingsTime, SettingsService, WeekDay
 from .models import MedicalRecord, MedicalHistory, PrescriptionDrug, Medicine
+from .utils_forms import ValidOpeningTimeForm
+
+
+class WeekDayForm(forms.ModelForm):
+
+    class Meta:
+        model = WeekDay
+        fields = ["day","opening_time","closing_time"]
+
+class SettingsTimeForm(forms.ModelForm):
+
+    enable_voice = forms.BooleanField(required=False)
+    examination_period = forms.CharField(required=False)
+    class Meta:
+        model = SettingsTime
+        fields = ["enable_voice","examination_period"]
+
+
+class SettingsServiceForm(forms.ModelForm):
+    blood_pressure = forms.BooleanField(required=False)
+    weight = forms.BooleanField(required=False)
+    glycemic = forms.BooleanField(required=False)
+    ph_meter = forms.BooleanField(required=False)
+    medical_ultrasonography = forms.BooleanField(required=False)
+    endoscopy = forms.BooleanField(required=False)
+    
+    class Meta:
+        model = SettingsService
+        fields = "__all__"
+    
 
 class CalculateBenefitForm(forms.Form):
     from_date = forms.DateField(input_formats=["%d/%m/%Y", ])
@@ -24,7 +54,7 @@ class MedicalRecordForm(forms.ModelForm):
     class Meta:
         model = MedicalRecord
         fields = ["full_name", "address", "birth_date",
-                  "sex"]
+                  "sex","phone"]
 
 
 # class MedicalHistoryForm(forms.ModelForm):
@@ -51,7 +81,8 @@ class MedicalHistoryFormMix(forms.ModelForm):
 
     class Meta:
         model = MedicalHistory
-        fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","last_menstrual_period","co_tu_cung_ps","note_co_tu_cung_ps","tim_thai_ps","note_tim_thai_ps","can_go_ps","note_con_go_ps","co_tu_cung_pk","note_co_tu_cung_pk","am_dao_pk","note_am_dao_pk","is_waiting"]
+        fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","last_menstrual_period","co_tu_cung_ps","note_co_tu_cung_ps","tim_thai_ps","note_tim_thai_ps","can_go_ps","note_con_go_ps","co_tu_cung_pk","note_co_tu_cung_pk","am_dao_pk","note_am_dao_pk","is_waiting","medical_ultrasonography","medical_ultrasonography_file","endoscopy","endoscopy_file","blood_pressure","weight","glycemic","ph_meter"]
+        
     def clean_tim_thai_ps(self):
         c = self.cleaned_data["tim_thai_ps"]
         print("OK")

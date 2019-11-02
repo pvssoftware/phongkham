@@ -1,7 +1,18 @@
+import re, os
+import pytz
 from django.db import models
-from user.models import User
+from user.models import User, DoctorProfile
 
 # Create your models here.
+
+class BookedDay(models.Model):
+    doctor = models.ForeignKey(DoctorProfile,on_delete=models.CASCADE)
+    date = models.DateField()
+    max_patients = models.CharField(max_length=5)
+    current_patients = models.CharField(max_length=5,default="0")
+
+    def __str__(self):
+        return self.doctor.full_name
 
 
 
@@ -10,10 +21,23 @@ class MedicalRecord(models.Model):
     birth_date = models.DateField()
     address = models.CharField(max_length=50)
     sex = models.BooleanField(help_text="True is Female, False is Male")
+    phone = models.CharField(max_length = 20,unique=True,blank=True,null=True)
     doctor = models.ForeignKey(User,on_delete=models.CASCADE)
 
     def __str__(self):
         return self.full_name
+
+
+def locate_medical_ultrasonography_upload(instance,filename):
+    # extension = re.sub(r".*\/","",instance.type_file_medical_ultrasonography)
+    filename = ("%s_%s_%s.pdf")% ((instance.medical_record.full_name).replace(" ","_"),instance.medical_record.phone, instance.date_booked.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Asia/Ho_Chi_Minh")).strftime("%d-%m-%y--%H-%M"))
+    return os.path.join("{}/{}/medical_ultrasonography/".format(instance.medical_record.pk,instance.pk),filename)
+
+def locate_endoscopy_upload(instance,filename):
+    # extension = re.sub(r".*\/","",instance.type_file_endoscopy)
+    filename = ("%s_%s_%s.pdf")% ((instance.medical_record.full_name).replace(" ","_"),instance.medical_record.phone,instance.date_booked.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Asia/Ho_Chi_Minh")).strftime("%d-%m-%y--%H-%M"))
+    return os.path.join("{}/{}/endoscopy/".format(instance.medical_record.pk,instance.pk),filename)
+
 
 class MedicalHistory(models.Model):
     service = models.CharField(max_length=30,default="khám phụ sản")
@@ -26,7 +50,24 @@ class MedicalHistory(models.Model):
     last_menstrual_period = models.DateField(blank=True,null=True)
     # Biện pháp tránh thai
     contraceptive = models.CharField(max_length=12,default="Khong",blank=True)
+    # Huyết áp
+    blood_pressure = models.CharField(max_length=50,blank=True,default="")
+    # Cân nặng
+    weight = models.CharField(max_length=30,blank=True,default="")
+    # Chỉ số đường huyết
+    glycemic = models.CharField(max_length=50,blank=True,default="")
+    # Giấy quỳ pH
+    ph_meter = models.CharField(max_length=30,blank=True,default="")
+
     date = models.DateTimeField(auto_now_add=True)
+    date_booked = models.DateTimeField(blank=True,null=True)
+    ordinal_number = models.CharField(max_length=10,null=True,blank=True)
+
+    medical_ultrasonography = models.CharField(max_length=200,blank=True,default="")
+    medical_ultrasonography_file = models.FileField(upload_to=locate_medical_ultrasonography_upload,blank=True,null=True)
+
+    endoscopy = models.CharField(max_length=200,blank=True,default="")
+    endoscopy_file = models.FileField(upload_to=locate_endoscopy_upload,blank=True,null=True)
     
     co_tu_cung_ps = models.BooleanField(default=False,help_text='chỉ check khi khám phụ sản')
     note_co_tu_cung_ps = models.CharField(max_length=100,blank=True,default="",help_text='chỉ check khi khám cổ tử cung phụ sản')
@@ -49,7 +90,7 @@ class MedicalHistory(models.Model):
     def __str__(self):
         return self.medical_record.full_name
     class Meta:
-        ordering = ['date']
+        ordering = ['-date']
 
 class Medicine(models.Model):
     name = models.CharField(max_length=20)

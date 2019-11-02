@@ -1,19 +1,112 @@
-import xlsxwriter, xlrd, io
+import xlsxwriter, xlrd, io, os
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.template.loader import render_to_string
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponse
 from django.views.generic import DetailView, ListView
 from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
 
-from user.models import User
-from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug
-from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin
-from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm
+from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
+from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, BookedDay
+from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file
+from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm
 
+
+# settings services
+
+def settings_service(request,pk_doctor):
+    user = User.objects.get(pk=pk_doctor)
+    
+    if user.doctor:
+        if request.method == "POST":
+            form = SettingsServiceForm(request.POST)
+            
+            if form.is_valid():
+                try:
+                    user.doctor.settingsservice.delete()
+                    form = form.save()
+                    form.doctor = user.doctor
+                    print("try")
+                    form.save()
+                except DoctorProfile.settingsservice.RelatedObjectDoesNotExist:
+                    form = form.save()
+                    form.doctor = user.doctor
+                    print("except")
+                    form.save()
+                return render(request,"doctors/doctor_settings_service.html",{"doctor":user.doctor})
+
+        return render(request,"doctors/doctor_settings_service.html",{"doctor":user.doctor})
+
+# settings opening time
+def settings_openingtime(request,pk_doctor):
+    user = User.objects.get(pk=pk_doctor)
+    if user.doctor:
+        if request.method == "POST":
+            form = SettingsTimeForm(request.POST)
+            
+            if form.is_valid():                
+                try:                    
+                    user.doctor.settings_time.delete()
+                    form = form.save()
+                    form.doctor = user.doctor
+                    print("try")
+                    form.save()
+                except DoctorProfile.settings_time.RelatedObjectDoesNotExist:
+                    form = form.save()
+                    form.doctor = user.doctor
+                    print("except")
+                    form.save()
+
+                
+                weekdays = user.doctor.settings_time.weekday_set.all()
+                days = weekday_context(weekdays)
+
+                return render(request,"doctors/doctor_settings_openingtime.html",{"doctor":user.doctor,"days":days})
+        try:
+            weekdays = user.doctor.settings_time.weekday_set.all().order_by("opening_time")
+            days = weekday_context(weekdays)
+        except DoctorProfile.settings_time.RelatedObjectDoesNotExist:
+            days = {}
+        return render(request,"doctors/doctor_settings_openingtime.html",{"doctor":user.doctor,"days":days})
+
+# create weekday
+def create_weekday(request,pk_doctor):
+    user = User.objects.get(pk=pk_doctor)
+    if user.doctor:
+        if request.method == "POST":
+            form = WeekDayForm(request.POST)
+            
+            if form.is_valid():
+                
+                settings_time = user.doctor.settings_time
+                
+                valid = True
+                if settings_time.weekday_set.all():
+                    for day in settings_time.weekday_set.all():
+                        if day.day == form.cleaned_data['day']:
+                            if not ((combine_datetime(form.cleaned_data["opening_time"]) < combine_datetime(day.opening_time) and combine_datetime(form.cleaned_data["closing_time"]) < combine_datetime(day.opening_time)) or (combine_datetime(form.cleaned_data["opening_time"]) > combine_datetime(day.closing_time) and combine_datetime(form.cleaned_data["closing_time"]) > combine_datetime(day.closing_time))):
+                                valid = False
+                if valid:
+                    form = form.save(commit=False)
+                    form.settingstime = settings_time
+                    form.save()
+                    return redirect(reverse('settings_openingtime',kwargs={'pk_doctor':pk_doctor}))
+                else:
+                    return render(request,"doctors/doctor_create_weekday.html",{"doctor":user.doctor,"form":form})
+
+        return render(request,"doctors/doctor_create_weekday.html",{"doctor":user.doctor,"form":[]})
+
+# delete weekday
+def delete_weekday(request,pk_doctor,pk_weekday):
+    user = User.objects.get(pk=pk_doctor)
+    day = WeekDay.objects.get(pk=pk_weekday)
+    if user == request.user:
+        day.delete()
+        return redirect(reverse('settings_openingtime',kwargs={'pk_doctor':pk_doctor}))
 
 # calculate benefit
 
@@ -22,7 +115,7 @@ def cal_benefit(request,pk_doctor):
     if user.doctor:
         form = CalculateBenefitForm(request.GET)
         if form.is_valid():
-            print("valid")
+            
             from_date = form.cleaned_data['from_date']
             to_date = form.cleaned_data['to_date']
             histories = MedicalHistory.objects.filter(medical_record__doctor = user).filter(date__gte=from_date).filter(date__lte=to_date+timedelta(days=1))
@@ -139,7 +232,7 @@ def medicine_edit(request,pk_doctor,pk_medicine):
         if request.method == "POST":
             form = MedicineEditForm(request.POST)
             if form.is_valid():
-                print("valid")
+                
                 all_medicine = Medicine.objects.filter(doctor=doctor).exclude(pk=pk_medicine)
 
                 try:
@@ -269,7 +362,7 @@ def medical_record_edit(request,pk_doctor,pk_mrecord):
                 mrecord.birth_date = form.birth_date
                 mrecord.address = form.address
                 mrecord.sex = form.sex
-                print(form.sex)
+                
                 mrecord.save()
                 return redirect(reverse('medical_record_view',kwargs={"pk_doctor":pk_doctor,"pk_mrecord":pk_mrecord}))
         else:
@@ -291,6 +384,10 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
 
     if request.user == doctor:
         mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
+        try:
+            settings_time = doctor.doctor.settings_time
+        except:
+            settings_time = SettingsTime.objects.create(examination_period="0",doctor=doctor.doctor)
         if request.method == "POST":
             form = MedicalHistoryFormMix(request.POST)
             if form.is_valid():
@@ -299,10 +396,72 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
 
                 if form.is_waiting:
                     # form.is_waiting = True
-                    form.save()
+                    today = date.today()
+                        
+                    date_book = date(year=today.year,month=today.month,day=today.day)
+                    
+                    if settings_time.enable_voice:
 
-                    histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True)
-                    html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories})
+                        days_detail = get_days_detail(settings_time.weekday_set.all(),date_book,settings_time.examination_period)
+
+                        if not days_detail:
+                            return render(request,"doctors/doctor_not_setting_opening_day.html",{"weekday":date_book.weekday(),"pk_mrecord":pk_mrecord,"pk_doctor":pk_doctor})
+
+                        total_patients = 0
+                        for day_detail in days_detail:
+                            total_patients += day_detail["total_patients"]
+
+                        try:
+                            info_bookedday = BookedDay.objects.get(doctor=doctor.doctor,date=date_book)
+                            info_bookedday.max_patients = total_patients
+                            info_bookedday.save()
+                            if int(info_bookedday.current_patients) < int(info_bookedday.max_patients):
+                                full_booked = False
+                            else:
+                                full_booked = True
+                            
+                            total_patients_prevday = 0
+                            for day_detail in days_detail:
+                                if int(info_bookedday.current_patients) < (day_detail["total_patients"]+total_patients_prevday):
+                                    info_bookedday.current_patients = str(int(info_bookedday.current_patients) + 1)
+                                    info_bookedday.save()
+
+                                    datetime_book = datetime.combine(date_book,day_detail["opening_time"]) + timedelta(minutes=(int(info_bookedday.current_patients)-total_patients_prevday-1)*int(doctor.doctor.settings_time.examination_period))
+                                    break
+                                else:
+                                    total_patients_prevday = day_detail["total_patients"]
+                            form.date_booked = datetime_book
+                            form.ordinal_number = info_bookedday.current_patients
+                            form.save()
+
+                        except ObjectDoesNotExist:
+                            full_booked = False
+
+                            BookedDay.objects.create(doctor=doctor.doctor,date=date_book,max_patients=str(total_patients),current_patients="1")
+                            datetime_book = datetime.combine(date_book,days_detail[0]["opening_time"])
+
+                            form.date_booked = datetime_book
+                            form.ordinal_number = '1'
+                            form.save()
+                    else:
+                        full_booked = False
+                        try:
+                            info_bookedday = BookedDay.objects.get(doctor=doctor.doctor,date=date_book)
+                            info_bookedday.current_patients = str(int(info_bookedday.current_patients) + 1)
+                            info_bookedday.save()
+                            print("try")
+                        except ObjectDoesNotExist:
+                            info_bookedday = BookedDay.objects.create(doctor=doctor.doctor,date=date_book,max_patients="limitless",current_patients="1")
+
+                        form.date_booked = datetime.now()
+                        form.ordinal_number = info_bookedday.current_patients
+                        form.save()
+                        print(form)
+
+
+                    histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
+                    print(histories)
+                    html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories,"full_booked":full_booked})
 
                     channel_layer = get_channel_layer()
                     async_to_sync(channel_layer.group_send)(
@@ -349,8 +508,12 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
 
                     return redirect(reverse("prescription_drug", kwargs={"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": form.pk}))
         else:
+            try:
+                settings_service = doctor.doctor.settingsservice
+            except:
+                settings_service = SettingsService.objects.create(doctor=doctor.doctor)
             form = MedicalHistoryFormMix()
-            return render(request, "doctors/doctor_medical_record.html", {"mrecord": mrecord, "doctor": doctor, "form": form})
+            return render(request, "doctors/doctor_medical_record.html", {"mrecord": mrecord, "doctor": doctor, "form": form,"settings_service":settings_service})
 
 # Medical record back view
 
@@ -418,10 +581,34 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                 history_edit.PARA = form.cleaned_data['PARA']
                 history_edit.contraceptive = form.cleaned_data['contraceptive']
                 history_edit.last_menstrual_period = form.cleaned_data['last_menstrual_period']
+                history_edit.blood_pressure = form.cleaned_data['blood_pressure']
+                history_edit.weight = form.cleaned_data['weight']
+                history_edit.glycemic = form.cleaned_data['glycemic']
+
+                history_edit.medical_ultrasonography = form.cleaned_data['medical_ultrasonography']
+                if "medical_ultrasonography_file" in request.FILES:
+                    if history_edit.medical_ultrasonography_file:
+                        try:
+                            os.remove(history_edit.medical_ultrasonography_file.path)
+                        except FileNotFoundError:
+                            pass 
+                    history_edit.medical_ultrasonography_file = request.FILES["medical_ultrasonography_file"]
+
+                history_edit.endoscopy = form.cleaned_data['endoscopy']
+                if "endoscopy_file" in request.FILES:
+                    if history_edit.endoscopy_file:
+                        try:
+                            os.remove(history_edit.endoscopy_file.path)
+                        except FileNotFoundError:
+                            pass
+                    history_edit.endoscopy_file = request.FILES["endoscopy_file"]
                 
                 history_edit.save()
 
-                histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True)
+                if history_edit.is_waiting:
+                    return redirect(reverse("list_examination",kwargs={"pk_doctor": pk_doctor}))
+
+                histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date.today()).order_by("date_booked")
                 html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories})
 
                 channel_layer = get_channel_layer()
@@ -441,19 +628,32 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
             last_menstrual_period = lambda x: x.strftime("%d/%m/%Y") if (x) else ""
             
             histories = mrecord.medicalhistory_set.exclude(pk=pk_history)
+            settings_service = doctor.doctor.settingsservice
             form = MedicalHistoryFormMix(initial={
                                     "disease_symptom": history_edit.disease_symptom, "diagnostis": history_edit.diagnostis,"service":history_edit.service,"PARA":history_edit.PARA,"contraceptive":history_edit.contraceptive,"last_menstrual_period":last_menstrual_period(history_edit.last_menstrual_period)})
             
-            return render(request, 'doctors/doctor_medical_record_back_view.html', {"histories": histories, "history_edit": history_edit, "form": form,"mrecord":mrecord,"doctor":doctor})
+            return render(request, 'doctors/doctor_medical_record_back_view.html', {"histories": histories, "history_edit": history_edit, "form": form,"mrecord":mrecord,"doctor":doctor,"settings_service":settings_service})
 
 # List examination
 def list_examination(request,pk_doctor):
     doctor = User.objects.get(pk=pk_doctor)
-    histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True)
+    histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date.today()).order_by("date_booked")
 
-    return render(request,"doctors/doctor_list_examination.html",{"pk_doctor":pk_doctor,"histories":histories})
+    return render(request,"doctors/doctor_list_examination.html",{"pk_doctor":pk_doctor,"histories":histories,"full_booked":False})
 
-
+# download medical_ultrasonography file
+def download_medical_ultrasonography(request,pk_doctor,pk_history):
+    doctor = User.objects.get(pk=pk_doctor)
+    if doctor == request.user:
+        history = MedicalHistory.objects.get(pk=pk_history)
+        return download_medical_ultrasonography_file(history)
+        
+# download endoscopy file
+def download_endoscopy(request,pk_doctor,pk_history):
+    doctor = User.objects.get(pk=pk_doctor)
+    if doctor == request.user:
+        history = MedicalHistory.objects.get(pk=pk_history)
+        return download_endoscopy_file(history)
 
 
 # Delete history medical 
@@ -461,7 +661,9 @@ def list_examination(request,pk_doctor):
 def medical_history_del(request,pk_doctor,pk_mrecord,pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        settings_time = doctor.doctor.settings_time
         history_del = MedicalHistory.objects.get(pk=pk_history)
+        date_book = history_del.date.date()
         is_waiting = history_del.is_waiting
         drugs_history_del = history_del.prescriptiondrug_set.all()
         for drug in drugs_history_del:
@@ -469,7 +671,15 @@ def medical_history_del(request,pk_doctor,pk_mrecord,pk_history):
             drug.medicine.save()
         history_del.delete()
         if is_waiting:
-            histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True)
+            if settings_time.enable_voice:
+                try:
+                    info_bookedday = BookedDay.objects.get(doctor=doctor.doctor,date=date_book)
+                    info_bookedday.current_patients = str(int(info_bookedday.current_patients) - 1)
+                    info_bookedday.save()
+                except ObjectDoesNotExist:
+                    pass
+
+            histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date.today())
             html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories})
 
             channel_layer = get_channel_layer()
@@ -562,11 +772,12 @@ def final_info(request,pk_doctor,pk_mrecord,pk_history):
     if doctor == request.user:
         mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
         history = MedicalHistory.objects.get(pk=pk_history)
+        settings_service = doctor.doctor.settingsservice
         total_cost = 0
         for drug in history.prescriptiondrug_set.all():
             total_cost += int(drug.cost)
 
-        return render(request,'doctors/doctor_final_info.html',{"doctor":doctor,"mrecord":mrecord,"history":history,"total_cost":total_cost})
+        return render(request,'doctors/doctor_final_info.html',{"doctor":doctor,"mrecord":mrecord,"history":history,"total_cost":total_cost,"settings_service":settings_service})
 
 # export to excel file
 def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
@@ -574,6 +785,7 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
     if doctor == request.user:
         mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
         history = MedicalHistory.objects.get(pk=pk_history)
+        settings_service = doctor.doctor.settingsservice
         output = io.BytesIO()
         wb = xlsxwriter.Workbook(output,{'remove_timezone': True})
 
@@ -662,6 +874,14 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
         # informtation total cost at worksheet patient #
         ws.merge_range("A{}:C{}".format(str(row_drug+1),str(row_drug+1)),"Tổng tiền thuốc (VNĐ)",normal_style)
         ws.merge_range("D{}:G{}".format(str(row_drug+1),str(row_drug+1)),total_cost,number_style)
+
+        if settings_service.medical_ultrasonography_cost:
+            ws.merge_range("A{}:C{}".format(str(row_drug+2),str(row_drug+2)),"Tiền siêu âm (VNĐ)",normal_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+2),str(row_drug+2)),int(settings_service.medical_ultrasonography_cost),number_style)
+        if settings_service.endoscopy_cost:
+            ws.merge_range("A{}:C{}".format(str(row_drug+3),str(row_drug+3)),"Tiền nội soi (VNĐ)",normal_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+3),str(row_drug+3)),int(settings_service.endoscopy_cost),number_style)
+
         # informtation total benefit at worksheet doctor #
         ws1.merge_range("A{}:C{}".format(str(row_drug1+1),str(row_drug1+1)),"Tổng giá bán (VNĐ)",normal_style)
         ws1.merge_range("D{}:G{}".format(str(row_drug1+1),str(row_drug1+1)),total_cost,number_style)
@@ -669,15 +889,21 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
         ws1.merge_range("A{}:C{}".format(str(row_drug1+2),str(row_drug1+2)),"Tổng giá mua (VNĐ)",normal_style)
         ws1.merge_range("D{}:G{}".format(str(row_drug1+2),str(row_drug1+2)),total_import_price,number_style)
 
-        ws1.merge_range("A{}:C{}".format(str(row_drug1+3),str(row_drug1+3)),"Tổng lợi nhuận (VNĐ)",normal_style)
+        ws1.merge_range("A{}:C{}".format(str(row_drug1+3),str(row_drug1+3)),"Tổng lợi nhuận thuốc (VNĐ)",normal_style)
         ws1.merge_range("D{}:G{}".format(str(row_drug1+3),str(row_drug1+3)),total_cost-total_import_price,number_style)
 
+        if settings_service.medical_ultrasonography_cost:
+            ws1.merge_range("A{}:C{}".format(str(row_drug1+4),str(row_drug1+4)),"Tiền siêu âm (VNĐ)",normal_style)
+            ws1.merge_range("D{}:G{}".format(str(row_drug1+4),str(row_drug1+4)),int(settings_service.medical_ultrasonography_cost),number_style)
+        if settings_service.endoscopy_cost:
+            ws1.merge_range("A{}:C{}".format(str(row_drug1+5),str(row_drug1+5)),"Tiền nội soi (VNĐ)",normal_style)
+            ws1.merge_range("D{}:G{}".format(str(row_drug1+5),str(row_drug1+5)),int(settings_service.endoscopy_cost),number_style)
 
         # information date in worksheet patient #
         day_name={0:"Thứ Hai",1:"Thứ Ba",2:"Thứ Tư",3:"Thứ Năm",4:"Thứ Sáu",5:"Thứ Bảy",6:"Chủ Nhật"}
-        ws.merge_range("H{}:K{}".format(str(row_drug+4),str(row_drug+4)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
-        # information date in worksheet dcotor #
-        ws1.merge_range("H{}:K{}".format(str(row_drug1+6),str(row_drug1+6)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
+        ws.merge_range("H{}:K{}".format(str(row_drug+5),str(row_drug+5)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
+        # information date in worksheet doctor #
+        ws1.merge_range("H{}:K{}".format(str(row_drug1+7),str(row_drug1+7)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
 
 
         wb.close()

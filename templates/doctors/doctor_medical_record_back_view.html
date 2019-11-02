@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load staticfiles %}
  {% block content %}
 
 
@@ -23,6 +24,10 @@
                  <td>{{ mrecord.birth_date | date:"Y" }}</td>
              </tr>
              <tr class="table-active">
+                <th>Điện thoại</th>
+                <td>{{ mrecord.phone }}</td>
+            </tr>
+             <tr class="table-active">
                  <th>Địa chỉ</th>
                  <td>{{ mrecord.address }}</td>
              </tr>
@@ -30,8 +35,8 @@
          </tbody>
      </table>
 
-     <h4 class="mt-3"> Nhập lại thông tin lần khám {{ history_edit.date|date:"P D. d-m-Y"  }}</h4>
-     <form action="{% url 'medical_record_back_view' doctor.pk mrecord.pk history_edit.pk %}" method="post" id="history_form">
+     <h4 class="mt-3"> Nhập lại thông tin lần khám {{ history_edit.date_booked|date:"P D. d-m-Y"  }}</h4>
+     <form action="{% url 'medical_record_back_view' doctor.pk mrecord.pk history_edit.pk %}" method="post" id="history_form" enctype="multipart/form-data">
         {% csrf_token %}
         <input type="checkbox" name="is_waiting" id="is_waiting" value="is_waiting">
         <div class="form-row">
@@ -48,7 +53,6 @@
             <div class="form-group col-md-4">
                 <label for="contraceptive">Ngừa thai<span class="required-input">*</span></label>
                 <select id="contraceptive" class="form-control" name="contraceptive">
-                <option>Lựa chọn...</option>
                 
                 <option 
                 {% if form.contraceptive.value == 'Thuốc' %}
@@ -71,7 +75,44 @@
                 {% endif %}>Không</option>
                 </select>
                 <span id="alert_contraceptive" style="color: #d9534f;font-size:15px"></span>
-            </div>           
+            </div>
+            
+            <div class="form-group col-md-4" id="blood_pressure_field" 
+                {% if not settings_service.blood_pressure %}
+                style="display: none;"   
+                {% endif %}
+            >
+                <label for="blood_pressure">Huyết áp<span class="required-input">*</span></label>
+                <input type="text" class="form-control" id="blood_pressure" name="blood_pressure" placeholder=""  value="{{ history_edit.blood_pressure }}">
+                <span id="alert_blood_pressure" style="color: #d9534f;font-size:15px"></span>
+            </div>         
+            <div class="form-group col-md-4" id="glycemic_field" 
+                {% if not settings_service.glycemic %}
+                style="display: none;"   
+                {% endif %}
+            >
+                <label for="glycemic">Chỉ số đường huyết<span class="required-input">*</span></label>
+                <input type="text" class="form-control" id="glycemic" name="glycemic" placeholder=""  value="{{ history_edit.glycemic }}">
+                <span id="alert_glycemic" style="color: #d9534f;font-size:15px"></span>
+            </div>         
+            <div class="form-group col-md-4" id="ph_meter_field"            
+                {% if not settings_service.ph_meter %}
+                style="display: none;"   
+                {% endif %}                
+            >
+                <label for="ph_meter">Giấy quỳ pH<span class="required-input">*</span></label>
+                <input type="text" class="form-control" id="ph_meter" name="ph_meter" placeholder=""  value="{{ history_edit.ph_meter }}">
+                <span id="alert_ph_meter" style="color: #d9534f;font-size:15px"></span>
+            </div>         
+            <div class="form-group col-md-4" id="weight_field"
+                {% if not settings_service.weight %}
+                style="display: none;"   
+                {% endif %}
+            >
+                <label for="weight">Cân nặng<span class="required-input">*</span></label>
+                <input type="text" class="form-control" id="weight" name="weight" placeholder=""  value="{{ history_edit.weight }}">
+                <span id="alert_weight" style="color: #d9534f;font-size:15px"></span>
+            </div> 
         </div>
 
         <div class="mb-2">
@@ -187,6 +228,54 @@
             </div>
                 
             </div>
+
+    <div class="mb-3" id="medical_ultrasonography_field" 
+            {% if not settings_service.medical_ultrasonography %}
+            style="display: none;"   
+            {% endif %}
+        >
+        <div class="form-group mb-0">
+            <label for="medical_ultrasonography">Ghi chú kêt quả siêu âm<span class="required-input">*</span></label>
+            <input type="text" class="form-control" id="medical_ultrasonography" name="medical_ultrasonography" placeholder=""  value="{{ history_edit.medical_ultrasonography }}">
+            <span id="alert_medical_ultrasonography" style="color: #d9534f;font-size:15px"></span>
+        </div>
+        {% if history_edit.medical_ultrasonography_file %}
+        <a class="btn btn-link view-pdf page-link-mix" href="{{ history_edit.medical_ultrasonography_file.url }}">Xem kết quả siêu âm</a>
+        {% endif %}
+        <div class="form-group">
+            <label for="medical_ultrasonography_file">Upload lại kết quả siêu âm</label>
+            <input
+              type="file"
+              class="form-control-file"
+              id="medical_ultrasonography_file"
+              name="medical_ultrasonography_file"
+            />
+            <span id="alert_medical_ultrasonography_file" style="color: red;font-size:15px"></span>
+          </div>
+    </div>
+    <div class="mb-3" id="endoscopy_field"
+            {% if not settings_service.endoscopy %}
+            style="display: none;"   
+            {% endif %}>
+        <div class="form-group mb-0">
+            <label for="endoscopy">Ghi chú kêt quả nội soi<span class="required-input">*</span></label>
+            <input type="text" class="form-control" id="endoscopy" name="endoscopy" placeholder=""  value="{{ history_edit.endoscopy }}">
+            <span id="alert_endoscopy" style="color: #d9534f;font-size:15px"></span>
+        </div>
+        {% if history_edit.endoscopy_file %}
+        <a class="btn btn-link view-pdf page-link-mix" href="{{ history_edit.endoscopy_file.url }}">Xem kết quả nội soi</a>
+        {% endif %}
+        <div class="form-group">
+            <label for="endoscopy_file">Upload lại kết quả nội soi</label>
+            <input
+              type="file"
+              class="form-control-file"
+              id="endoscopy_file"
+              name="endoscopy_file"
+            />
+            <span id="alert_endoscopy_file" style="color: red;font-size:15px"></span>
+          </div>
+    </div>
         <div class="form-group">
             <label for="disease_symptom">Triệu chứng<span class="required-input">*</span></label>
             <textarea class="form-control" id="disease_symptom" name="disease_symptom" rows="3">{{ form.disease_symptom.value }}</textarea>
@@ -198,13 +287,20 @@
             <span id="alert_diagnostis" style="color: #d9534f;font-size:15px"></span>
           </div>
         <button class="btn btn-submit btn_history mb-4" type="button">Kê thuốc</button>
+        <button class="btn btn-finished btn_is_waiting float-right mb-4">Lưu hồ sơ chuyển bác sĩ khám</button>
      </form>
 
      {% if histories %}
      <h4>Các lần đi khám bệnh</h4>
      {% for history in histories %}
      <div class="box-shadow rounded bg-light p-3 my-3">
-         <h6 style="cursor: pointer" class=" pb-2 mb-0"><i class="fa fa-plus"></i><i class="fa fa-minus"></i> Lần khám thứ {{ forloop.counter }} -- <i class="fa fa-calendar"></i> {{ history.date|date:"P D. d-m-Y"  }}</h6>
+         <h6 style="cursor: pointer" class=" pb-2 mb-0"><i class="fa fa-plus"></i><i class="fa fa-minus"></i> Lần khám vào thời gian -- <i class="fa fa-calendar"></i>
+            {% if history.date_booked %}
+            {{ history.date_booked | date:"H:i D. d-m-Y" }}
+            {% else %}
+            {{ history.date | date:"H:i D. d-m-Y" }}
+            {% endif %}
+            </h6>
          <div class="info_basic">
             <div class="media pt-3 d-flex justify-content-between">
            <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
@@ -217,11 +313,81 @@
            </p>
            <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right">
            <strong class="d-block text-gray-dark">Ngừa thai</strong>
-           {{ history.contraceptive }}
+           
+           {% if history.contraceptive != "Lựa chọn..." %}
+              {{ history.contraceptive }} 
+           {% endif %}          
            </p>
            </div>
        </div>
-         <div class="media pt-3 info_service" >
+
+       {% if settings_service.blood_pressure %}
+        <div class="media pt-3  info_blood_pressure" id="">
+            <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                <strong class="d-block text-gray-dark">Huyết áp</strong>
+                {{ history.blood_pressure }}
+            </p>
+        </div> 
+        {% endif %}       
+        {% if settings_service.glycemic %}
+        <div class="media pt-3 info_glycemic">
+            <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                <strong class="d-block text-gray-dark">Đường huyết</strong>
+                {{ history.glycemic }}
+            </p>
+        </div>   
+        {% endif %}     
+        {% if settings_service.weight %}
+           <div class="media pt-3  info_weight">
+            <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                <strong class="d-block text-gray-dark">Cân nặng</strong>
+                {{ history.weight }}
+            </p>
+        </div>  
+        {% endif %}
+        {% if settings_service.ph_meter %}
+           <div class="media pt-3 info_ph_meter">
+            <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                <strong class="d-block text-gray-dark">Độ pH</strong>
+                {{ history.ph_meter }}
+            </p>
+        </div>        
+        {% endif %}
+        {% if settings_service.medical_ultrasonography %}
+            <div class="info_medical_ultrasonography">
+                <div class="media pt-3 d-flex justify-content-between">
+               <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+               <strong class="d-block text-gray-dark">Siêu âm</strong>
+               {{ history.medical_ultrasonography }}
+               </p>
+               <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right">
+                {% if history.medical_ultrasonography_file %}
+                <a class="view-pdf page-link-mix" href="{{ history.medical_ultrasonography_file.url }}">Xem file</a>
+                {% else %}
+                <strong class="d-block text-gray-dark">Không có file</strong>
+                {% endif %}
+               </p>
+               </div>
+            </div>   
+        {% endif %}
+        {% if settings_service.endoscopy %}
+           <div class="info_endoscopy">
+                <div class="media pt-3 d-flex justify-content-between">
+               <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+               <strong class="d-block text-gray-dark">Nội soi</strong>
+               {{ history.endoscopy }}
+               </p>
+               <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right">
+                {% if history.endoscopy_file %}
+                <a class="view-pdf page-link-mix" href="{{ history.endoscopy_file.url }}">Xem file</a>
+                {% else %}
+               <strong class="d-block text-gray-dark">Không có file</strong>
+                {% endif %}
+               </p>
+               </div>
+            </div>    
+        {% endif %}
+        <div class="media pt-3 info_service" >
             <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
                <strong class="d-block text-gray-dark mb-2">{{ history.service|title }}</strong>
                {% if history.co_tu_cung_ps %}
@@ -267,7 +433,7 @@
      
  </div>
 
-
+<script src="{% static 'js/easy-modal-plugin.js' %}"></script>
  <script>
      $(document).ready(function(){
          // validate datetime format dd/mm/Y
@@ -279,6 +445,12 @@
 
         var info_basic = $(".info_basic");
         var info_service = $(".info_service");
+        var info_blood_pressure = $(".info_blood_pressure");
+        var info_glycemic = $(".info_glycemic");
+        var info_weight = $(".info_weight");
+        var info_ph_meter = $(".info_ph_meter");
+        var info_medical_ultrasonography = $(".info_medical_ultrasonography");
+        var info_endoscopy = $(".info_endoscopy");
         var info_disease_symptom = $(".info_disease_symptom");
         var info_diagnostis = $(".info_diagnostis");
         var info_bt = $(".info_bt");
@@ -286,6 +458,12 @@
         $(".fa-minus").hide();
         info_basic.hide();
         info_service.hide();
+        info_blood_pressure.hide();
+        info_glycemic.hide();
+        info_weight.hide();
+        info_ph_meter.hide();
+        info_medical_ultrasonography.hide();
+        info_endoscopy.hide();
         info_disease_symptom.hide();
         info_diagnostis.hide();
         info_bt.hide();
@@ -294,10 +472,16 @@
             var fa_minus = $(this).children(".fa-minus");
             var fa_plus = $(this).children(".fa-plus");
             var info_basic = $(this).next();
-            var info_service = info_basic.next();
-            var info_disease_symptom = info_service.next();
-            var info_diagnostis = info_disease_symptom.next();
-            var info_bt = info_diagnostis.next();
+            var info_service = $(this).siblings(".info_service");
+            var info_blood_pressure = $(this).siblings(".info_blood_pressure");
+            var info_glycemic = $(this).siblings(".info_glycemic");
+            var info_weight = $(this).siblings(".info_weight");
+            var info_ph_meter = $(this).siblings(".info_ph_meter");
+            var info_medical_ultrasonography = $(this).siblings(".info_medical_ultrasonography");
+            var info_endoscopy = $(this).siblings(".info_endoscopy");
+            var info_disease_symptom = $(this).siblings(".info_disease_symptom ");
+            var info_diagnostis = $(this).siblings(".info_diagnostis");
+            var info_bt = $(this).siblings(".info_bt");
 
             if (fa_minus.is(":hidden")) {
             $(this).addClass('border-bottom border-gray')
@@ -305,6 +489,12 @@
 			fa_plus.hide();
 			info_basic.show();
             info_service.show();
+            info_blood_pressure.show();
+            info_glycemic.show();
+            info_weight.show();
+            info_ph_meter.show();
+            info_medical_ultrasonography.show();
+            info_endoscopy.show();
             info_disease_symptom.show();
             info_diagnostis.show();
             info_bt.show();
@@ -314,6 +504,12 @@
 			fa_plus.show();
 			info_basic.hide();
             info_service.hide();
+            info_blood_pressure.hide();
+            info_glycemic.hide();
+            info_weight.hide();
+            info_ph_meter.hide();
+            info_medical_ultrasonography.hide();
+            info_endoscopy.hide();
             info_disease_symptom.hide();
             info_diagnostis.hide();
             info_bt.hide();
@@ -370,10 +566,34 @@
 
         $("#is_waiting").hide();
 
+        $(".btn_is_waiting").click(function(){
+            $("#is_waiting").prop("checked",true);
+            console.log($("#is_waiting").is(":checked"));
+            $("#history_form").submit();
+        }); // edn click
+
         $(".btn_history").click(function(){
             var last_menstrual_period = $("#last_menstrual_period").val();
             var contraceptive = $("#contraceptive").val();
             var PARA = $("#PARA").val();
+
+            var blood_pressure_field = $("#blood_pressure_field").is(":hidden");
+            var blood_pressure = $("#blood_pressure").val();
+
+            var glycemic_field = $("#glycemic_field").is(":hidden");
+            var glycemic = $("#glycemic").val();
+
+            var ph_meter_field = $("#ph_meter_field").is(":hidden");
+            var ph_meter = $("#ph_meter").val();
+
+            var weight_field = $("#weight_field").is(":hidden");
+            var weight = $("#weight").val();
+
+            var medical_ultrasonography_field = $("#medical_ultrasonography_field").is(":hidden");
+            var medical_ultrasonography = $("#medical_ultrasonography").val();
+
+            var endoscopy_field = $("#endoscopy_field").is(":hidden");
+            var endoscopy = $("#endoscopy").val();
             
             var disease_symptom = $('#disease_symptom').val();
             var diagnostis = $("#diagnostis").val();
@@ -405,6 +625,55 @@
                 $("#alert_contraceptive").text("");
             }
 
+            if(!blood_pressure_field){
+                if(blood_pressure ===""){
+                    $("#alert_blood_pressure").text("Bạn chưa nhập thông tin huyết áp");
+                    valid &= false;
+                    } else{
+                        $("#alert_blood_pressure").text("");
+                } 
+            }
+            if(!glycemic_field){
+                if(glycemic ===""){
+                    $("#alert_glycemic").text("Bạn chưa nhập thông tin đường huyết");
+                    valid &= false;
+                    } else{
+                        $("#alert_glycemic").text("");
+                } 
+            }
+            if(!ph_meter_field){
+                if(ph_meter ===""){
+                    $("#alert_ph_meter").text("Bạn chưa nhập thông tin pH");
+                    valid &= false;
+                    } else{
+                        $("#alert_ph_meter").text("");
+                } 
+            }
+            if(!weight_field){
+                if(weight ===""){
+                    $("#alert_weight").text("Bạn chưa nhập cân nặng");
+                    valid &= false;
+                    } else{
+                        $("#alert_weight").text("");
+                } 
+            }
+            if(!medical_ultrasonography_field){
+                if(medical_ultrasonography ===""){
+                    $("#alert_medical_ultrasonography").text("Bạn chưa nhập thông tin siêu âm");
+                    valid &= false;
+                    } else{
+                        $("#alert_medical_ultrasonography").text("");
+                } 
+            }
+            if(!endoscopy_field){
+                if(endoscopy ===""){
+                    $("#alert_endoscopy").text("Bạn chưa nhập thông tin nội soi");
+                    valid &= false;
+                    } else{
+                        $("#alert_endoscopy").text("");
+                } 
+            }
+
             if(!ValidateDate(last_menstrual_period)){
                 $("#alert_last_menstrual_period").text("Ngày không hợp lệ");
                 valid &= false;
@@ -417,6 +686,24 @@
             }
             
         }); // end click
+
+        // modal plugin 
+        $(function(){    
+            $('.view-pdf').on('click',function(){
+                var pdf_link = $(this).attr('href');
+                console.log(pdf_link);
+                // var iframe = '<div class="iframe-container"><iframe src="'+pdf_link+'"></iframe></div>'
+                // var iframe = '<object data="'+pdf_link+'" type="application/pdf"><embed src="'+pdf_link+'" type="application/pdf" /></object>'        
+                var iframe = '<object type="application/pdf" data="'+pdf_link+'" width="100%" height="600">No Support</object>'
+                $.createModal({
+                    title:'Kết quả siêu âm',
+                    message: iframe,
+                    closeButton:true,
+                    scrollable:false
+                });
+                return false;        
+            });    
+        }); //end modal
 
      }); // end ready
  </script>

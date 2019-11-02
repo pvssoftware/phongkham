@@ -1,11 +1,81 @@
+import os, re
+from datetime import datetime
 from user.models import User
 from django.views.generic import ListView
 from django.shortcuts import render
+from django.http import HttpResponse
 from django.db.models import Q
 from .forms import SearchDrugForm
 from .models import Medicine
 
+# download medical_ultrasonography file
+def download_medical_ultrasonography_file(history):
 
+    file_path = history.medical_ultrasonography_file.path
+    print(file_path)
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as iv:
+            response = HttpResponse(iv.read(), content_type="application/pdf")
+            response['Content-Disposition'] = 'attachment;filename=' + \
+                re.sub(r".*\/", "",history.medical_ultrasonography_file.name)
+            return response
+# download endoscopy file
+def download_endoscopy_file(history):
+
+    file_path = history.endoscopy_file.path
+    print(file_path)
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as iv:
+            response = HttpResponse(iv.read(), content_type="application/pdf")
+            response['Content-Disposition'] = 'attachment;filename=' + \
+                re.sub(r".*\/", "",history.endoscopy_file.name)
+            return response
+
+weekday_dic ={
+    0:"mon",
+    1:"tue",
+    2:"wed",
+    3:"thu",
+    4:"fri",
+    5:"sat",
+    6:"sun"
+}
+
+def get_days_detail(weekdays,date_book,examination_period):
+    days = weekdays.filter(day=weekday_dic[date_book.weekday()]).order_by("opening_time")
+    object_list = []
+    if days:
+        for day in days:
+            time_duration = int((datetime.combine(date_book,day.closing_time) - datetime.combine(date_book,day.opening_time)).total_seconds()//60)
+            total_patients = time_duration//int(examination_period)+1
+
+            object_list.append({"time_duration":time_duration,"opening_time":day.opening_time,"total_patients":total_patients})
+    return object_list
+
+
+def combine_datetime(my_time):
+    my_date = datetime.strptime("08/10/1987","%d/%m/%Y")
+    return datetime.combine(my_date,my_time)
+
+
+def weekday_context(weekdays):
+    days = {"mon":[],"tue":[],"wed":[],"thu":[],"fri":[],"sat":[],"sun":[]}   
+    for day in weekdays:
+        if day.day == "mon":
+            days["mon"].append(day)
+        elif day.day == "tue":
+            days["tue"].append(day)
+        elif day.day == "wed":
+            days["wed"].append(day)
+        elif day.day == "thu":
+            days["thu"].append(day)
+        elif day.day == "fri":
+            days["fri"].append(day)
+        elif day.day == "sat":
+            days["sat"].append(day)
+        elif day.day == "sun":
+            days["sun"].append(day)
+    return days
 
 
 

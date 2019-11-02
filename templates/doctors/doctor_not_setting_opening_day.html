@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+   <p class="mt-4 text-xl-left">Bạn chưa cài đặt giờ làm việc vào 
+
+    {% if weekday == 0 %}
+    <span class="font-weight-bold">Thứ Hai</span> 
+    {% endif %}
+        
+    {% if weekday == 1 %}
+    <span class="font-weight-bold">Thứ Ba</span>
+        
+    {% endif %}
+
+    {% if weekday == 2 %}
+    <span class="font-weight-bold">Thứ Tư</span>
+        
+    {% endif %}
+
+    {% if weekday == 3 %}
+    <span class="font-weight-bold">Thứ Năm</span>
+    {% endif %}
+
+    {% if weekday == 4 %}
+    <span class="font-weight-bold">Thứ Sáu</span>
+        
+    {% endif %}
+
+    {% if weekday == 5 %}
+    <span class="font-weight-bold">Thứ Bảy</span> 
+    {% endif %}
+
+    {% if weekday == 6 %}
+    <span class="font-weight-bold">Chủ Nhật</span>   
+    {% endif %}
+           
+    . Hãy vào mục <a class="page-link-mix" href="{% url 'settings_openingtime' pk_doctor %}">cài đặt</a> giờ làm việc sau đó quay lại <a class="page-link-mix" href="{% url 'medical_record_view' pk_doctor pk_mrecord %}">đây</a>  để tiếp tục với quy trình khám bệnh!</p> 
+</div>
+
+
+{% endblock %}

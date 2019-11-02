@@ -138,3 +138,24 @@
         width: 70%;
     }
 }
+
+@media screen and (min-width: 400px){
+	.opening-time{
+        width: 100%;
+    }
+}
+@media screen and (min-width: 550px){
+	.opening-time{
+        width: 90%;
+    }
+}
+@media screen and (min-width: 700px){
+	.opening-time{
+        width: 65%;
+    }
+}
+@media screen and (min-width: 990px){
+	.opening-time{
+        width: 60%;
+    }
+}
