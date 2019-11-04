@@ -1,96 +1,20 @@
 from django import forms
+from django.conf import settings
 
 
 
-class ValidOpeningTimeForm(forms.ModelForm):
-
-    def clean_mon_opening(self):
-        v = self.cleaned_data["mon_opening"]
-        if v == "":
-            return None
+def clean_upload_file(file):
+    if file:
+        content_type = file.content_type.split("/")[1]
+        if content_type in settings.CONTENT_TYPES:
+            print(file.size)
+            if file.size > settings.MAX_UPLOAD_SIZE:
+                raise forms.ValidationError("File upload của bạn trên 5M. Làm ơn chọn file dưới 5M!")
+            else:
+                print("1")
+                return file
         else:
-            
-            return v
-    def clean_mon_closing(self):
-        v = self.cleaned_data["mon_closing"]
-        if v == "":
-            return None
-        else:
-            
-            return v
-    def clean_tue_opening(self):
-        v = self.cleaned_data["tue_opening"]
-        print("tue",v)
-        if v == "":
-            
-            return None
-        else:
-            
-            return v
-    def clean_tue_closing(self):
-        v = self.cleaned_data["tue_closing"]
-        if v == "":
-            return None
-        else:
-            return v
-    def clean_wed_opening(self):
-        v = self.cleaned_data["wed_opening"]
-        if v == "":
-            return None
-        else:
-            return v
-    def clean_wed_closing(self):
-        v = self.cleaned_data["wed_closing"]
-        if v == "":
-            return None
-        else:
-            return v
-    def clean_thu_opening(self):
-        v = self.cleaned_data["thu_opening"]
-        if v == "":
-            return None
-        else:
-            return v
-    def clean_thu_closing(self):
-        v = self.cleaned_data["thu_closing"]
-        if v == "":
-            return None
-        else:
-            return v
-    def clean_fri_opening(self):
-        v = self.cleaned_data["fri_opening"]
-        if v == "":
-            return None
-        else:
-            return v
-    def clean_fri_closing(self):
-        v = self.cleaned_data["fri_closing"]
-        if v == "":
-            return None
-        else:
-            return v
-    def clean_sat_opening(self):
-        v = self.cleaned_data["sat_opening"]
-        if v == "":
-            return None
-        else:
-            return v
-    def clean_sat_closing(self):
-        v = self.cleaned_data["sat_closing"]
-        if v == "":
-            return None
-        else:
-            return v
-    def clean_sun_opening(self):
-        v = self.cleaned_data["sun_opening"]
-        if v == "":
-            return None
-        else:
-            return v
-    def clean_sun_closing(self):
-        v = self.cleaned_data["sun_closing"]
-        if v == "":
-            return None
-        else:
-            return v
+            raise forms.ValidationError("Bạn nên upload định dạng PDF")
+    print(file)
+    return file
     

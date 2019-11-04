@@ -389,7 +389,7 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
         except:
             settings_time = SettingsTime.objects.create(examination_period="0",doctor=doctor.doctor)
         if request.method == "POST":
-            form = MedicalHistoryFormMix(request.POST)
+            form = MedicalHistoryFormMix(request.POST,request.FILES)
             if form.is_valid():
                 form = form.save(commit=False)
                 form.medical_record = mrecord
@@ -507,6 +507,8 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
                 # service=service,service_detail=service_detail,PARA=PARA,contraceptive=contraceptive,last_menstrual_period=last_menstrual_period,note=note,medical_record = mrecord,co_tu_cung_pk=co_tu_cung_pk,am_dao_pk=am_dao_pk,chuan_doan_khac_pk=chuan_doan_khac_pk,co_tu_cung_ps=co_tu_cung_ps,tim_thai_ps=tim_thai_ps,can_go_ps=can_go_ps)
 
                     return redirect(reverse("prescription_drug", kwargs={"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": form.pk}))
+            else:
+                return render(request,"doctors/doctor_errors_file_upload.html",{"form":form})
         else:
             try:
                 settings_service = doctor.doctor.settingsservice
@@ -522,7 +524,7 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
         if request.method == "POST":
-            form = MedicalHistoryFormMix(request.POST)
+            form = MedicalHistoryFormMix(request.POST,request.FILES)
             if form.is_valid():
                 history_edit = MedicalHistory.objects.get(pk=pk_history)
 
@@ -621,6 +623,9 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                 )
 
                 return redirect(reverse("prescription_drug", kwargs={"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": history_edit.pk}))
+            else:
+                # return HttpResponse("<h1>File upload của bạn trên 5M. Làm ơn chọn file dưới 5M!</h1>")
+                return render(request,"doctors/doctor_errors_file_upload.html",{"form":form})
 
         else:
             mrecord = MedicalRecord.objects.get(pk=pk_mrecord)

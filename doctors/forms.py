@@ -1,8 +1,9 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.conf import settings
 from user.models import SettingsTime, SettingsService, WeekDay
 from .models import MedicalRecord, MedicalHistory, PrescriptionDrug, Medicine
-from .utils_forms import ValidOpeningTimeForm
+from .utils_forms import clean_upload_file
 
 
 class WeekDayForm(forms.ModelForm):
@@ -83,11 +84,14 @@ class MedicalHistoryFormMix(forms.ModelForm):
         model = MedicalHistory
         fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","last_menstrual_period","co_tu_cung_ps","note_co_tu_cung_ps","tim_thai_ps","note_tim_thai_ps","can_go_ps","note_con_go_ps","co_tu_cung_pk","note_co_tu_cung_pk","am_dao_pk","note_am_dao_pk","is_waiting","medical_ultrasonography","medical_ultrasonography_file","endoscopy","endoscopy_file","blood_pressure","weight","glycemic","ph_meter"]
         
-    def clean_tim_thai_ps(self):
-        c = self.cleaned_data["tim_thai_ps"]
-        print("OK")
-        print(c)
-        return c
+    def clean_medical_ultrasonography_file(self):
+        file = self.cleaned_data.get("medical_ultrasonography_file")
+        
+        return clean_upload_file(file)
+
+    def clean_endoscopy_file(self):
+        file = self.cleaned_data.get("endoscopy_file")
+        return clean_upload_file(file)
 
 
 class MedicineForm(forms.ModelForm):

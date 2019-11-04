@@ -1,0 +1,14 @@
+
+
+
+
+{% if form.medical_ultrasonography_file.errors %}
+<label style="font-size: 18px;">Lỗi khi upload kết quả siêu âm</label>
+<h1 style="">{{ form.medical_ultrasonography_file.errors }}</h1>   
+{% endif %}
+
+{% if form.endoscopy_file.errors %}
+<label style="font-size: 18px;">Lỗi khi upload kết quả nội soi</label>
+<h1 style="">{{ form.endoscopy_file.errors }}</h1>   
+{% endif %}
+    

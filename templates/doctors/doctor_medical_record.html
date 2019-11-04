@@ -58,6 +58,7 @@
     action="{% url 'medical_record_view' doctor.pk mrecord.pk %}"
     method="post"
     id="history_form"
+    enctype="multipart/form-data"
   >
     {% csrf_token %}
     <input
