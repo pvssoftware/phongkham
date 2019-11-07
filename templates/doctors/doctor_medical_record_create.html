@@ -9,35 +9,62 @@
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label for="full_name">Họ và tên<span class="required-input">*</span></label>
-                <input type="text" name="full_name" class="form-control" placeholder="Họ và tên" id="full_name">
+                <input type="text" name="full_name" class="form-control" placeholder="Họ và tên" id="full_name"
+                
+                {% if form.full_name.value %}
+                   value="{{ form.full_name.value }}" 
+                {% endif %}                    
+                >
                 <span id="alert_full_name" style="color: #d9534f;font-size:15px"></span>
             </div>
             <div class="col-md-3 mb-3">
                 <label for="birth_date">Năm sinh<span class="required-input">*</span></label>
-                <input type="text" id="birth_date" name="birth_date" class="form-control" placeholder="Năm sinh" id="birth_date">
+                <input type="text" id="birth_date" name="birth_date" class="form-control" placeholder="Năm sinh" id="birth_date"
+                {% if form.birth_date.value %}
+                value="{{ form.birth_date.value }}" 
+                {% endif %}>
                 <span id="alert_birth_date" style="color: #d9534f;font-size:15px"></span>
             </div>
             <div class="col-md-3 mb-3">
                 <label for="phone">Điện thoại<span class="required-input">*</span></label>
-                <input type="text" id="phone" name="phone" class="form-control" placeholder="Số điện thoại" id="phone">
-                <span id="alert_phone" style="color: #d9534f;font-size:15px"></span>
+                <input type="text" id="phone" name="phone" class="form-control" placeholder="Số điện thoại" id="phone"
+                {% if form.phone.value %}
+                value="{{ form.phone.value }}" 
+                {% endif %}>
+                {% for error in form.phone.errors %}
+                <span id="alert_phone" style="color: #d9534f;font-size:13px">{{ error }}</span>
+                {% endfor %}
             </div>
         </div>
         <div class="mb-3">
             <label for="address">Địa chỉ<span class="required-input">*</span></label>
-            <input type="text" id="address" name="address" class="form-control" placeholder="Địa chỉ" id="address">
+            <input type="text" id="address" name="address" class="form-control" placeholder="Địa chỉ" id="address"
+            {% if form.address.value %}
+                value="{{ form.address.value }}" 
+            {% endif %}>
+            
             <span id="alert_address" style="color: #d9534f;font-size:15px"></span>
+            
         </div>
         <div class="row">
             <div class="col-md-3 mb-3">
                 <p class="mb-0">Giới tính</p>
                 <div>
                     <label class="custom_radio mr-4">
-                        <input type="radio" name="sex" value="0">
+                        <input type="radio" name="sex" value="0"
+                        {% if form.sex.value == "0" %}
+                            checked
+                        {% endif %}>
                         <span>Nam</span>
                     </label>
                     <label class="custom_radio">
-                        <input type="radio" name="sex" value="1" checked>
+                        <input type="radio" name="sex" value="1"
+                        {% if form.sex.value == "1" %}
+                            checked
+                        {% endif %}
+                        {% if not form.sex.value %}
+                            checked
+                        {% endif %}>
                         <span>Nữ</span>
                     </label>
                 </div>

@@ -5,8 +5,25 @@ from django.views.generic import ListView
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.db.models import Q
-from .forms import SearchDrugForm
+from .forms import SearchDrugForm, PasswordProtectForm
 from .models import Medicine
+from user.models import DoctorProfile, SettingsService
+
+
+# password protect mixin
+def password_protect(request,pk_doctor,template_service,template_protect,context):
+    user = User.objects.get(pk=pk_doctor)
+    settings_service = user.doctor.settingsservice
+    error = ""
+    if user.doctor:
+        if request.method == "POST":
+            form = PasswordProtectForm(request.POST)
+            if form.is_valid():
+                if settings_service.password_field == form.cleaned_data["password"]:
+                    return render(request,template_service,context)
+                error = "Mật khẩu không hợp lệ."
+
+        return render(request,template_protect,{"pk_doctor":pk_doctor,"error":error})
 
 # download medical_ultrasonography file
 def download_medical_ultrasonography_file(history):
@@ -122,6 +139,10 @@ class PageLinksMixin(ListView):
 class DoctorProfileMixin:
     def get(self,request,pk_doctor,*args,**kwargs):
         doctor = User.objects.get(pk=pk_doctor)
+        try:
+            doctor.doctor.settingsservice
+        except DoctorProfile.settingsservice.RelatedObjectDoesNotExist:
+            SettingsService.objects.create(doctor=doctor.doctor)
         
         if doctor == request.user:
             self.object_list = self.get_queryset().filter(doctor=doctor)
@@ -198,6 +219,9 @@ class DoctorProfileMixin:
             return self.render_to_response(context)
         
 class MedicineMixin:
+    # def medicine_list_protect(self,request,context):
+    #         return password_protect(request,"doctors/doctor_medicine_list.html","doctors/doctor_medicine_list_protect.html",context)
+
     def get(self,request,pk_doctor,*args,**kwargs):
         doctor = User.objects.get(pk=pk_doctor)
 
@@ -228,7 +252,11 @@ class MedicineMixin:
             context = self.get_context_data()
             context.update({"doctor":doctor,"page":page,"order":order})
 
+            # if doctor.doctor.settingsservice.password:
+            #     return self.medicine_list_protect(request,context)
             return self.render_to_response(context)
+
+        
 
     def post(self,request,pk_doctor):
         doctor = User.objects.get(pk=pk_doctor)

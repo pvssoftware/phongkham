@@ -21,7 +21,7 @@ class MedicalRecord(models.Model):
     birth_date = models.DateField()
     address = models.CharField(max_length=50)
     sex = models.BooleanField(help_text="True is Female, False is Male")
-    phone = models.CharField(max_length = 20,unique=True,blank=True,null=True)
+    phone = models.CharField(max_length = 20,blank=True,null=True)
     doctor = models.ForeignKey(User,on_delete=models.CASCADE)
 
     def __str__(self):

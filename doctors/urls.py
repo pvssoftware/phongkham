@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit, medicine_del, upload_medicine_excel, search_drugs, cal_benefit, list_examination, settings_openingtime, settings_service, create_weekday, delete_weekday, download_medical_ultrasonography, download_endoscopy
+from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_edit_back_history, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit, medicine_del, upload_medicine_excel, search_drugs, cal_benefit, cal_benefit_protect, list_examination, settings_openingtime, settings_service, settings_service_protect, create_weekday, delete_weekday, download_medical_ultrasonography, download_endoscopy
 
 
 
@@ -13,7 +13,9 @@ urlpatterns = [
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/delete-weekday/(?P<pk_weekday>\d+)/$",delete_weekday,name="delete_weekday"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/settings-openingtime/$",settings_openingtime,name="settings_openingtime"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/settings-service/$",settings_service,name="settings_service"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/settings-service-protect/$",settings_service_protect,name="settings_service_protect"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/cal-benefit/$",cal_benefit,name="cal_benefit"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/cal-benefit-protect/$",cal_benefit_protect,name="cal_benefit_protect"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/list-examination/$",list_examination,name="list_examination"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/$",DoctorProfileView.as_view(),name="doctor_profile"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medicine-list/$",MedicineList.as_view(),name="medicine_list"),
@@ -25,6 +27,7 @@ urlpatterns = [
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record-create/$",medical_record_create,name="medical_record_create"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record/(?P<pk_mrecord>\d+)/$",medical_record_view,name="medical_record_view"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record-edit/(?P<pk_mrecord>\d+)/$",medical_record_edit,name="medical_record_edit"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record-edit/(?P<pk_mrecord>\d+)/medical-history/(?P<pk_history>\d+)/$",medical_record_edit_back_history,name="medical_record_edit_back_history"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record-del/(?P<pk_mrecord>\d+)/$",medical_record_del,name="medical_record_del"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record/(?P<pk_mrecord>\d+)/medical-history-edit/(?P<pk_history>\d+)/$",medical_record_back_view,
     name="medical_record_back_view"),

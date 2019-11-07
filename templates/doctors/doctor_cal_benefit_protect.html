@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+ {% block content %}
+
+ <div class="d-flex justify-content-center mt-5">
+   <form action="{% url 'cal_benefit_protect' pk_doctor %}" class="w-100" method="post" style="max-width: 420px;margin: 0 auto;">
+    {% csrf_token %}
+    <div class="text-center mb-4">
+        <h2 class="mb-3 font-weight-normal">Nhập mật khẩu</h1>
+    </div>
+
+    <div class="form-label-group">
+        <input type="password" id="password" class="form-control" placeholder="Password" required name="password">        
+        {% if error %}
+          <span id="alert_password" style="color: #d9534f;font-size:13px">{{ error }}</span>  
+        {% endif %}                    
+    </div>
+
+    <button class="btn btn-lg btn-submit btn-block mt-3" type="submit">Xác nhận</button>
+ </form>
+ </div>
+ 
+
+ {% endblock %}

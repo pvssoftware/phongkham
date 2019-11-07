@@ -12,9 +12,15 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, BookedDay
-from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file
-from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm
+from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect
+from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm
 
+
+# settings services protect
+
+def settings_service_protect(request,pk_doctor):
+    user = User.objects.get(pk=pk_doctor)
+    return password_protect(request,pk_doctor,"doctors/doctor_settings_service.html","doctors/doctor_settings_service_protect.html",{"doctor":user.doctor})
 
 # settings services
 
@@ -27,18 +33,33 @@ def settings_service(request,pk_doctor):
             
             if form.is_valid():
                 try:
-                    user.doctor.settingsservice.delete()
-                    form = form.save()
-                    form.doctor = user.doctor
-                    print("try")
-                    form.save()
+                    # user.doctor.settingsservice.delete()
+                    # form = form.save()
+                    # form.doctor = user.doctor
+                    # print("try")
+                    # form.save()
+
+                    settings_service = user.doctor.settingsservice
+                    settings_service.blood_pressure = form.cleaned_data["blood_pressure"]
+                    settings_service.weight = form.cleaned_data["weight"]
+                    settings_service.glycemic = form.cleaned_data["glycemic"]
+                    settings_service.ph_meter = form.cleaned_data["ph_meter"]
+                    settings_service.medical_ultrasonography = form.cleaned_data["medical_ultrasonography"]
+                    settings_service.medical_ultrasonography_cost = form.cleaned_data["medical_ultrasonography_cost"]
+                    settings_service.endoscopy = form.cleaned_data["endoscopy"]
+                    settings_service.endoscopy_cost = form.cleaned_data["endoscopy_cost"]
+                    settings_service.password = form.cleaned_data["password"]
+                    settings_service.password_field = form.cleaned_data["password_field"]
+
+                    settings_service.save()
                 except DoctorProfile.settingsservice.RelatedObjectDoesNotExist:
                     form = form.save()
                     form.doctor = user.doctor
                     print("except")
                     form.save()
                 return render(request,"doctors/doctor_settings_service.html",{"doctor":user.doctor})
-
+        if user.doctor.settingsservice.password:
+            return redirect(reverse("settings_service_protect",kwargs={"pk_doctor":pk_doctor}))
         return render(request,"doctors/doctor_settings_service.html",{"doctor":user.doctor})
 
 # settings opening time
@@ -50,11 +71,14 @@ def settings_openingtime(request,pk_doctor):
             
             if form.is_valid():                
                 try:                    
-                    user.doctor.settings_time.delete()
-                    form = form.save()
-                    form.doctor = user.doctor
+                    settings_time = user.doctor.settings_time
+                    # form = form.save()
+                    settings_time.examination_period = form.cleaned_data["examination_period"]
+                    settings_time.enable_voice = form.cleaned_data["enable_voice"]
+                    # form.doctor = user.doctor
                     print("try")
-                    form.save()
+                    # form.save()
+                    settings_time.save()
                 except DoctorProfile.settings_time.RelatedObjectDoesNotExist:
                     form = form.save()
                     form.doctor = user.doctor
@@ -108,6 +132,14 @@ def delete_weekday(request,pk_doctor,pk_weekday):
         day.delete()
         return redirect(reverse('settings_openingtime',kwargs={'pk_doctor':pk_doctor}))
 
+
+# calculate benefit protect
+
+def cal_benefit_protect(request,pk_doctor):
+    form = CalculateBenefitForm()
+
+    return password_protect(request,pk_doctor,'doctors/doctor_cal_benefit.html','doctors/doctor_cal_benefit_protect.html',{"pk_doctor":pk_doctor,"form":form})
+
 # calculate benefit
 
 def cal_benefit(request,pk_doctor):
@@ -136,6 +168,8 @@ def cal_benefit(request,pk_doctor):
             gross_profit = gross_revenue - accrued_expenses
             return render(request,'doctors/doctor_cal_benefit.html',{"histories_object":histories_object,"gross_revenue":gross_revenue,"accrued_expense":accrued_expenses,"gross_profit":gross_profit,"pk_doctor":pk_doctor,"form":form})
         else:
+            if user.doctor.settingsservice.password:
+                return redirect(reverse("cal_benefit_protect",kwargs={"pk_doctor":pk_doctor}))
             form = CalculateBenefitForm()
             return render(request,'doctors/doctor_cal_benefit.html',{"pk_doctor":pk_doctor,"form":form})
 
@@ -178,6 +212,10 @@ def search_navbar(request,pk_doctor):
 
             return render(request,'doctors/doctor_search_navbar.html',{"results":results,"pk_doctor":pk_doctor})
 
+
+# medicine list protect
+# def medicine_list_protect(request,pk_doctor,context):
+#     return password_protect(request,"doctors/doctor_medicine_list.html","doctors/doctor_medicine_list_protect.html",context)
 # Medicine List view
 class MedicineList(MedicineMixin,PageLinksMixin):
     model = Medicine
@@ -332,7 +370,8 @@ def medical_record_create(request,pk_doctor):
 
     if doctor == request.user:
         if request.method == "POST":
-            form = MedicalRecordForm(request.POST)
+            form = MedicalRecordForm(request.POST,doctor=doctor)
+            print(form)
             if form.is_valid():
                 form = form.save(commit=False)
                 # form.birth_date = datetime.strptime(form.birth_date,'%d/%m/%Y')
@@ -341,6 +380,8 @@ def medical_record_create(request,pk_doctor):
                 form.save()
 
                 return redirect(reverse("medical_record_view",kwargs={"pk_doctor":pk_doctor,"pk_mrecord":form.id}))
+            else:
+                return render(request,'doctors/doctor_medical_record_create.html',{"form":form,'pk_doctor':pk_doctor})
         else:
             form = MedicalRecordForm()
             return render(request,'doctors/doctor_medical_record_create.html',{"form":form,'pk_doctor':pk_doctor})
@@ -352,7 +393,7 @@ def medical_record_edit(request,pk_doctor,pk_mrecord):
     if doctor == request.user:
         mrecord  = MedicalRecord.objects.get(pk=pk_mrecord)
         if request.method == "POST":
-            form = MedicalRecordForm(request.POST)
+            form = MedicalRecordForm(request.POST,doctor=doctor)
             if form.is_valid():
                 
                 form = form.save(commit=False)
@@ -362,12 +403,43 @@ def medical_record_edit(request,pk_doctor,pk_mrecord):
                 mrecord.birth_date = form.birth_date
                 mrecord.address = form.address
                 mrecord.sex = form.sex
+                mrecord.phone = form.phone
                 
                 mrecord.save()
                 return redirect(reverse('medical_record_view',kwargs={"pk_doctor":pk_doctor,"pk_mrecord":pk_mrecord}))
+            else:
+                return render(request,"doctors/doctor_medical_record_edit.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord})
         else:
-            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":mrecord.birth_date.year,"address":mrecord.address})
+            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":mrecord.birth_date.year,"address":mrecord.address,"phone":mrecord.phone})
             return render(request,"doctors/doctor_medical_record_edit.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord})
+# Medical record edit back history view
+def medical_record_edit_back_history(request,pk_doctor,pk_mrecord,pk_history):
+    doctor = User.objects.get(pk=pk_doctor)
+
+    if doctor == request.user:
+        mrecord  = MedicalRecord.objects.get(pk=pk_mrecord)
+        if request.method == "POST":
+            form = MedicalRecordForm(request.POST,doctor=doctor)
+            print(form)
+            if form.is_valid():
+                
+                form = form.save(commit=False)
+                
+                mrecord.full_name = form.full_name
+                mrecord.birth_date = form.birth_date
+                mrecord.address = form.address
+                mrecord.sex = form.sex
+                mrecord.phone = form.phone
+                
+                mrecord.save()
+                return redirect(reverse('medical_record_back_view',kwargs={"pk_doctor":pk_doctor,"pk_mrecord":pk_mrecord,"pk_history":pk_history}))
+            else:
+                return render(request,"doctors/doctor_medical_record_edit_back_history.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord,"pk_history":pk_history})
+        else:
+            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":mrecord.birth_date.year,"address":mrecord.address,"phone":mrecord.phone})
+            return render(request,"doctors/doctor_medical_record_edit_back_history.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord,"pk_history":pk_history})
+
+
 
 # Medical record delete view
 def medical_record_del(request,pk_doctor,pk_mrecord):

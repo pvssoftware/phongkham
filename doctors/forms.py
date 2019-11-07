@@ -1,10 +1,15 @@
 from django import forms
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist 
 from django.conf import settings
 from user.models import SettingsTime, SettingsService, WeekDay
 from .models import MedicalRecord, MedicalHistory, PrescriptionDrug, Medicine
 from .utils_forms import clean_upload_file
 
+
+class PasswordProtectForm(forms.Form):
+    password = forms.CharField()
+    class Meta:
+        fields = ("password",)
 
 class WeekDayForm(forms.ModelForm):
 
@@ -28,6 +33,7 @@ class SettingsServiceForm(forms.ModelForm):
     ph_meter = forms.BooleanField(required=False)
     medical_ultrasonography = forms.BooleanField(required=False)
     endoscopy = forms.BooleanField(required=False)
+    password = forms.BooleanField(required=False)
     
     class Meta:
         model = SettingsService
@@ -56,6 +62,21 @@ class MedicalRecordForm(forms.ModelForm):
         model = MedicalRecord
         fields = ["full_name", "address", "birth_date",
                   "sex","phone"]
+    def __init__(self, *args, **kwargs):
+        self.doctor = kwargs.pop('doctor',None)
+        super(MedicalRecordForm, self).__init__(*args, **kwargs)
+
+    def clean_phone(self):
+        phone = self.cleaned_data['phone']
+        print(phone)
+        if phone == None:
+            return None
+        else:
+            try:
+                MedicalRecord.objects.get(doctor=self.doctor,phone=phone)
+                raise forms.ValidationError("Số điện thoại trùng với bệnh nhân khác")
+            except ObjectDoesNotExist:
+                return phone
 
 
 # class MedicalHistoryForm(forms.ModelForm):
