@@ -12,15 +12,15 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, BookedDay
-from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file
+from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect
 from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm
 
 
 # settings services protect
 
-# def settings_service_protect(request,pk_doctor):
-#     user = User.objects.get(pk=pk_doctor)
-#     return password_protect(request,pk_doctor,"doctors/doctor_settings_service.html","doctors/doctor_settings_service_protect.html",{"doctor":user.doctor})
+def settings_service_protect(request,pk_doctor):
+    user = User.objects.get(pk=pk_doctor)
+    return password_protect(request,pk_doctor,"doctors/doctor_settings_service.html","doctors/doctor_settings_service_protect.html",{"doctor":user.doctor})
 
 # settings services
 
@@ -58,8 +58,8 @@ def settings_service(request,pk_doctor):
                     print("except")
                     form.save()
                 return render(request,"doctors/doctor_settings_service.html",{"doctor":user.doctor})
-        # if user.doctor.settingsservice.password:
-        #     return redirect(reverse("settings_service_protect",kwargs={"pk_doctor":pk_doctor}))
+        if user.doctor.settingsservice.password:
+            return redirect(reverse("settings_service_protect",kwargs={"pk_doctor":pk_doctor}))
         return render(request,"doctors/doctor_settings_service.html",{"doctor":user.doctor})
 
 # settings opening time
@@ -135,10 +135,10 @@ def delete_weekday(request,pk_doctor,pk_weekday):
 
 # calculate benefit protect
 
-# def cal_benefit_protect(request,pk_doctor):
-#     form = CalculateBenefitForm()
+def cal_benefit_protect(request,pk_doctor):
+    form = CalculateBenefitForm()
 
-#     return password_protect(request,pk_doctor,'doctors/doctor_cal_benefit.html','doctors/doctor_cal_benefit_protect.html',{"pk_doctor":pk_doctor,"form":form})
+    return password_protect(request,pk_doctor,'doctors/doctor_cal_benefit.html','doctors/doctor_cal_benefit_protect.html',{"pk_doctor":pk_doctor,"form":form})
 
 # calculate benefit
 
@@ -168,8 +168,8 @@ def cal_benefit(request,pk_doctor):
             gross_profit = gross_revenue - accrued_expenses
             return render(request,'doctors/doctor_cal_benefit.html',{"histories_object":histories_object,"gross_revenue":gross_revenue,"accrued_expense":accrued_expenses,"gross_profit":gross_profit,"pk_doctor":pk_doctor,"form":form})
         else:
-            # if user.doctor.settingsservice.password:
-            #     return redirect(reverse("cal_benefit_protect",kwargs={"pk_doctor":pk_doctor}))
+            if user.doctor.settingsservice.password:
+                return redirect(reverse("cal_benefit_protect",kwargs={"pk_doctor":pk_doctor}))
             form = CalculateBenefitForm()
             return render(request,'doctors/doctor_cal_benefit.html',{"pk_doctor":pk_doctor,"form":form})
 
