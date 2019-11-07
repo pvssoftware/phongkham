@@ -11,19 +11,19 @@ from user.models import DoctorProfile, SettingsService
 
 
 # password protect mixin
-def password_protect(request,pk_doctor,template_service,template_protect,context):
-    user = User.objects.get(pk=pk_doctor)
-    settings_service = user.doctor.settingsservice
-    error = ""
-    if user.doctor:
-        if request.method == "POST":
-            form = PasswordProtectForm(request.POST)
-            if form.is_valid():
-                if settings_service.password_field == form.cleaned_data["password"]:
-                    return render(request,template_service,context)
-                error = "Mật khẩu không hợp lệ."
+# def password_protect(request,pk_doctor,template_service,template_protect,context):
+#     user = User.objects.get(pk=pk_doctor)
+#     settings_service = user.doctor.settingsservice
+#     error = ""
+#     if user.doctor:
+#         if request.method == "POST":
+#             form = PasswordProtectForm(request.POST)
+#             if form.is_valid():
+#                 if settings_service.password_field == form.cleaned_data["password"]:
+#                     return render(request,template_service,context)
+#                 error = "Mật khẩu không hợp lệ."
 
-        return render(request,template_protect,{"pk_doctor":pk_doctor,"error":error})
+#         return render(request,template_protect,{"pk_doctor":pk_doctor,"error":error})
 
 # download medical_ultrasonography file
 def download_medical_ultrasonography_file(history):

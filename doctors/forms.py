@@ -33,7 +33,7 @@ class SettingsServiceForm(forms.ModelForm):
     ph_meter = forms.BooleanField(required=False)
     medical_ultrasonography = forms.BooleanField(required=False)
     endoscopy = forms.BooleanField(required=False)
-    password = forms.BooleanField(required=False)
+    # password = forms.BooleanField(required=False)
     
     class Meta:
         model = SettingsService

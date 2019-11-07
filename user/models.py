@@ -119,6 +119,7 @@ class WeekDay(models.Model):
         ("sat","Thứ Bảy"),
         ("sun","Chủ Nhật"),
     }
+
     day = models.CharField(max_length=10,choices=WEEKDAY)
     opening_time = models.TimeField()
     closing_time = models.TimeField()
@@ -137,8 +138,8 @@ class SettingsService(models.Model):
     endoscopy = models.BooleanField(default=False)
     endoscopy_cost = models.CharField(max_length=50,blank=True,null=True)
 
-    password = models.BooleanField(default=False)
-    password_field = models.CharField(max_length=20,blank=True,null=True)
+    # password = models.BooleanField(default=False)
+    # password_field = models.CharField(max_length=20,blank=True,null=True)
 
     doctor = models.OneToOneField(
         DoctorProfile, on_delete=models.CASCADE, blank=True, null=True)
