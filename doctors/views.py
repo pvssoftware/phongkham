@@ -482,6 +482,7 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
                         total_patients = 0
                         for day_detail in days_detail:
                             total_patients += day_detail["total_patients"]
+                            closing_time = day_detail["closing_time"]
 
                         try:
                             info_bookedday = BookedDay.objects.get(doctor=doctor.doctor,date=date_book)
@@ -489,19 +490,26 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
                             info_bookedday.save()
                             if int(info_bookedday.current_patients) < int(info_bookedday.max_patients):
                                 full_booked = False
+                                total_patients_prevday = 0
+                                for day_detail in days_detail:
+                                    if int(info_bookedday.current_patients) < (day_detail["total_patients"]+total_patients_prevday):
+                                        info_bookedday.current_patients = str(int(info_bookedday.current_patients) + 1)
+                                        info_bookedday.save()
+
+                                        datetime_book = datetime.combine(date_book,day_detail["opening_time"]) + timedelta(minutes=(int(info_bookedday.current_patients)-total_patients_prevday-1)*int(doctor.doctor.settings_time.examination_period))
+                                        break
+                                    else:
+                                        total_patients_prevday += day_detail["total_patients"]
+                                    
                             else:
                                 full_booked = True
-                            
-                            total_patients_prevday = 0
-                            for day_detail in days_detail:
-                                if int(info_bookedday.current_patients) < (day_detail["total_patients"]+total_patients_prevday):
-                                    info_bookedday.current_patients = str(int(info_bookedday.current_patients) + 1)
-                                    info_bookedday.save()
 
-                                    datetime_book = datetime.combine(date_book,day_detail["opening_time"]) + timedelta(minutes=(int(info_bookedday.current_patients)-total_patients_prevday-1)*int(doctor.doctor.settings_time.examination_period))
-                                    break
-                                else:
-                                    total_patients_prevday += day_detail["total_patients"]
+                                info_bookedday.current_patients = str(int(info_bookedday.current_patients) + 1)
+                                info_bookedday.save()
+
+                                datetime_book = datetime.combine(date_book,closing_time) + timedelta(minutes=(int(info_bookedday.current_patients)- int(info_bookedday.max_patients))*int(doctor.doctor.settings_time.examination_period))
+                                print("max")
+                            
                             form.date_booked = datetime_book
                             form.ordinal_number = info_bookedday.current_patients
                             form.save()
@@ -521,18 +529,18 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
                             info_bookedday = BookedDay.objects.get(doctor=doctor.doctor,date=date_book)
                             info_bookedday.current_patients = str(int(info_bookedday.current_patients) + 1)
                             info_bookedday.save()
-                            print("try")
+                            
                         except ObjectDoesNotExist:
                             info_bookedday = BookedDay.objects.create(doctor=doctor.doctor,date=date_book,max_patients="limitless",current_patients="1")
 
                         form.date_booked = datetime.now()
                         form.ordinal_number = info_bookedday.current_patients
                         form.save()
-                        print(form)
+                        
 
 
                     histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
-                    print(histories)
+                    
                     html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories,"full_booked":full_booked})
 
                     channel_layer = get_channel_layer()
@@ -574,6 +582,7 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
                         form.note_am_dao_pk = ''
                         
                     
+                    form.date_booked = datetime.now()
                     form.save()
                 # history = MedicalHistory.objects.create(disease_symptom=disease_symptom,diagnostis=diagnostis,
                 # service=service,service_detail=service_detail,PARA=PARA,contraceptive=contraceptive,last_menstrual_period=last_menstrual_period,note=note,medical_record = mrecord,co_tu_cung_pk=co_tu_cung_pk,am_dao_pk=am_dao_pk,chuan_doan_khac_pk=chuan_doan_khac_pk,co_tu_cung_ps=co_tu_cung_ps,tim_thai_ps=tim_thai_ps,can_go_ps=can_go_ps)

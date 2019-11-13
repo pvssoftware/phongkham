@@ -104,7 +104,7 @@ def get_days_detail(weekdays,date_book,examination_period):
             time_duration = int((datetime.combine(date_book,day.closing_time) - datetime.combine(date_book,day.opening_time)).total_seconds()//60)
             total_patients = time_duration//int(examination_period)+1
 
-            object_list.append({"time_duration":time_duration,"opening_time":day.opening_time,"total_patients":total_patients})
+            object_list.append({"time_duration":time_duration,"opening_time":day.opening_time,"closing_time":day.closing_time,"total_patients":total_patients})
     return object_list
 
 
