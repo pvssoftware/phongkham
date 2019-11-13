@@ -501,7 +501,7 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
                                     datetime_book = datetime.combine(date_book,day_detail["opening_time"]) + timedelta(minutes=(int(info_bookedday.current_patients)-total_patients_prevday-1)*int(doctor.doctor.settings_time.examination_period))
                                     break
                                 else:
-                                    total_patients_prevday = day_detail["total_patients"]
+                                    total_patients_prevday += day_detail["total_patients"]
                             form.date_booked = datetime_book
                             form.ordinal_number = info_bookedday.current_patients
                             form.save()

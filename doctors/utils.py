@@ -1,14 +1,52 @@
 import os, re
 from datetime import datetime
-from user.models import User
+
 from django.views.generic import ListView
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.db.models import Q
+from django.template.loader import render_to_string
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from rest_framework import status
+from rest_framework.response import Response
+
+from user.models import User
+
 from .forms import SearchDrugForm, PasswordProtectForm
-from .models import Medicine
+from .models import Medicine, MedicalHistory
+from .serializers import MedicalHistorySerializer
 from user.models import DoctorProfile, SettingsService
 
+
+# history serializer mix
+
+def history_serializer_mix(data_history,info_day,doctor,date_book):
+    
+    history_serializer = MedicalHistorySerializer(data=data_history)
+    if history_serializer.is_valid():
+        history_serializer.save()
+        
+        histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
+        print(histories)
+        html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":doctor.pk,"histories":histories,"full_booked":False})
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "patients",
+            {
+                "type":"patient_update",
+                "html_patients":html_patients,
+            }
+        )
+
+        return Response({
+            "soTT":int(info_day.current_patients),
+            "ngayKham":history_serializer.data["date_booked"],
+            "tenBS":doctor.doctor.full_name
+        }, status=status.HTTP_201_CREATED)
+
+    return Response(history_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # password protect mixin
 def password_protect(request,pk_doctor,template_service,template_protect,context):

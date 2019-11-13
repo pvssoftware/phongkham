@@ -17,7 +17,7 @@ class CustomUserAdmin(UserAdmin):
 
 	add_form = CustomUserCreationForm
 	form = CustomUserChangeForm
-	list_display = ["email","is_staff","is_active","doctor"]
+	list_display = ["email","is_staff","is_active","doctor","pk"]
 	model = User
 	ordering = ["email",]
 	fieldsets = (
@@ -33,7 +33,7 @@ class CustomUserAdmin(UserAdmin):
             'fields': ('email', 'password1', 'password2', 'doctor','is_admin','is_staff','is_active','is_superuser','user_permissions','groups')}
         ),
     )
-	search_fields = ('email',)
+	search_fields = ('email',"pk")
 	
 
 class DoctorProfileAdmin(admin.ModelAdmin):

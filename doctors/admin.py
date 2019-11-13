@@ -5,7 +5,7 @@ from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, B
 
 
 class MedicalRecordAdmin(admin.ModelAdmin):
-    list_display = ["full_name","birth_date","doctor"]
+    list_display = ["phone","full_name","birth_date","doctor"]
     model = MedicalRecord
 
 class MedicalHistoryAdmin(admin.ModelAdmin):

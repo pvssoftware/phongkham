@@ -15,7 +15,14 @@
             {% endif %}>{{ history.ordinal_number }}</i>
           <div class="media-body pb-3 mb-0 lh-125 border-bottom border-gray">
             <div class="d-flex justify-content-between align-items-center w-100">
-              <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_back_view' pk_doctor history.medical_record.pk history.pk %}">{{ history.medical_record.full_name }}</a>
+              <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_back_view' pk_doctor history.medical_record.pk history.pk %}">
+                
+                {% if history.medical_record.full_name == "" %}
+                  Bệnh nhân mới - 
+                {% else %}
+                  {{ history.medical_record.full_name }} - 
+                {% endif %}
+                 {{ history.medical_record.phone }}</a>
               </strong>
               {% if history.service == "khám phụ sản" %}
             <span class="page-link-mix">Phụ sản</span>
