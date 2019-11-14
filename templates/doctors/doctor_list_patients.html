@@ -18,11 +18,17 @@
               <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_back_view' pk_doctor history.medical_record.pk history.pk %}">
                 
                 {% if history.medical_record.full_name == "" %}
-                  Bệnh nhân mới - 
+                  Bệnh nhân mới 
                 {% else %}
-                  {{ history.medical_record.full_name }} - 
+                  {{ history.medical_record.full_name }} 
                 {% endif %}
-                 {{ history.medical_record.phone }}</a>
+                 
+                 
+                 {% if history.medical_record.phone %}
+                   - {{ history.medical_record.phone }}
+                 {% endif %}
+                   
+                </a>
               </strong>
               {% if history.service == "khám phụ sản" %}
             <span class="page-link-mix">Phụ sản</span>

@@ -116,6 +116,7 @@ $(document).ready(function(){
         }
 
         if(valid){
+            $(this).prop("disabled",true);
             $("#mrecord_edit_form").submit();
         }
         

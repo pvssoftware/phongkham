@@ -33,7 +33,7 @@ def history_serializer_mix(data_history,info_day,doctor,date_book):
 
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
-            "patients",
+            "patients"+str(doctor.pk),
             {
                 "type":"patient_update",
                 "html_patients":html_patients,

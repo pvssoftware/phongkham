@@ -545,7 +545,7 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
 
                     channel_layer = get_channel_layer()
                     async_to_sync(channel_layer.group_send)(
-                        "patients",
+                        "patients"+str(pk_doctor),
                         {
                             "type":"patient_update",
                             "html_patients":html_patients,
@@ -667,6 +667,7 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                 history_edit.blood_pressure = form.cleaned_data['blood_pressure']
                 history_edit.weight = form.cleaned_data['weight']
                 history_edit.glycemic = form.cleaned_data['glycemic']
+                history_edit.ph_meter = form.cleaned_data['ph_meter']
 
                 history_edit.medical_ultrasonography = form.cleaned_data['medical_ultrasonography']
                 if "medical_ultrasonography_file" in request.FILES:
@@ -696,7 +697,7 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
 
                 channel_layer = get_channel_layer()
                 async_to_sync(channel_layer.group_send)(
-                    "patients",
+                    "patients"+str(pk_doctor),
                     {
                         "type":"patient_update",
                         "html_patients":html_patients,
@@ -770,7 +771,7 @@ def medical_history_del(request,pk_doctor,pk_mrecord,pk_history):
 
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
-                "patients",
+                "patients"+str(pk_doctor),
                 {
                     "type":"patient_update",
                     "html_patients":html_patients,

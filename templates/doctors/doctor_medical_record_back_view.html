@@ -580,6 +580,7 @@
         $(".btn_is_waiting").click(function(){
             $("#is_waiting").prop("checked",true);
             console.log($("#is_waiting").is(":checked"));
+            $(this).prop("disabled",true);
             $("#history_form").submit();
         }); // edn click
 
@@ -693,6 +694,7 @@
             }
 
             if (valid){
+                $(this).prop("disabled",true);
                 $("#history_form").submit();
             }
             
