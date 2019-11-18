@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import MedicalRecord, MedicalHistory
-from .custom_serializers import CustomHyperlinkedIdentityField, CustomHyperlinkedRelatedField
+from .custom_serializers import CustomHyperlinkedIdentityField, CustomHyperlinkedRelatedField, RecordSerializerField
 from user.models import User, DoctorProfile
 
 
@@ -18,11 +18,16 @@ class MedicalRecordSerializer(serializers.HyperlinkedModelSerializer):
 
 class MedicalHistorySerializer(serializers.HyperlinkedModelSerializer):
 
-    
-    medical_record = serializers.SlugRelatedField(queryset=MedicalRecord.objects.all(),slug_field="phone")
+    def __init__(self, *args, **kwargs):
+        self.pk_doctor = kwargs.pop('pk_doctor')
+        super().__init__(*args, **kwargs)
+
+    medical_record = RecordSerializerField(queryset=MedicalRecord.objects.all(),slug_field="phone")
     date_booked = serializers.DateTimeField(format="%d/%m/%Y %H:%M",input_formats=["%d/%m/%Y %H:%M",])
 
     class Meta:
         model = MedicalHistory
         fields = ("date_booked","medical_record","ordinal_number","is_waiting")
+
+
 

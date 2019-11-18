@@ -24,7 +24,7 @@ from user.models import DoctorProfile, SettingsService
 
 def history_serializer_mix(data_history,info_day,doctor,date_book,phone):
     
-    history_serializer = MedicalHistorySerializer(data=data_history)
+    history_serializer = MedicalHistorySerializer(data=data_history,pk_doctor=doctor.pk)
     if history_serializer.is_valid():
         history_serializer.save()
         

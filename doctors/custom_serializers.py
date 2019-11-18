@@ -27,3 +27,10 @@ class CustomHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
             'pk_history': obj.pk
         }
         return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
+
+class RecordSerializerField(serializers.SlugRelatedField):
+    def get_queryset(self):
+        queryset = self.queryset
+        if hasattr(self.root, 'pk_doctor'):
+            queryset = queryset.filter(doctor__pk=self.root.pk_doctor)
+        return queryset
