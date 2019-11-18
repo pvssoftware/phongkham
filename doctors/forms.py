@@ -64,6 +64,7 @@ class MedicalRecordForm(forms.ModelForm):
                   "sex","phone"]
     def __init__(self, *args, **kwargs):
         self.doctor = kwargs.pop('doctor',None)
+        self.pk_mrecord = kwargs.pop('pk_mrecord',None)
         super(MedicalRecordForm, self).__init__(*args, **kwargs)
 
     def clean_phone(self):
@@ -73,7 +74,14 @@ class MedicalRecordForm(forms.ModelForm):
             return None
         else:
             try:
-                MedicalRecord.objects.get(doctor=self.doctor,phone=phone)
+                record = MedicalRecord.objects.get(doctor=self.doctor,phone=phone)
+                print(record.pk)
+                print(self.pk_mrecord)
+                if self.pk_mrecord:
+                    print(type(self.pk_mrecord))
+                    if record.pk == int(self.pk_mrecord):
+                        print("valid")
+                        return phone
                 raise forms.ValidationError("Số điện thoại trùng với bệnh nhân khác")
             except ObjectDoesNotExist:
                 return phone

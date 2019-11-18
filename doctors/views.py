@@ -393,7 +393,7 @@ def medical_record_edit(request,pk_doctor,pk_mrecord):
     if doctor == request.user:
         mrecord  = MedicalRecord.objects.get(pk=pk_mrecord)
         if request.method == "POST":
-            form = MedicalRecordForm(request.POST,doctor=doctor)
+            form = MedicalRecordForm(request.POST,doctor=doctor,pk_mrecord=pk_mrecord)
             if form.is_valid():
                 
                 form = form.save(commit=False)
@@ -419,7 +419,7 @@ def medical_record_edit_back_history(request,pk_doctor,pk_mrecord,pk_history):
     if doctor == request.user:
         mrecord  = MedicalRecord.objects.get(pk=pk_mrecord)
         if request.method == "POST":
-            form = MedicalRecordForm(request.POST,doctor=doctor)
+            form = MedicalRecordForm(request.POST,doctor=doctor,pk_mrecord=pk_mrecord)
             print(form)
             if form.is_valid():
                 
@@ -436,7 +436,8 @@ def medical_record_edit_back_history(request,pk_doctor,pk_mrecord,pk_history):
             else:
                 return render(request,"doctors/doctor_medical_record_edit_back_history.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord,"pk_history":pk_history})
         else:
-            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":mrecord.birth_date.year,"address":mrecord.address,"phone":mrecord.phone})
+            birth_date = lambda x: x.year if (x) else ""
+            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":birth_date(mrecord.birth_date),"address":mrecord.address,"phone":mrecord.phone})
             return render(request,"doctors/doctor_medical_record_edit_back_history.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord,"pk_history":pk_history})
 
 
