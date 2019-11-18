@@ -98,7 +98,7 @@ def create_record_ticket(request):
 
         try:
             MedicalRecord.objects.get(doctor=doctor,phone=data["soDT"])
-            return history_serializer_mix(data_history,info_bookedday,doctor,date_book)
+            return history_serializer_mix(data_history,info_bookedday,doctor,date_book,data["soDT"])
         except ObjectDoesNotExist:
             data_record = {
                 "phone":data["soDT"],
@@ -108,7 +108,7 @@ def create_record_ticket(request):
             record_serializer = MedicalRecordSerializer(data=data_record)
             if record_serializer.is_valid():
                 record_serializer.save()
-                return history_serializer_mix(data_history,info_bookedday,doctor,date_book)
+                return history_serializer_mix(data_history,info_bookedday,doctor,date_book,data["soDT"])
 
             return Response(record_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             

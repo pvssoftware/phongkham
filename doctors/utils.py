@@ -16,18 +16,23 @@ from user.models import User
 from .forms import SearchDrugForm, PasswordProtectForm
 from .models import Medicine, MedicalHistory
 from .serializers import MedicalHistorySerializer
+from .bulk_sms import send_sms
 from user.models import DoctorProfile, SettingsService
 
 
 # history serializer mix
 
-def history_serializer_mix(data_history,info_day,doctor,date_book):
+def history_serializer_mix(data_history,info_day,doctor,date_book,phone):
     
     history_serializer = MedicalHistorySerializer(data=data_history)
     if history_serializer.is_valid():
         history_serializer.save()
         
         histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
+
+        # call send sms
+        send_sms(doctor.doctor.full_name,doctor.pk,info_day.current_patients,history_serializer.data["date_booked"],phone)
+
         print(histories)
         html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":doctor.pk,"histories":histories,"full_booked":False})
 
