@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+ {% block content %}
+
+ <div class="container">
+     <h5 class="my-3">Tìm hồ sơ bệnh nhân mà bạn muốn xác nhập</h5>
+    <form action="{% url 'merge_history_search' pk_doctor pk_history %}" class="search_form" method="post">
+            {% csrf_token %}
+        <div class="input-group my-3">
+        <input type="text" class="form-control" required placeholder="Nhập số điện thoại" id="search" name="search_navbar"
+        {% if form.search_navbar.value %}
+        value="{{ form.search_navbar.value }}"
+        {% endif %}>
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary btn-finished" type="submit">Tìm hồ sơ</button>
+        </div>
+        </div>
+        
+    </form>
+    {% if results %}
+        <h5 class="my-3">Kết quả tìm kiếm</h5>
+        <div class="">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tên bệnh nhân</th>
+                        <th>Số điện thoại</th>
+                    </tr>
+                </thead>
+                {% for record in results %}
+                <tbody>
+                    <tr>
+                        <td scope="row"><a
+                            class="page-link-mix" href="{% url 'merge_history_confirm' pk_doctor record.pk pk_history %}">{{ record.full_name }}</a></td>
+                        <td><a
+                            class="page-link-mix" href="{% url 'merge_history_confirm' pk_doctor record.pk pk_history %}"> {{ record.phone }}</a></td>
+                    </tr>
+                    
+                </tbody>
+                {% endfor %}
+            </table>
+        </div>
+    {% endif %}
+ </div>
+
+ {% endblock %}

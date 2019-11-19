@@ -103,6 +103,7 @@
      <button class="btn btn-back mt-3"><a href="{% url 'prescription_drug' doctor.pk mrecord.pk history.pk %}">Quay lại kê thuốc</a></button>
      <button class="btn btn-finished mt-3 ml-3"><a href="{% url 'medical_record_view' doctor.pk mrecord.pk %}">Hoàn tất</a></button>
      <button class="btn btn-submit ml-3 mt-3" type="button"><a href="{% url 'export_final_info_excel' doctor.pk mrecord.pk history.pk %}">In file excel</a></button>
+     <button class="btn btn-finished mt-3 float-right ml-3"><a href="{% url 'merge_history_search' doctor.pk history.pk %}">Xác nhập</a></button>
      <button class="btn btn-del float-right mt-3" type="button"><a href="{% url 'medical_history_del' doctor.pk mrecord.pk history.pk %}">Huỷ</a></button>
      
  </div>

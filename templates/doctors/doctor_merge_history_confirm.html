@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+ {% block content %}
+
+<div class="container">
+    <p class="lead text-center mt-3">
+        Bạn muốn chuyển dữ liệu khám bệnh này vào hồ sơ bệnh nhân <span class="font-weight-bold">{{ mrecord.full_name }}</span> ? Nếu đồng ý hãy click vào <a href="{% url 'merge_history' pk_doctor pk_mrecord pk_history %}"> đây xác nhận.</a> Nếu không hãy click <a href="{% url 'final_info' pk_doctor pk_mrecord_new pk_history %}"> vào đây</a> để trở về trang thông tin khám bệnh.
+    </p>
+</div>
+
+ {% endblock %}

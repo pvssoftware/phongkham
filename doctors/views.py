@@ -16,6 +16,43 @@ from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_co
 from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm
 
 
+# merge history search
+def merge_history_search(request,pk_doctor,pk_history):
+    user = User.objects.get(pk=pk_doctor)
+    if user.doctor:
+        if request.method == "POST":
+            form = SearchNavBarForm(request.POST)
+            
+            if form.is_valid():
+                key_words = form.cleaned_data["search_navbar"]
+                results = MedicalRecord.objects.filter(doctor=user,phone__icontains=key_words)
+
+                return render(request,"doctors/doctor_merge_history_search.html",{"results":results,"form":form,"pk_doctor":pk_doctor,"pk_history":pk_history})
+        results = {}  
+        form = SearchNavBarForm()
+        return render(request,"doctors/doctor_merge_history_search.html",{"results":results,"form":form,"pk_doctor":pk_doctor,"pk_history":pk_history})
+
+# merge history confirm
+def merge_history_confirm(request,pk_doctor,pk_mrecord,pk_history):
+    user = User.objects.get(pk=pk_doctor)
+    if user.doctor:
+        mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
+        pk_mrecord_new = MedicalHistory.objects.get(pk=pk_history).medical_record.pk
+        return render(request,"doctors/doctor_merge_history_confirm.html",{"pk_mrecord":pk_mrecord,"pk_mrecord_new":pk_mrecord_new,"pk_doctor":pk_doctor,"pk_history":pk_history,"mrecord":mrecord})
+# merge history
+def merge_history(request,pk_doctor,pk_mrecord,pk_history):
+    user = User.objects.get(pk=pk_doctor)
+    if user.doctor:
+        history_merge = MedicalHistory.objects.get(pk=pk_history)
+        mrecord_new = history_merge.medical_record
+
+        mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
+        history_merge.medical_record = mrecord
+        history_merge.save()
+
+        mrecord_new.delete()
+        return redirect(reverse("final_info",kwargs={"pk_doctor":pk_doctor,"pk_history":pk_history,"pk_mrecord":pk_mrecord}))
+
 # settings services protect
 
 def settings_service_protect(request,pk_doctor):

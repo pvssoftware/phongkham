@@ -1,11 +1,13 @@
 from django.conf.urls import url
-from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_edit_back_history, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit, medicine_del, upload_medicine_excel, search_drugs, cal_benefit, cal_benefit_protect, list_examination, settings_openingtime, settings_service, settings_service_protect, create_weekday, delete_weekday, download_medical_ultrasonography, download_endoscopy
+from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_edit_back_history, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit, medicine_del, upload_medicine_excel, search_drugs, cal_benefit, cal_benefit_protect, list_examination, settings_openingtime, settings_service, settings_service_protect, create_weekday, delete_weekday, download_medical_ultrasonography, download_endoscopy, merge_history_search, merge_history_confirm, merge_history
 
 
 
 
 urlpatterns = [
-
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record-merge/(?P<pk_mrecord>\d+)/medical-history-merge-confirm/(?P<pk_history>\d+)/$",merge_history_confirm,name="merge_history_confirm"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record-merge/(?P<pk_mrecord>\d+)/medical-history-merge/(?P<pk_history>\d+)/$",merge_history,name="merge_history"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-history-merge-search/(?P<pk_history>\d+)/$",merge_history_search,name="merge_history_search"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/search/$",search_navbar,name="search_navbar"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-history-download-endoscopy/(?P<pk_history>\d+)/$",download_endoscopy,name="download_endoscopy"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-history-download-medical-ultrasonography/(?P<pk_history>\d+)/$",download_medical_ultrasonography,name="download_medical_ultrasonography"),
