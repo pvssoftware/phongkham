@@ -26,14 +26,15 @@ def history_serializer_mix(data_history,info_day,doctor,date_book,phone):
     
     history_serializer = MedicalHistorySerializer(data=data_history,pk_doctor=doctor.pk)
     if history_serializer.is_valid():
-        history_serializer.save()
+        history=history_serializer.save()
         
         histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
 
+        
         # call send sms
-        send_sms(doctor.doctor.full_name,doctor.pk,info_day.current_patients,history_serializer.data["date_booked"],phone)
+        send_sms(doctor.doctor.full_name,doctor.pk,info_day.current_patients,history.date_booked,phone)
 
-        print(histories)
+        
         html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":doctor.pk,"histories":histories,"full_booked":False})
 
         channel_layer = get_channel_layer()
