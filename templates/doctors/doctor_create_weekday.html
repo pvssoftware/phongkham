@@ -24,7 +24,7 @@
                 <label for="opening_time">Giờ mở cửa</label>
                 
                     
-                <input type="text" class="form-control timepicker" id="opening_time" name="opening_time" 
+                <input type="text" class="form-control timepicker" id="opening_time" name="opening_time" autocomplete="off"
                 
                 {% if form %}
                     value="{{ form.opening_time.value }}"
@@ -41,7 +41,7 @@
               </div>
              <div class="form-group col-sm-4">
                 <label for="closing_time">Giờ đóng cửa</label>
-                <input type="text" class="form-control timepicker" id="closing_time" name="closing_time" 
+                <input type="text" class="form-control timepicker" id="closing_time" name="closing_time" autocomplete="off"
                 
                 {% if form %}
                     value="{{ form.closing_time.value }}"
