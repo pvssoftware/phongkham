@@ -329,7 +329,8 @@ def medicine_edit(request,pk_doctor,pk_medicine):
 
                 return redirect(reverse('medicine_edit',kwargs={'pk_doctor':pk_doctor,'pk_medicine':pk_medicine}))
         else:
-            form = MedicineEditForm(initial={"name":medicine.name,'full_name':medicine.full_name,'sale_price':medicine.sale_price,'import_price':medicine.import_price,'date_expired':medicine.date_expired.strftime("%d/%m/%Y")})
+            date_expired = lambda x: x.strftime("%d/%m/%Y") if (x) else ""
+            form = MedicineEditForm(initial={"name":medicine.name,'full_name':medicine.full_name,'sale_price':medicine.sale_price,'import_price':medicine.import_price,'date_expired':date_expired(medicine.date_expired)})
             return render(request,'doctors/doctor_medicine_edit.html',{'form':form,'pk_doctor':pk_doctor,'pk_medicine':pk_medicine,"medicine":medicine})
 
 # Medicine del view
