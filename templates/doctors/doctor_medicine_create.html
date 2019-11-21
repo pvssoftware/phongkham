@@ -28,7 +28,7 @@
       <span id="alert_full_name" style="color: #d9534f;font-size:15px"></span>
     </div>
     <div class="row">
-      <div class="col-md-5">
+      <div class="col-md-4">
         <label for="sale_price">Giá bán<span class="required-input">*</span></label>
         <input class="form-control" type="text" name="sale_price" id="sale_price" placeholder="Nhập giá bán"
          {% if form.sale_price.value  %}
@@ -36,13 +36,21 @@
           {% endif %} />
         <span id="alert_sale_price" style="color: #d9534f;font-size:15px"></span>
       </div>
-      <div class="col-md-5">
+      <div class="col-md-4">
         <label for="import_price">Giá mua<span class="required-input">*</span></label>
         <input class="form-control" type="text" name="import_price" id="import_price" placeholder="Nhập giá mua" 
         {% if form.import_price.value %}
          value="{{ form.import_price.value }}"
         {% endif %} />
         <span id="alert_import_price" style="color: #d9534f;font-size:15px"></span>
+      </div>
+      <div class="col-md-2">
+        <label for="date_expired">Ngày hết hạn</label>
+        <input class="form-control" type="text" name="date_expired" id="date_expired" placeholder="Nhập ngày hết hạn" autocomplete="off"
+        {% if form.date_expired.value %}
+         value="{{ form.date_expired.value }}"
+        {% endif %} />
+        <span id="alert_date_expired" style="color: #d9534f;font-size:15px"></span>
       </div>
       <div class="col-md-2">
         <label for="quantity">Số lượng<span class="required-input">*</span></label>
@@ -105,12 +113,22 @@
       return isValid;
     }
 
+    // validate datetime format dd/mm/Y
+    function ValidateDate(value) {
+      regex = new RegExp(
+        "^([0-2]\\d{1}|3[0-1])\\/(0\\d{1}|1[0-2])\\/(19|20)\\d{2}$"
+      );
+      var isValid = regex.test(value);
+      return isValid;
+    }
+
     $(".btn-submit").click(function () {
       var name = $("#name").val();
       var full_name = $("#full_name").val();
 
       var sale_price = $("#sale_price").val();
       var import_price = $("#import_price").val();
+      var date_expired = $("#date_expired").val();
       var quantity = $("#quantity").val();
       var valid = true;
 
@@ -144,8 +162,17 @@
       } else {
         $("#alert_quantity").text("");
       }
+      if (date_expired==""){
+        $("#alert_date_expired").text("");
+      } else if (!ValidateDate(date_expired)) {
+        $("#alert_date_expired").text("Thời gian không hợp lệ");
+        valid &= false;
+      } else {
+        $("#alert_date_expired").text("");
+      }
 
       if (valid) {
+        $(this).prop("disabled",true);
         $("#medicine_create_form").submit();
       }
     }); // end click
@@ -162,9 +189,47 @@
       }
 
       if (valid) {
+        $(this).prop("disabled",true);
         $("#form_upload_excel").submit();
       }
     }); // endclick
+
+    // date picker
+    $("#date_expired").datepicker({
+      // constrainInput: false,
+      dateFormat: "dd/mm/yy",
+      changeMonth: true,
+      // changeYear: true,
+      // yearRange:"-90:+0",
+      monthNames: [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      monthNamesShort: [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12"
+      ]
+    }); // end datepicker
   });
 </script>
 {% endblock %}

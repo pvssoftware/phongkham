@@ -53,6 +53,12 @@
                         {% else %}
                         href="?order=import_price_desc"
                         {% endif %}>Giá mua (VNĐ)</a></th>
+                    <th><a class="page-link-mix"
+                        {% if order == 'date_expired_desc' %} 
+                        href="?order=date_expired_asc"
+                        {% else %}
+                        href="?order=date_expired_desc"
+                        {% endif %}>Ngày hết hạn</a></th>
                 </tr>
             </thead>
         {% for ob in object_list %}
@@ -62,6 +68,7 @@
                     <td class="number medicine_quantity">{{ ob.quantity }}</td>
                     <td class="number">{{ ob.sale_price }}</td>
                     <td class="number">{{ ob.import_price }}</td>
+                    <td class="date_format">{{ ob.date_expired|date:"d/m/Y" }}</td>
                 </tr>
             
             </tbody>
@@ -125,6 +132,15 @@
 </div>
 <script>
     $(document).ready(function(){
+
+        // validate datetime format dd/mm/Y
+        function ValidateDate(value) {
+        regex = new RegExp(
+            "^([0-2]\\d{1}|3[0-1])\\/(0\\d{1}|1[0-2])\\/(19|20)\\d{2}$"
+        );
+        var isValid = regex.test(value);
+        return isValid;
+        }
         $(".number").each(function() {
       
             let cost = parseInt($(this).text());
@@ -155,6 +171,24 @@
                 $(this).css({"color":"#d9534f"})
             }
         }); // end each
+
+        // Notify when date expired near 6 months
+        $(".date_format").each(function(){
+            date_expired = $(this).text();
+
+            if (ValidateDate(date_expired)){
+                today = new Date();
+
+                date_expired_object = new Date(parseInt(date_expired.split("/")[2]),parseInt(date_expired.split("/")[1]),parseInt(date_expired.split("/")[0]));
+
+                day_delta = (date_expired_object.getTime()-today.getTime())/(1000*3600*24)
+
+                if (day_delta <=180){
+                    $(this).css({"color":"#d9534f"}) 
+                }  
+            }
+            
+        })
 
     }); //end ready
 </script>

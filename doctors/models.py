@@ -99,6 +99,7 @@ class Medicine(models.Model):
     sale_price = models.CharField(max_length=50)
     import_price = models.CharField(max_length=50)
     doctor = models.ForeignKey(User,on_delete=models.CASCADE)
+    date_expired = models.DateField(blank=True,null=True)
 
     def __str__(self):
         return self.name

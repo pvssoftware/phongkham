@@ -124,11 +124,11 @@ class MedicalHistoryFormMix(forms.ModelForm):
 
 
 class MedicineForm(forms.ModelForm):
-
+    date_expired = forms.DateField(input_formats=["%d/%m/%Y", ])
     class Meta:
         model = Medicine
         fields = ["name", 'full_name', 'quantity',
-                  'sale_price', 'import_price']
+                  'sale_price', 'import_price',"date_expired"]
 
 class MedicineEditForm(forms.Form):
     name  = forms.CharField()
@@ -136,10 +136,11 @@ class MedicineEditForm(forms.Form):
     add_quantity = forms.CharField(required=False)
     sale_price = forms.CharField()
     import_price = forms.CharField()
+    date_expired = forms.DateField(input_formats=["%d/%m/%Y", ])
 
     class Meta:
         fields = ["name", 'full_name', 'add_quantity',
-                  'sale_price', 'import_price']
+                  'sale_price', 'import_price','date_expired']
 
 class UploadMedicineForm(forms.Form):
     file_excel = forms.FileField(help_text="chưa chọn file")

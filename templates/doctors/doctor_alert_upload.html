@@ -5,7 +5,8 @@
      <h3 class="my-3">Thông báo file bị lỗi</h3>
      <h5 class="my-3">Danh sách thuốc có thông tin upload không hợp lệ</h5>
      
-     {% for drug in data_error %}
+     
+     {% if data_error %}        
      <table class="table">
          <thead>
              <tr>
@@ -14,8 +15,10 @@
                  <th>Giá bán (VNĐ)</th>
                  <th>Giá mua (VNĐ)</th>
                  <th>Số lượng</th>
+                 <th>Ngày hết hạn</th>
              </tr>
          </thead>
+    {% for drug in data_error %}
          <tbody>
              <tr>
                  <td scope="row">{{ drug.0 }}</td>
@@ -23,12 +26,12 @@
                  <td class="number">{{ drug.2 }}</td>
                  <td class="number">{{ drug.3 }}</td>
                  <td class="number">{{ drug.4 }}</td>
+                 <td>{{ drug.5 }}</td>
              </tr>
          </tbody>
-     </table>
-         
-     {% endfor %}
-
+    {% endfor %}
+     </table>     
+     {% endif %}
 <script>
 
     $(document).ready(function(){

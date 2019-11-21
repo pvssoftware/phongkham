@@ -12,7 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, BookedDay
-from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect
+from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format
 from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm
 
 
@@ -279,6 +279,7 @@ def medicine_create(request,pk_doctor):
         form_upload_excel = UploadMedicineForm()
         if request.method == "POST":
             form = MedicineForm(request.POST)
+            
             if form.is_valid():
                 full_name = form.cleaned_data['full_name']
                 
@@ -321,13 +322,14 @@ def medicine_edit(request,pk_doctor,pk_medicine):
                     medicine.full_name = form.cleaned_data['full_name']
                     medicine.sale_price = form.cleaned_data['sale_price']
                     medicine.import_price = form.cleaned_data['import_price']
+                    medicine.date_expired = form.cleaned_data['date_expired']
                     if form.cleaned_data['add_quantity']:
                         medicine.quantity = str(int(form.cleaned_data['add_quantity'])+int(medicine.quantity))
                     medicine.save()
 
                 return redirect(reverse('medicine_edit',kwargs={'pk_doctor':pk_doctor,'pk_medicine':pk_medicine}))
         else:
-            form = MedicineEditForm(initial={"name":medicine.name,'full_name':medicine.full_name,'sale_price':medicine.sale_price,'import_price':medicine.import_price})
+            form = MedicineEditForm(initial={"name":medicine.name,'full_name':medicine.full_name,'sale_price':medicine.sale_price,'import_price':medicine.import_price,'date_expired':medicine.date_expired.strftime("%d/%m/%Y")})
             return render(request,'doctors/doctor_medicine_edit.html',{'form':form,'pk_doctor':pk_doctor,'pk_medicine':pk_medicine,"medicine":medicine})
 
 # Medicine del view
@@ -359,14 +361,14 @@ def upload_medicine_excel(request,pk_doctor):
                     # number of rows and columns
                     num_rows = sheet.nrows
                     num_columns = sheet.ncols
-
+                    
                     for r in range(1,num_rows):
                         row = []
                         
                         for c in range(num_columns):
                             row.append(sheet.cell(r,c).value)
-
-                        if (type(row[2])==str or row[2]=="") or (type(row[3])==str or row[3]=="") or (type(row[4])==str or row[4]==0 or row[4]==""):
+                        
+                        if (type(row[2])==str or row[2]=="") or (type(row[3])==str or row[3]=="") or (type(row[4])==str or row[4]==0 or row[4]=="") or not check_date_format(row[5]):
                             data_error.append(row)
                             continue
                         
@@ -380,9 +382,10 @@ def upload_medicine_excel(request,pk_doctor):
                             medicine.sale_price = str(row[2])
                             medicine.import_price = str(row[3])
                             medicine.quantity = str(row[4])
+                            medicine.date_expired = datetime.strptime(row[5],"%d/%m/%Y").strftime("%Y-%m-%d")
                             medicine.save()
                         except:
-                            Medicine.objects.create(name=str(row[0]),full_name=str(row[1]),sale_price=str(row[2]),import_price=str(row[3]),quantity=str(row[4]),doctor=doctor)
+                            Medicine.objects.create(name=str(row[0]),full_name=str(row[1]),sale_price=str(row[2]),import_price=str(row[3]),quantity=str(row[4]),date_expired = datetime.strptime(row[5],"%d/%m/%Y").strftime("%Y-%m-%d") ,doctor=doctor)
 
                 if data_error:
                     return render(request,'doctors/doctor_alert_upload.html',{"pk_doctor":pk_doctor,"data_error":data_error})

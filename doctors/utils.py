@@ -10,6 +10,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from rest_framework import status
 from rest_framework.response import Response
+from dateutil.parser import parse
 
 from user.models import User
 
@@ -19,6 +20,11 @@ from .serializers import MedicalHistorySerializer
 from .bulk_sms import send_sms
 from user.models import DoctorProfile, SettingsService
 
+# check date format dd/mm/Y
+def check_date_format(date_string):
+    if re.match(r"^([0-2]\d{1}|3[0-1])\/(0\d{1}|1[0-2])\/(19|20)\d{2}$",str(date_string)):
+        return bool(parse(date_string))
+    return False
 
 # history serializer mix
 
@@ -270,13 +276,15 @@ class MedicineMixin:
         doctor = User.objects.get(pk=pk_doctor)
 
         if doctor == request.user:
-            self.object_list = self.get_queryset().filter(doctor=doctor)
+            self.object_list = self.get_queryset().filter(doctor=doctor).order_by("date_expired")
 
             page = request.GET.get('page')
             order = request.GET.get('order')
 
             if order == 'desc':
                 self.object_list = self.object_list.order_by('-full_name')
+            elif order == 'asc':
+                self.object_list = self.object_list.order_by('full_name')
 
             elif order == 'quantity_asc':
                 self.object_list = sorted(self.object_list,key=lambda drug: int(drug.quantity))               
@@ -292,6 +300,11 @@ class MedicineMixin:
                 self.object_list = sorted(self.object_list,key=lambda drug: int(drug.import_price))
             elif order == 'import_price_desc':
                 self.object_list = sorted(self.object_list,key=lambda drug: int(drug.import_price),reverse=True)
+            elif order == 'date_expired_asc':
+                self.object_list = self.object_list.order_by('date_expired')
+            elif order == 'date_expired_desc':
+                self.object_list = self.object_list.order_by('-date_expired')
+            
 
             context = self.get_context_data()
             context.update({"doctor":doctor,"page":page,"order":order})
