@@ -368,7 +368,10 @@ def upload_medicine_excel(request,pk_doctor):
                         
                         for c in range(num_columns):
                             row.append(sheet.cell(r,c).value)
-                        
+                        try:
+                            row[5] = datetime(*xlrd.xldate_as_tuple(row[5],wb.datemode)).strftime('%d/%m/%Y')
+                        except:
+                            pass
                         if (type(row[2])==str or row[2]=="") or (type(row[3])==str or row[3]=="") or (type(row[4])==str or row[4]==0 or row[4]=="") or not check_date_format(row[5]):
                             data_error.append(row)
                             continue
