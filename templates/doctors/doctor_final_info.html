@@ -2,7 +2,7 @@
  {% block content %}
 
 
- <div class="container">
+ <div class="container mb-4">
      <h3 class="mt-3">Thông tin khám bệnh</h3>
 
      <table class="table box-shadow rounded">
@@ -47,6 +47,16 @@
                 <tr class="table-active">
                     <th>Nội soi</th>
                     <td>{{ history.endoscopy }}</td>
+                </tr>
+            </tbody>
+        </table>
+     {% endif %}
+     {% if settings_service.medical_test %}
+        <table class="table">
+            <tbody>
+                <tr class="table-active">
+                    <th>Xét nghiệm</th>
+                    <td>{{ history.medical_test }}</td>
                 </tr>
             </tbody>
         </table>

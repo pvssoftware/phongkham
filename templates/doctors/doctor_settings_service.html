@@ -84,6 +84,27 @@
 
         <div class="form-inline">
             <div class="form-check my-3">
+                <input class="form-check-input" type="checkbox" id="medical_test" name="medical_test" 
+                {% if doctor.settingsservice.medical_test %}
+                    checked
+                {% endif %}>
+                <label class="form-check-label" for="medical_test">
+                  Kích hoạt dịch vụ lưu trữ kết quả xét nghiệm (VNĐ)
+                </label>
+            </div>
+            <div class="form-group mx-sm-3 my-3">
+                <label for="medical_test_cost" class="sr-only">Giá tiền</label>
+                <input type="text" class="form-control" name="medical_test_cost" id="medical_test_cost" placeholder="Nhập giá tiền" 
+                {% if doctor.settingsservice.medical_test_cost %}
+                    value="{{ doctor.settingsservice.medical_test_cost }}"
+                {% endif %}>
+                <small id="alert_medical_test_cost"  class="text-muted" style="color: #d9534f !important;"></small>
+            </div>
+            
+        </div>
+
+        <div class="form-inline">
+            <div class="form-check my-3">
                 <input class="form-check-input" type="checkbox" id="password" name="password" 
                 {% if doctor.settingsservice.password %}
                     checked
@@ -136,6 +157,12 @@ $(document).ready(function(){
   } else{
     $("#endoscopy_cost").prop("disabled",true);
   }
+  //  check whenther medical_test enabled or not
+  if($("#medical_test").prop("checked")){
+    $("#medical_test_cost").prop("disabled",false);
+  } else{
+    $("#medical_test_cost").prop("disabled",true);
+  }
   //  check whenther password protect enabled or not
   if($("#password").prop("checked")){
     $("#password_field").prop("disabled",false);
@@ -161,6 +188,15 @@ $(document).ready(function(){
     }
   }); // end click
 
+  // enable medical_test service
+  $("#medical_test").click(function(){
+    if($("#medical_test").prop("checked")){
+      $("#medical_test_cost").prop("disabled",false);
+    } else{
+      $("#medical_test_cost").prop("disabled",true);
+    }
+  }); // end click
+
   // enable passwrod protect service
   $("#password").click(function(){
     if($("#password").prop("checked")){
@@ -175,6 +211,7 @@ $(document).ready(function(){
     var valid = true;
     var medical_ultrasonography_cost = $("#medical_ultrasonography_cost").val();
     var endoscopy_cost = $("#endoscopy_cost").val();
+    var medical_test_cost = $("#medical_test_cost").val();
     var password_field = $("#password_field").val();
     console.log(medical_ultrasonography_cost);
     console.log(ValidateDigit(""));
@@ -195,6 +232,14 @@ $(document).ready(function(){
         $("#alert_endoscopy_cost").text("Giá trị không hợp lệ!");
       } else{
         $("#alert_endoscopy_cost").text("");
+      }
+    }
+    if ($("#medical_test").prop("checked")){
+      if(medical_test_cost !== "" && !ValidateDigit(medical_test_cost)){
+        valid &= false;
+        $("#alert_medical_test_cost").text("Giá trị không hợp lệ!");
+      } else{
+        $("#alert_medical_test_cost").text("");
       }
     }
 

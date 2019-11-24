@@ -85,6 +85,8 @@ def settings_service(request,pk_doctor):
                     settings_service.medical_ultrasonography_cost = form.cleaned_data["medical_ultrasonography_cost"]
                     settings_service.endoscopy = form.cleaned_data["endoscopy"]
                     settings_service.endoscopy_cost = form.cleaned_data["endoscopy_cost"]
+                    settings_service.medical_test = form.cleaned_data["medical_test"]
+                    settings_service.medical_test_cost = form.cleaned_data["medical_test_cost"]
                     settings_service.password = form.cleaned_data["password"]
                     settings_service.password_field = form.cleaned_data["password_field"]
 
@@ -113,13 +115,13 @@ def settings_openingtime(request,pk_doctor):
                     settings_time.examination_period = form.cleaned_data["examination_period"]
                     settings_time.enable_voice = form.cleaned_data["enable_voice"]
                     # form.doctor = user.doctor
-                    print("try")
+                    
                     # form.save()
                     settings_time.save()
                 except DoctorProfile.settings_time.RelatedObjectDoesNotExist:
                     form = form.save()
                     form.doctor = user.doctor
-                    print("except")
+                    
                     form.save()
 
                 
@@ -731,6 +733,15 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                         except FileNotFoundError:
                             pass
                     history_edit.endoscopy_file = request.FILES["endoscopy_file"]
+
+                history_edit.medical_test = form.cleaned_data['medical_test']
+                if "medical_test_file" in request.FILES:
+                    if history_edit.medical_test_file:
+                        try:
+                            os.remove(history_edit.medical_test_file.path)
+                        except FileNotFoundError:
+                            pass
+                    history_edit.medical_test_file = request.FILES["medical_test_file"]
                 
                 history_edit.save()
 
@@ -1013,6 +1024,9 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
         if settings_service.endoscopy_cost:
             ws.merge_range("A{}:C{}".format(str(row_drug+3),str(row_drug+3)),"Tiền nội soi (VNĐ)",normal_style)
             ws.merge_range("D{}:G{}".format(str(row_drug+3),str(row_drug+3)),int(settings_service.endoscopy_cost),number_style)
+        if settings_service.medical_test_cost:
+            ws.merge_range("A{}:C{}".format(str(row_drug+4),str(row_drug+4)),"Tiền xét nghiệm (VNĐ)",normal_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+4),str(row_drug+4)),int(settings_service.medical_test_cost),number_style)
 
         # informtation total benefit at worksheet doctor #
         ws1.merge_range("A{}:C{}".format(str(row_drug1+1),str(row_drug1+1)),"Tổng giá bán (VNĐ)",normal_style)
@@ -1030,12 +1044,15 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
         if settings_service.endoscopy_cost:
             ws1.merge_range("A{}:C{}".format(str(row_drug1+5),str(row_drug1+5)),"Tiền nội soi (VNĐ)",normal_style)
             ws1.merge_range("D{}:G{}".format(str(row_drug1+5),str(row_drug1+5)),int(settings_service.endoscopy_cost),number_style)
+        if settings_service.medical_test_cost:
+            ws1.merge_range("A{}:C{}".format(str(row_drug1+6),str(row_drug1+6)),"Tiền xét nghiệm (VNĐ)",normal_style)
+            ws1.merge_range("D{}:G{}".format(str(row_drug1+6),str(row_drug1+6)),int(settings_service.medical_test_cost),number_style)
 
         # information date in worksheet patient #
         day_name={0:"Thứ Hai",1:"Thứ Ba",2:"Thứ Tư",3:"Thứ Năm",4:"Thứ Sáu",5:"Thứ Bảy",6:"Chủ Nhật"}
-        ws.merge_range("H{}:K{}".format(str(row_drug+5),str(row_drug+5)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
+        ws.merge_range("H{}:K{}".format(str(row_drug+6),str(row_drug+6)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
         # information date in worksheet doctor #
-        ws1.merge_range("H{}:K{}".format(str(row_drug1+7),str(row_drug1+7)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
+        ws1.merge_range("H{}:K{}".format(str(row_drug1+8),str(row_drug1+8)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
 
 
         wb.close()

@@ -138,6 +138,9 @@ class SettingsService(models.Model):
     endoscopy = models.BooleanField(default=False)
     endoscopy_cost = models.CharField(max_length=50,blank=True,null=True)
 
+    medical_test = models.BooleanField(default=False)
+    medical_test_cost = models.CharField(max_length=50,blank=True,null=True)
+
     password = models.BooleanField(default=False)
     password_field = models.CharField(max_length=20,blank=True,null=True)
 

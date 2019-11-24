@@ -33,6 +33,7 @@ class SettingsServiceForm(forms.ModelForm):
     ph_meter = forms.BooleanField(required=False)
     medical_ultrasonography = forms.BooleanField(required=False)
     endoscopy = forms.BooleanField(required=False)
+    medical_test = forms.BooleanField(required=False)
     password = forms.BooleanField(required=False)
     
     class Meta:
@@ -111,7 +112,7 @@ class MedicalHistoryFormMix(forms.ModelForm):
 
     class Meta:
         model = MedicalHistory
-        fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","last_menstrual_period","co_tu_cung_ps","note_co_tu_cung_ps","tim_thai_ps","note_tim_thai_ps","can_go_ps","note_con_go_ps","co_tu_cung_pk","note_co_tu_cung_pk","am_dao_pk","note_am_dao_pk","is_waiting","medical_ultrasonography","medical_ultrasonography_file","endoscopy","endoscopy_file","blood_pressure","weight","glycemic","ph_meter"]
+        fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","last_menstrual_period","co_tu_cung_ps","note_co_tu_cung_ps","tim_thai_ps","note_tim_thai_ps","can_go_ps","note_con_go_ps","co_tu_cung_pk","note_co_tu_cung_pk","am_dao_pk","note_am_dao_pk","is_waiting","medical_ultrasonography","medical_ultrasonography_file","endoscopy","endoscopy_file","blood_pressure","weight","glycemic","ph_meter","medical_test","medical_test_file"]
         
     def clean_medical_ultrasonography_file(self):
         file = self.cleaned_data.get("medical_ultrasonography_file")
@@ -120,6 +121,10 @@ class MedicalHistoryFormMix(forms.ModelForm):
 
     def clean_endoscopy_file(self):
         file = self.cleaned_data.get("endoscopy_file")
+        return clean_upload_file(file)
+
+    def clean_medical_test_file(self):
+        file = self.cleaned_data.get("medical_test_file")
         return clean_upload_file(file)
 
 

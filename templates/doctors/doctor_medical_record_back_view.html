@@ -287,6 +287,29 @@
             <span id="alert_endoscopy_file" style="color: red;font-size:15px"></span>
           </div>
     </div>
+    <div class="mb-3" id="medical_test_field"
+            {% if not settings_service.medical_test %}
+            style="display: none;"   
+            {% endif %}>
+        <div class="form-group mb-0">
+            <label for="medical_test">Ghi chú kêt quả xét nghiệm<span class="required-input">*</span></label>
+            <input type="text" class="form-control" id="medical_test" name="medical_test" placeholder=""  value="{{ history_edit.medical_test }}">
+            <span id="alert_medical_test" style="color: #d9534f;font-size:15px"></span>
+        </div>
+        {% if history_edit.medical_test_file %}
+        <a class="btn btn-link view-pdf page-link-mix" href="{{ history_edit.medical_test_file.url }}">Xem kết quả xét nghiệm</a>
+        {% endif %}
+        <div class="form-group">
+            <label for="medical_test_file">Upload lại kết quả xét nghiệm</label>
+            <input
+              type="file"
+              class="form-control-file"
+              id="medical_test_file"
+              name="medical_test_file"
+            />
+            <span id="alert_medical_test_file" style="color: red;font-size:15px"></span>
+          </div>
+    </div>
         <div class="form-group">
             <label for="disease_symptom">Triệu chứng<span class="required-input">*</span></label>
             <textarea class="form-control" id="disease_symptom" name="disease_symptom" rows="3">{{ form.disease_symptom.value }}</textarea>
@@ -398,6 +421,29 @@
                </div>
             </div>    
         {% endif %}
+        {% if settings_service.medical_test %}
+        <div class="info_medical_test">
+        <div class="media pt-3 d-flex justify-content-between">
+            <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+            <strong class="d-block text-gray-dark">Xét nghiệm</strong>
+            {{ history.medical_test }}
+            </p>
+            <p
+            class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right"
+            >
+            {% if history.medical_test_file %}
+            <a
+                class="view-pdf page-link-mix"
+                href="{{ history.medical_test_file.url }}"
+                >Xem file</a
+            >
+            {% else %}
+            <strong class="d-block text-gray-dark">Không có file</strong>
+            {% endif %}
+            </p>
+        </div>
+        </div>
+        {% endif %}
         <div class="media pt-3 info_service" >
             <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
                <strong class="d-block text-gray-dark mb-2">{{ history.service|title }}</strong>
@@ -462,6 +508,7 @@
         var info_ph_meter = $(".info_ph_meter");
         var info_medical_ultrasonography = $(".info_medical_ultrasonography");
         var info_endoscopy = $(".info_endoscopy");
+        var info_medical_test = $(".info_medical_test");
         var info_disease_symptom = $(".info_disease_symptom");
         var info_diagnostis = $(".info_diagnostis");
         var info_bt = $(".info_bt");
@@ -475,6 +522,7 @@
         info_ph_meter.hide();
         info_medical_ultrasonography.hide();
         info_endoscopy.hide();
+        info_medical_test.hide();
         info_disease_symptom.hide();
         info_diagnostis.hide();
         info_bt.hide();
@@ -490,6 +538,7 @@
             var info_ph_meter = $(this).siblings(".info_ph_meter");
             var info_medical_ultrasonography = $(this).siblings(".info_medical_ultrasonography");
             var info_endoscopy = $(this).siblings(".info_endoscopy");
+            var info_medical_test = $(this).siblings(".info_medical_test");
             var info_disease_symptom = $(this).siblings(".info_disease_symptom ");
             var info_diagnostis = $(this).siblings(".info_diagnostis");
             var info_bt = $(this).siblings(".info_bt");
@@ -506,6 +555,7 @@
             info_ph_meter.show();
             info_medical_ultrasonography.show();
             info_endoscopy.show();
+            info_medical_test.show();
             info_disease_symptom.show();
             info_diagnostis.show();
             info_bt.show();
@@ -521,6 +571,7 @@
             info_ph_meter.hide();
             info_medical_ultrasonography.hide();
             info_endoscopy.hide();
+            info_medical_test.hide();
             info_disease_symptom.hide();
             info_diagnostis.hide();
             info_bt.hide();
@@ -606,6 +657,9 @@
 
             var endoscopy_field = $("#endoscopy_field").is(":hidden");
             var endoscopy = $("#endoscopy").val();
+
+            var medical_test_field = $("#medical_test_field").is(":hidden");
+            var medical_test = $("#medical_test").val();
             
             var disease_symptom = $('#disease_symptom').val();
             var diagnostis = $("#diagnostis").val();
@@ -686,6 +740,15 @@
                 } 
             }
 
+            if (!medical_test_field) {
+                if (medical_test === "") {
+                $("#alert_medical_test").text("Bạn chưa nhập thông tin xét nghiệm");
+                valid &= false;
+                } else {
+                $("#alert_medical_test").text("");
+                }
+            }
+
             if(!ValidateDate(last_menstrual_period)){
                 $("#alert_last_menstrual_period").text("Ngày không hợp lệ");
                 valid &= false;
@@ -709,7 +772,7 @@
                 // var iframe = '<object data="'+pdf_link+'" type="application/pdf"><embed src="'+pdf_link+'" type="application/pdf" /></object>'        
                 var iframe = '<object type="application/pdf" data="'+pdf_link+'" width="100%" height="600">No Support</object>'
                 $.createModal({
-                    title:'Kết quả siêu âm',
+                    title:'Xem file',
                     message: iframe,
                     closeButton:true,
                     scrollable:false

@@ -38,6 +38,11 @@ def locate_endoscopy_upload(instance,filename):
     filename = ("%s_%s_%s.pdf")% ((instance.medical_record.full_name).replace(" ","_"),instance.medical_record.phone,instance.date_booked.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Asia/Ho_Chi_Minh")).strftime("%d-%m-%y--%H-%M"))
     return os.path.join("{}/{}/endoscopy/".format(instance.medical_record.pk,instance.pk),filename)
 
+def locate_medical_test_upload(instance,filename):
+    # extension = re.sub(r".*\/","",instance.type_file_endoscopy)
+    filename = ("%s_%s_%s.pdf")% ((instance.medical_record.full_name).replace(" ","_"),instance.medical_record.phone,instance.date_booked.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Asia/Ho_Chi_Minh")).strftime("%d-%m-%y--%H-%M"))
+    return os.path.join("{}/{}/medical_test/".format(instance.medical_record.pk,instance.pk),filename)
+
 
 class MedicalHistory(models.Model):
     service = models.CharField(max_length=30,default="khám phụ sản")
@@ -68,6 +73,9 @@ class MedicalHistory(models.Model):
 
     endoscopy = models.CharField(max_length=200,blank=True,default="")
     endoscopy_file = models.FileField(upload_to=locate_endoscopy_upload,blank=True,null=True)
+
+    medical_test = models.CharField(max_length=200,blank=True,default="")
+    medical_test_file = models.FileField(upload_to=locate_medical_test_upload,blank=True,null=True)
     
     co_tu_cung_ps = models.BooleanField(default=False,help_text='chỉ check khi khám phụ sản')
     note_co_tu_cung_ps = models.CharField(max_length=100,blank=True,default="",help_text='chỉ check khi khám cổ tử cung phụ sản')
