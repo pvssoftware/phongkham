@@ -72,7 +72,7 @@ def upload_medical_ultrasonography_file(request):
         
         if request.user.pk == history.medical_record.doctor.pk:
 
-            history_serializer = UploadMedicalUltrasonographySerializer(history,data=data)
+            history_serializer = UploadMedicalUltrasonographySerializer(history,data=data,context={"request": request})
             
             if history_serializer.is_valid():
                 history_serializer.save()
