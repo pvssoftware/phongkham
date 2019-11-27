@@ -13,6 +13,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 
 from user.models import User, DoctorProfile, SettingsTime
 from .utils import get_days_detail, history_serializer_mix
+from .custom_token import ExpiringTokenAuthentication
 from .models import BookedDay, MedicalRecord, MedicalHistory
 from .serializers import MedicalRecordSerializer, ExaminationPatientsSerializer, UploadMedicalUltrasonographySerializer
 
@@ -33,10 +34,19 @@ class CustomAuthToken(ObtainAuthToken):
             'tenBS':user.doctor.full_name,
             'loaiBS':user.doctor.get_kind_display()
         })
+# delete token when user logout
+@api_view(["POST"])
+@authentication_classes([ExpiringTokenAuthentication])
+def delete_token_logout(request):
+    if request.method == "POST":
+       user = request.user
 
+       token = Token.objects.get(user=user)
+       token.delete()
+       return Response({"alert":"Bạn đã xoá token!"})
 # get list examination patients
 @api_view(["GET"])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 def get_examination_patients(request):
     if request.method == "GET":
         
@@ -51,7 +61,7 @@ def get_examination_patients(request):
 
 # upload medical ultrasonography file
 @api_view(["PATCH"])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 def upload_medical_ultrasonography_file(request):
     if request.method == "PATCH":
         data = request.data
