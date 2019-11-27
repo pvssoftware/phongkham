@@ -643,6 +643,7 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
             except:
                 settings_service = SettingsService.objects.create(doctor=doctor.doctor)
             form = MedicalHistoryFormMix()
+            
             return render(request, "doctors/doctor_medical_record.html", {"mrecord": mrecord, "doctor": doctor, "form": form,"settings_service":settings_service})
 
 # Medical record back view

@@ -4,18 +4,75 @@ from datetime import date, datetime, timedelta
 from  django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import status, generics
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
 
 from user.models import User, DoctorProfile, SettingsTime
 from .utils import get_days_detail, history_serializer_mix
-from .models import BookedDay, MedicalRecord
-from .serializers import MedicalRecordSerializer
+from .models import BookedDay, MedicalRecord, MedicalHistory
+from .serializers import MedicalRecordSerializer, ExaminationPatientsSerializer, UploadMedicalUltrasonographySerializer
 
 
+# create token for user login
+class CustomAuthToken(ObtainAuthToken):
+    def post(self,request,*args,**kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'maPK': user.pk,
+            'dcPK': user.doctor.clinic_address,
+            'soDT': user.doctor.phone,
+            'tenBS':user.doctor.full_name,
+            'loaiBS':user.doctor.get_kind_display()
+        })
 
+# get list examination patients
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+def get_examination_patients(request):
+    if request.method == "GET":
+        
+        today = date.today()
+            
+        date_book = date(year=today.year,month=today.month,day=today.day)
+        
+        examination_list = MedicalHistory.objects.filter(medical_record__doctor__pk=request.user.pk,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
+        examination_serializer = ExaminationPatientsSerializer(examination_list, many=True)
+        return Response(examination_serializer.data)
+    
 
+# upload medical ultrasonography file
+@api_view(["PATCH"])
+@authentication_classes([TokenAuthentication])
+def upload_medical_ultrasonography_file(request):
+    if request.method == "PATCH":
+        data = request.data
+        try:
+            history = MedicalHistory.objects.get(pk=int(data["id"]))
+        except MedicalHistory.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        if request.user.pk == history.medical_record.doctor.pk:
+
+            history_serializer = UploadMedicalUltrasonographySerializer(history,data=data)
+            
+            if history_serializer.is_valid():
+                history_serializer.save()
+                return Response(history_serializer.data)
+
+            return Response(history_serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+# check doctor
 @api_view(["POST"])
 def get_doctor(request):
     if request.method == "POST":
@@ -32,6 +89,7 @@ def get_doctor(request):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+# book schedle examination
 @api_view(["POST"])
 def create_record_ticket(request):
     if request.method == "POST":
