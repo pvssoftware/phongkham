@@ -72,8 +72,8 @@ def password_protect(request,pk_doctor,template_service,template_protect,context
                 if settings_service.password_field == form.cleaned_data["password"]:
                     return render(request,template_service,context)
                 error = "Mật khẩu không hợp lệ."
-
-        return render(request,template_protect,{"pk_doctor":pk_doctor,"error":error})
+        context["error"] = error
+        return render(request,template_protect,context)
 
 # download medical_ultrasonography file
 def download_medical_ultrasonography_file(history):

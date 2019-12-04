@@ -57,7 +57,7 @@ def merge_history(request,pk_doctor,pk_mrecord,pk_history):
 
 def settings_service_protect(request,pk_doctor):
     user = User.objects.get(pk=pk_doctor)
-    return password_protect(request,pk_doctor,"doctors/doctor_settings_service.html","doctors/doctor_settings_service_protect.html",{"doctor":user.doctor})
+    return password_protect(request,pk_doctor,"doctors/doctor_settings_service.html","doctors/doctor_settings_service_protect.html",{"doctor":user.doctor,"pk_doctor":pk_doctor})
 
 # settings services
 
@@ -302,6 +302,16 @@ def medicine_create(request,pk_doctor):
             form = MedicineForm()
             return render(request,'doctors/doctor_medicine_create.html',{'form':form, "form_upload_excel":form_upload_excel,'pk_doctor':pk_doctor})
 
+# medicine edit protect view
+def medicine_edit_protect(request,pk_doctor,pk_medicine):
+    doctor = User.objects.get(pk=pk_doctor)
+    if doctor == request.user:
+        medicine = Medicine.objects.get(pk=pk_medicine)
+        date_expired = lambda x: x.strftime("%d/%m/%Y") if (x) else ""
+        form = MedicineEditForm(initial={"name":medicine.name,'full_name':medicine.full_name,'sale_price':medicine.sale_price,'import_price':medicine.import_price,'date_expired':date_expired(medicine.date_expired)})
+        
+        return password_protect(request,pk_doctor,'doctors/doctor_medicine_edit.html','doctors/doctor_medicine_edit_protect.html',{'form':form,'pk_doctor':pk_doctor,'pk_medicine':pk_medicine,"medicine":medicine})
+
 # Medicine edit view
 def medicine_edit(request,pk_doctor,pk_medicine):
     doctor = User.objects.get(pk=pk_doctor)
@@ -309,6 +319,7 @@ def medicine_edit(request,pk_doctor,pk_medicine):
         medicine = Medicine.objects.get(pk=pk_medicine)
         if request.method == "POST":
             form = MedicineEditForm(request.POST)
+            print(form)
             if form.is_valid():
                 
                 all_medicine = Medicine.objects.filter(doctor=doctor).exclude(pk=pk_medicine)
@@ -329,8 +340,12 @@ def medicine_edit(request,pk_doctor,pk_medicine):
                         medicine.quantity = str(int(form.cleaned_data['add_quantity'])+int(medicine.quantity))
                     medicine.save()
 
-                return redirect(reverse('medicine_edit',kwargs={'pk_doctor':pk_doctor,'pk_medicine':pk_medicine}))
+                # return redirect(reverse('medicine_edit',kwargs={'pk_doctor':pk_doctor,'pk_medicine':pk_medicine}))
+                return render(request,'doctors/doctor_medicine_edit.html',{'form':form,'pk_doctor':pk_doctor,'pk_medicine':pk_medicine, "medicine":medicine})
         else:
+            if doctor.doctor.settingsservice.password:
+                return redirect(reverse("medicine_edit_protect",kwargs={"pk_doctor":pk_doctor,'pk_medicine':pk_medicine}))
+
             date_expired = lambda x: x.strftime("%d/%m/%Y") if (x) else ""
             form = MedicineEditForm(initial={"name":medicine.name,'full_name':medicine.full_name,'sale_price':medicine.sale_price,'import_price':medicine.import_price,'date_expired':date_expired(medicine.date_expired)})
             return render(request,'doctors/doctor_medicine_edit.html',{'form':form,'pk_doctor':pk_doctor,'pk_medicine':pk_medicine,"medicine":medicine})
