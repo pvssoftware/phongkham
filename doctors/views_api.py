@@ -55,7 +55,7 @@ def get_examination_patients(request):
         date_book = date(year=today.year,month=today.month,day=today.day)
         
         examination_list = MedicalHistory.objects.filter(medical_record__doctor__pk=request.user.pk,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
-        examination_serializer = ExaminationPatientsSerializer(examination_list, many=True)
+        examination_serializer = ExaminationPatientsSerializer(examination_list, many=True,context={"request": request})
         return Response(examination_serializer.data)
     
 

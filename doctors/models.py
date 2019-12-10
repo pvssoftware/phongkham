@@ -126,3 +126,4 @@ class PrescriptionDrug(models.Model):
     def __str__(self):
         return self.medicine.name
 
+

@@ -45,7 +45,7 @@ class ExaminationPatientsSerializer(serializers.ModelSerializer):
     date_booked = serializers.DateTimeField(format="%d/%m/%Y %H:%M",input_formats=["%d/%m/%Y %H:%M",])
     class Meta:
         model = MedicalHistory
-        fields = ("id","date_booked","medical_record","ordinal_number")
+        fields = ("id","date_booked","medical_record","ordinal_number","medical_ultrasonography_file")
 # upload medical ultrasonography file
 class UploadMedicalUltrasonographySerializer(serializers.ModelSerializer):
     # link = serializers.SerializerMethodField()
