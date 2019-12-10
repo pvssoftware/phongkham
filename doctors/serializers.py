@@ -34,10 +34,10 @@ class MedicalHistorySerializer(serializers.HyperlinkedModelSerializer):
 
 
 class MedicalRecordExaminationSerializer(serializers.ModelSerializer):
-
+    birth_date = serializers.DateField(format="%Y")
     class Meta:
         model = MedicalRecord
-        fields = ("id","full_name","address","phone")
+        fields = ("id","full_name","sex","birth_date","address","phone")
 # list examination patients
 class ExaminationPatientsSerializer(serializers.ModelSerializer):
 
@@ -45,7 +45,7 @@ class ExaminationPatientsSerializer(serializers.ModelSerializer):
     date_booked = serializers.DateTimeField(format="%d/%m/%Y %H:%M",input_formats=["%d/%m/%Y %H:%M",])
     class Meta:
         model = MedicalHistory
-        fields = ("id","date_booked","medical_record","ordinal_number","medical_ultrasonography_file")
+        fields = ("id","date_booked","ordinal_number","medical_ultrasonography_file","medical_record")
 # upload medical ultrasonography file
 class UploadMedicalUltrasonographySerializer(serializers.ModelSerializer):
     # link = serializers.SerializerMethodField()
