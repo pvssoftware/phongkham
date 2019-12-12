@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 
 
 from  django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
 
 from rest_framework import status, generics
 from rest_framework.decorators import api_view, authentication_classes
@@ -26,7 +27,7 @@ def get_update_app_win(request):
         if float(installer.version) > float(data["version"]):
             return Response({
                 'version':float(installer.version),
-                "link":installer.installer.path
+                "link": settings.DOMAIN + installer.installer.url
             })
         return Response({"alert":"App is up to date!"},status=status.HTTP_406_NOT_ACCEPTABLE)
 # create token for user login
