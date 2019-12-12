@@ -127,3 +127,12 @@ class PrescriptionDrug(models.Model):
         return self.medicine.name
 
 
+class AppWindow(models.Model):
+    installer = models.FileField(upload_to="installer_win/")
+    version = models.CharField(max_length=20)
+    release_date = models.DateField(auto_now=True)
+
+    def __str__(self):
+        return self.version
+
+

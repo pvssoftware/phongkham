@@ -14,10 +14,21 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from user.models import User, DoctorProfile, SettingsTime
 from .utils import get_days_detail, history_serializer_mix
 from .custom_token import ExpiringTokenAuthentication
-from .models import BookedDay, MedicalRecord, MedicalHistory
+from .models import BookedDay, MedicalRecord, MedicalHistory, AppWindow
 from .serializers import MedicalRecordSerializer, ExaminationPatientsSerializer, UploadMedicalUltrasonographySerializer
 
-
+# update app desktop window
+@api_view(["GET"])
+def get_update_app_win(request):
+    if request.method == "GET":
+        data = request.data
+        installer = AppWindow.objects.get(pk=1)
+        if float(installer.version) > float(data["version"]):
+            return Response({
+                'version':float(installer.version),
+                "link":installer.installer.path
+            })
+        return Response({"alert":"App is up to date!"},status=status.HTTP_406_NOT_ACCEPTABLE)
 # create token for user login
 class CustomAuthToken(ObtainAuthToken):
     def post(self,request,*args,**kwargs):
