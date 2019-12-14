@@ -1031,8 +1031,9 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
             
 
         # informtation total cost at worksheet patient #
-        ws.merge_range("A{}:C{}".format(str(row_drug+1),str(row_drug+1)),"Tổng tiền thuốc (VNĐ)",normal_style)
-        ws.merge_range("D{}:G{}".format(str(row_drug+1),str(row_drug+1)),total_cost,number_style)
+        if total_cost >0:
+            ws.merge_range("A{}:C{}".format(str(row_drug+1),str(row_drug+1)),"Tổng tiền thuốc (VNĐ)",normal_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+1),str(row_drug+1)),total_cost,number_style)
 
         if settings_service.medical_ultrasonography_cost:
             ws.merge_range("A{}:C{}".format(str(row_drug+2),str(row_drug+2)),"Tiền siêu âm (VNĐ)",normal_style)
@@ -1076,7 +1077,7 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
         output.seek(0)
 
         response = HttpResponse(output, content_type='application/vnd.ms-excel')
-        response['Content-Disposition'] = 'attachment;filename=test.xlsx'
+        response['Content-Disposition'] = 'attachment;filename=Toa thuoc_{}_{}.xlsx'.format(mrecord.phone,history.date_booked.strftime("%d/%m/%Y"))
 
         return response
 
