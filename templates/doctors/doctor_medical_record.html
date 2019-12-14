@@ -69,7 +69,7 @@
     />
     <div class="form-row">
       <div class="form-group col-md-4">
-        <label for="PARA">PARA<span class="required-input">*</span></label>
+        <label for="PARA">PARA</label>
         <input
           type="text"
           class="form-control"
@@ -81,7 +81,7 @@
       </div>
       <div class="form-group col-md-4">
         <label for="last_menstrual_period"
-          >Kinh cuối<span class="required-input">*</span></label
+          >Kinh cuối</label
         >
         <input
           type="text"
@@ -443,7 +443,7 @@
         </div> -->
     <div class="form-group">
       <label for="disease_symptom"
-        >Triệu chứng<span class="required-input">*</span></label
+        >Triệu chứng</label
       >
       <textarea
         class="form-control"
@@ -458,7 +458,7 @@
     </div>
     <div class="form-group">
       <label for="diagnostis"
-        >Chẩn đoán<span class="required-input">*</span></label
+        >Chẩn đoán</label
       >
       <textarea
         class="form-control"
@@ -493,13 +493,22 @@
       <div class="media pt-3 d-flex justify-content-between">
         <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
           <strong class="d-block text-gray-dark">PARA</strong>
-          {{ history.PARA }}
+          {% if history.PARA %}
+            {{ history.PARA }}
+            {% else %}
+            Bỏ trống
+          {% endif %}
         </p>
         <p
           class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-center"
         >
           <strong class="d-block text-gray-dark">Kinh cuối</strong>
+          {% if history.last_menstrual_period %}
           {{ history.last_menstrual_period | date:"d-m-Y" }}
+            {% else %}
+            Bỏ trống
+          {% endif %}
+          
         </p>
         <p
           class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right"
@@ -545,11 +554,16 @@
       <div class="media pt-3 d-flex justify-content-between">
         <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
           <strong class="d-block text-gray-dark">Siêu âm</strong>
+          {% if history.medical_ultrasonography %}
           {{ history.medical_ultrasonography }}
+          {% else %}
+          Bỏ trống
+          {% endif %}
         </p>
         <p
           class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right"
         >
+        <strong class="d-block text-gray-dark">File siêu âm</strong>
           {% if history.medical_ultrasonography_file %}
           <a
             class="view-pdf page-link-mix"
@@ -557,7 +571,8 @@
             >Xem file</a
           >
           {% else %}
-          <strong class="d-block text-gray-dark">Không có file</strong>
+          Không có file
+
           {% endif %}
         </p>
       </div>
@@ -568,11 +583,17 @@
       <div class="media pt-3 d-flex justify-content-between">
         <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
           <strong class="d-block text-gray-dark">Nội soi</strong>
+          {% if history.endoscopy %}
           {{ history.endoscopy }}
+          {% else %}
+          Bỏ trống
+          {% endif %}
+          
         </p>
         <p
           class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right"
         >
+        <strong class="d-block text-gray-dark">File nội soi</strong>
           {% if history.endoscopy_file %}
           <a
             class="view-pdf page-link-mix"
@@ -580,7 +601,7 @@
             >Xem file</a
           >
           {% else %}
-          <strong class="d-block text-gray-dark">Không có file</strong>
+          Không có file
           {% endif %}
         </p>
       </div>
@@ -591,11 +612,17 @@
       <div class="media pt-3 d-flex justify-content-between">
         <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
           <strong class="d-block text-gray-dark">Xét nghiệm</strong>
+          {% if history.medical_test %}
           {{ history.medical_test }}
+          {% else %}
+          Bỏ trống
+          {% endif %}
+          
         </p>
         <p
           class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right"
-        >
+        > 
+          <strong class="d-block text-gray-dark">File xét nghiệm</strong>
           {% if history.medical_test_file %}
           <a
             class="view-pdf page-link-mix"
@@ -603,7 +630,7 @@
             >Xem file</a
           >
           {% else %}
-          <strong class="d-block text-gray-dark">Không có file</strong>
+          Không có file
           {% endif %}
         </p>
       </div>
@@ -867,24 +894,24 @@
 
       var valid = true;
 
-      if (PARA === "") {
-        $("#alert_PARA").text("Bạn chưa nhập PARA");
-        valid &= false;
-      } else {
-        $("#alert_PARA").text("");
-      }
-      if (disease_symptom === "") {
-        $("#alert_disease_symptom").text("Bạn chưa nhập triệu chứng");
-        valid &= false;
-      } else {
-        $("#alert_disease_symptom").text("");
-      }
-      if (diagnostis === "") {
-        $("#alert_diagnostis").text("Bạn chưa nhập chuẩn đoán");
-        valid &= false;
-      } else {
-        $("#alert_diagnostis").text("");
-      }
+      // if (PARA === "") {
+      //   $("#alert_PARA").text("Bạn chưa nhập PARA");
+      //   valid &= false;
+      // } else {
+      //   $("#alert_PARA").text("");
+      // }
+      // if (disease_symptom === "") {
+      //   $("#alert_disease_symptom").text("Bạn chưa nhập triệu chứng");
+      //   valid &= false;
+      // } else {
+      //   $("#alert_disease_symptom").text("");
+      // }
+      // if (diagnostis === "") {
+      //   $("#alert_diagnostis").text("Bạn chưa nhập chuẩn đoán");
+      //   valid &= false;
+      // } else {
+      //   $("#alert_diagnostis").text("");
+      // }
       if (contraceptive === "Lựa chọn...") {
         $("#alert_contraceptive").text("Bạn chưa nhập cách ngừa thai");
         valid &= false;
@@ -952,12 +979,12 @@
         }
       }
 
-      if (!ValidateDate(last_menstrual_period)) {
-        $("#alert_last_menstrual_period").text("Ngày không hợp lệ");
-        valid &= false;
-      } else {
-        $("#alert_last_menstrual_period").text("");
-      }
+      // if (!ValidateDate(last_menstrual_period)) {
+      //   $("#alert_last_menstrual_period").text("Ngày không hợp lệ");
+      //   valid &= false;
+      // } else {
+      //   $("#alert_last_menstrual_period").text("");
+      // }
 
       if (valid) {
         $(this).prop("disabled",true);
