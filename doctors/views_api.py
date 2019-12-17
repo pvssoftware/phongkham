@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
-
-
+import os
+from django.http import HttpResponse
 from  django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
@@ -11,6 +11,7 @@ from rest_framework.reverse import reverse
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
+# from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from user.models import User, DoctorProfile, SettingsTime
 from .utils import get_days_detail, history_serializer_mix
@@ -18,18 +19,32 @@ from .custom_token import ExpiringTokenAuthentication
 from .models import BookedDay, MedicalRecord, MedicalHistory, AppWindow
 from .serializers import MedicalRecordSerializer, ExaminationPatientsSerializer, UploadMedicalUltrasonographySerializer
 
+# link download file xml
+def download_xml_update(request):
+    installer = AppWindow.objects.get(pk=1)
+    file_path = installer.installer.path
+    
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as iv:
+            response = HttpResponse(iv.read(), content_type="text/xml")
+            response['Content-Disposition'] = 'attachment;filename=healthy_app_' + installer.version+".xml"
+            return response
+
 # update app desktop window
 @api_view(["GET"])
-def get_update_app_win(request):
+def check_version_app(request):
     if request.method == "GET":
         data = request.data
         installer = AppWindow.objects.get(pk=1)
-        if float(installer.version) > float(data["version"]):
+
+        data_version = data['version'].split(".")
+        installer_version = installer.version.split(".")
+        if (data_version[0] != installer_version[0]) or (data_version[3] != installer_version[3]):
             return Response({
-                'version':float(installer.version),
-                "link": settings.DOMAIN + installer.installer.url
-            })
-        return Response({"alert":"App is up to date!"},status=status.HTTP_406_NOT_ACCEPTABLE)
+                "new_version": installer.version
+            },status=status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 # create token for user login
 class CustomAuthToken(ObtainAuthToken):
     def post(self,request,*args,**kwargs):
