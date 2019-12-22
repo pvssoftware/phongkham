@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load staticfiles %}
  {% block content %}
 
  <div class="container">
@@ -14,15 +15,19 @@
       {% for result in results %}
     <div class="media text-muted pt-3">
         <i class="fa fa-square mr-2"
-         {% if result.ob.sex %}
+         {% if result.medical_record.sex %}
           style="font-size: 47px;color: #ff4081 "
           {% else %}
           style="font-size: 47px;color: #304ffe"
           {% endif %}></i>
         <div class="media-body pb-3 mb-0 lh-125 border-bottom border-gray">
           <div class="d-flex justify-content-between align-items-center w-100">
-            <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_view' pk_doctor result.ob.pk %}">{{ result.ob.full_name }}</a></strong>
-            {% if result.ps and result.pk %}
+            <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_view' pk_doctor result.medical_record.pk %}">{{ result.medical_record.full_name }}
+              {% if result.medical_record.phone %}
+                - ĐT: {{ result.medical_record.phone }}
+              {% endif %}
+            </a></strong>
+            <!-- {% if result.ps and result.pk %}
             <span class="page-link-mix">Phụ sản / Phụ khoa</span>
             {% elif result.ps %}
             <span class="page-link-mix">Phụ sản</span>
@@ -30,15 +35,61 @@
             <span class="page-link-mix">Phụ khoa</span>
             {% else %}
             <span class="page-link-mix">Chưa khám</span>
-      {% endif %}
+            {% endif %} -->
+          
           </div>
-          <div>
-              {% if result.ob.sex %}
+          <div class="d-flex justify-content-between align-items-center">
+              <!-- {% if result.ob.sex %}
               <i class="fa fa-female"></i>
               {% else %}
               <i class="fa fa-male"></i>
               {% endif %}
-          <span >{{ result.ob.birth_date |date:"Y"}}</span>
+          <span >{{ result.ob.birth_date |date:"Y"}}</span> -->
+          <span>Lần đi khám thời gian -- <i class="fa fa-calendar"></i> {{ result.date_booked | date:"H:i D. d-m-Y" }}</span>
+          <div>
+          {% if settings_service.medical_ultrasonography %}
+          <div>
+            {% if result.medical_ultrasonography_file %}
+            <a
+              class="view-pdf page-link-mix"
+              href="{{ result.medical_ultrasonography_file.url }}"
+              >Xem file siêu âm</a
+            >
+            {% else %}
+            Không có file siêu âm
+            {% endif %}
+          </div>            
+          {% endif %}
+
+          {% if settings_service.endoscopy %}
+          <div>
+            {% if result.endoscopy_file %}
+            <a
+              class="view-pdf page-link-mix"
+              href="{{ result.endoscopy_file.url }}"
+              >Xem file nội soi</a
+            >
+            {% else %}
+            Không có file nội soi
+            {% endif %}
+          </div>
+          {% endif %}
+
+          {% if settings_service.medical_test %}
+          <div>
+            {% if result.medical_test_file %}
+            <a
+              class="view-pdf page-link-mix"
+              href="{{ result.medical_test_file.url }}"
+              >Xem file xét nghiệm</a
+            >
+            {% else %}
+            Không có file xét nghiệm
+            {% endif %}
+          </div>           
+          {% endif %}
+          </div>
+          
           </div>
         </div>
     </div>
@@ -50,5 +101,29 @@
        
          
  </div>
-
+ <script src="{% static 'js/easy-modal-plugin.js' %}"></script>
+<script>
+$(document).ready(function(){
+  // modal plugin
+  $(function() {
+      $(".view-pdf").on("click", function() {
+        var pdf_link = $(this).attr("href");
+        console.log(pdf_link);
+        // var iframe = '<div class="iframe-container"><iframe src="'+pdf_link+'"></iframe></div>'
+        // var iframe = '<object data="'+pdf_link+'" type="application/pdf"><embed src="'+pdf_link+'" type="application/pdf" /></object>'
+        var iframe =
+          '<object type="application/pdf" data="' +
+          pdf_link +
+          '" width="100%" height="600">No Support</object>';
+        $.createModal({
+          title: "Xem file",
+          message: iframe,
+          closeButton: true,
+          scrollable: false
+        });
+        return false;
+      });
+    }); //end modal
+});//
+</script>
  {% endblock %}

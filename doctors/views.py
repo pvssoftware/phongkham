@@ -224,32 +224,40 @@ def search_navbar(request,pk_doctor):
         if form.is_valid():
             search_value = form.cleaned_data['search_navbar']
 
+            # try:
+            #     results = []
+            #     date_obj = datetime.strptime(search_value,'%d/%m/%Y')
+            #     mrecords = MedicalRecord.objects.filter(doctor=user)
+            #     if mrecords.count() > 0:
+            #         for mrecord in mrecords:
+            #             if mrecord.medicalhistory_set.all().filter(date__date=date_obj):
+            #                 results.append(mrecord)
+            # except ValueError:
+            #     results = MedicalRecord.objects.filter(Q(doctor=user),Q (full_name__icontains=form.cleaned_data['search_navbar']))
+                
+            # object_list = []
+            # for ob in results:
+            #     o = {"ob":ob}
+            #     if ob.medicalhistory_set.all():
+            #         for history in ob.medicalhistory_set.all():
+            #             if history.service == "khám phụ sản":
+            #                 o['ps']  = True
+            #             else:
+            #                 o['pk'] = True
+            #     else:
+            #         o['ck'] = True
+            #     object_list.append(o)
+            # results = object_list
+
             try:
-                results = []
+                
                 date_obj = datetime.strptime(search_value,'%d/%m/%Y')
-                mrecords = MedicalRecord.objects.filter(doctor=user)
-                if mrecords.count() > 0:
-                    for mrecord in mrecords:
-                        if mrecord.medicalhistory_set.all().filter(date__date=date_obj):
-                            results.append(mrecord)
+                results = MedicalHistory.objects.filter(medical_record__doctor=user,date_booked__date=date_obj)
+
             except ValueError:
                 results = MedicalRecord.objects.filter(Q(doctor=user),Q (full_name__icontains=form.cleaned_data['search_navbar']))
-                
-            object_list = []
-            for ob in results:
-                o = {"ob":ob}
-                if ob.medicalhistory_set.all():
-                    for history in ob.medicalhistory_set.all():
-                        if history.service == "khám phụ sản":
-                            o['ps']  = True
-                        else:
-                            o['pk'] = True
-                else:
-                    o['ck'] = True
-                object_list.append(o)
-            results = object_list
-
-            return render(request,'doctors/doctor_search_navbar.html',{"results":results,"pk_doctor":pk_doctor})
+            settings_service = user.doctor.settingsservice
+            return render(request,'doctors/doctor_search_navbar.html',{"results":results,"pk_doctor":pk_doctor,"settings_service":settings_service})
 
 
 # medicine list protect
