@@ -255,7 +255,7 @@ def search_navbar(request,pk_doctor):
                 results = MedicalHistory.objects.filter(medical_record__doctor=user,date_booked__date=date_obj)
 
             except ValueError:
-                results = MedicalRecord.objects.filter(Q(doctor=user),Q (full_name__icontains=form.cleaned_data['search_navbar']))
+                results = MedicalHistory.objects.filter(Q(medical_record__doctor=user),Q(medical_record__full_name__icontains=form.cleaned_data['search_navbar']) | Q(medical_record__phone__icontains=form.cleaned_data['search_navbar']))
             settings_service = user.doctor.settingsservice
             return render(request,'doctors/doctor_search_navbar.html',{"results":results,"pk_doctor":pk_doctor,"settings_service":settings_service})
 
