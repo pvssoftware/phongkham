@@ -16,6 +16,11 @@ from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_co
 from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm
 
 
+# changelog update app
+def changelog_update_app(request):
+    return render(request,"doctors/changelog_update_app.html",{})
+
+
 # merge history search
 def merge_history_search(request,pk_doctor,pk_history):
     user = User.objects.get(pk=pk_doctor)

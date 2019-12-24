@@ -1,8 +1,10 @@
 from datetime import date, datetime, timedelta
 import os
+import xml.etree.ElementTree as ET
 from django.http import HttpResponse
 from  django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
+from django.shortcuts import render
 
 from rest_framework import status, generics
 from rest_framework.decorators import api_view, authentication_classes
@@ -23,12 +25,11 @@ from .serializers import MedicalRecordSerializer, ExaminationPatientsSerializer,
 def download_xml_update(request):
     installer = AppWindow.objects.get(pk=1)
     file_path = installer.installer.path
+    file_xml = ET.parse(file_path)
     
-    if os.path.exists(file_path):
-        with open(file_path, 'rb') as iv:
-            response = HttpResponse(iv.read(), content_type="text/xml")
-            response['Content-Disposition'] = 'attachment;filename=healthy_app_' + installer.version+".xml"
-            return response
+    xml_content = ET.tostring(file_xml.getroot(),encoding='unicode')
+    return render(request,"doctors/xml_update_app.html",{"xml_content":xml_content})
+    
 
 # update app desktop window
 @api_view(["GET"])
