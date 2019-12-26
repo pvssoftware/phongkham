@@ -246,7 +246,7 @@
             {% endif %}
         >
         <div class="form-group mb-0">
-            <label for="medical_ultrasonography">Ghi chú kêt quả siêu âm<span class="required-input">*</span></label>
+            <label for="medical_ultrasonography">Ghi chú kêt quả siêu âm</label>
             <input type="text" class="form-control" id="medical_ultrasonography" name="medical_ultrasonography" placeholder=""  value="{{ history_edit.medical_ultrasonography }}">
             <span id="alert_medical_ultrasonography" style="color: #d9534f;font-size:15px"></span>
         </div>
@@ -269,7 +269,7 @@
             style="display: none;"   
             {% endif %}>
         <div class="form-group mb-0">
-            <label for="endoscopy">Ghi chú kêt quả nội soi<span class="required-input">*</span></label>
+            <label for="endoscopy">Ghi chú kêt quả nội soi</label>
             <input type="text" class="form-control" id="endoscopy" name="endoscopy" placeholder=""  value="{{ history_edit.endoscopy }}">
             <span id="alert_endoscopy" style="color: #d9534f;font-size:15px"></span>
         </div>
@@ -292,7 +292,7 @@
             style="display: none;"   
             {% endif %}>
         <div class="form-group mb-0">
-            <label for="medical_test">Ghi chú kêt quả xét nghiệm<span class="required-input">*</span></label>
+            <label for="medical_test">Ghi chú kêt quả xét nghiệm</label>
             <input type="text" class="form-control" id="medical_test" name="medical_test" placeholder=""  value="{{ history_edit.medical_test }}">
             <span id="alert_medical_test" style="color: #d9534f;font-size:15px"></span>
         </div>
@@ -746,31 +746,31 @@
                         $("#alert_weight").text("");
                 } 
             }
-            if(!medical_ultrasonography_field){
-                if(medical_ultrasonography ===""){
-                    $("#alert_medical_ultrasonography").text("Bạn chưa nhập thông tin siêu âm");
-                    valid &= false;
-                    } else{
-                        $("#alert_medical_ultrasonography").text("");
-                } 
-            }
-            if(!endoscopy_field){
-                if(endoscopy ===""){
-                    $("#alert_endoscopy").text("Bạn chưa nhập thông tin nội soi");
-                    valid &= false;
-                    } else{
-                        $("#alert_endoscopy").text("");
-                } 
-            }
+            // if(!medical_ultrasonography_field){
+            //     if(medical_ultrasonography ===""){
+            //         $("#alert_medical_ultrasonography").text("Bạn chưa nhập thông tin siêu âm");
+            //         valid &= false;
+            //         } else{
+            //             $("#alert_medical_ultrasonography").text("");
+            //     } 
+            // }
+            // if(!endoscopy_field){
+            //     if(endoscopy ===""){
+            //         $("#alert_endoscopy").text("Bạn chưa nhập thông tin nội soi");
+            //         valid &= false;
+            //         } else{
+            //             $("#alert_endoscopy").text("");
+            //     } 
+            // }
 
-            if (!medical_test_field) {
-                if (medical_test === "") {
-                $("#alert_medical_test").text("Bạn chưa nhập thông tin xét nghiệm");
-                valid &= false;
-                } else {
-                $("#alert_medical_test").text("");
-                }
-            }
+            // if (!medical_test_field) {
+            //     if (medical_test === "") {
+            //     $("#alert_medical_test").text("Bạn chưa nhập thông tin xét nghiệm");
+            //     valid &= false;
+            //     } else {
+            //     $("#alert_medical_test").text("");
+            //     }
+            // }
 
             // if(!ValidateDate(last_menstrual_period)){
             //     $("#alert_last_menstrual_period").text("Ngày không hợp lệ");

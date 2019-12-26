@@ -341,7 +341,7 @@
     >
       <div class="form-group mb-0">
         <label for="medical_ultrasonography"
-          >Ghi chú kêt quả siêu âm<span class="required-input">*</span></label
+          >Ghi chú kêt quả siêu âm</label
         >
         <input
           type="text"
@@ -378,7 +378,7 @@
     >
       <div class="form-group mb-0">
         <label for="endoscopy"
-          >Ghi chú kêt quả nội soi<span class="required-input">*</span></label
+          >Ghi chú kêt quả nội soi</label
         >
         <input
           type="text"
@@ -412,7 +412,7 @@
     >
       <div class="form-group mb-0">
         <label for="medical_test"
-          >Ghi chú kêt quả xét nghiệm<span class="required-input">*</span></label
+          >Ghi chú kêt quả xét nghiệm</label
         >
         <input
           type="text"
@@ -951,33 +951,33 @@
           $("#alert_weight").text("");
         }
       }
-      if (!medical_ultrasonography_field) {
-        if (medical_ultrasonography === "") {
-          $("#alert_medical_ultrasonography").text(
-            "Bạn chưa nhập thông tin siêu âm"
-          );
-          valid &= false;
-        } else {
-          $("#alert_medical_ultrasonography").text("");
-        }
-      }
-      if (!endoscopy_field) {
-        if (endoscopy === "") {
-          $("#alert_endoscopy").text("Bạn chưa nhập thông tin nội soi");
-          valid &= false;
-        } else {
-          $("#alert_endoscopy").text("");
-        }
-      }
+      // if (!medical_ultrasonography_field) {
+      //   if (medical_ultrasonography === "") {
+      //     $("#alert_medical_ultrasonography").text(
+      //       "Bạn chưa nhập thông tin siêu âm"
+      //     );
+      //     valid &= false;
+      //   } else {
+      //     $("#alert_medical_ultrasonography").text("");
+      //   }
+      // }
+      // if (!endoscopy_field) {
+      //   if (endoscopy === "") {
+      //     $("#alert_endoscopy").text("Bạn chưa nhập thông tin nội soi");
+      //     valid &= false;
+      //   } else {
+      //     $("#alert_endoscopy").text("");
+      //   }
+      // }
 
-      if (!medical_test_field) {
-        if (medical_test === "") {
-          $("#alert_medical_test").text("Bạn chưa nhập thông tin xét nghiệm");
-          valid &= false;
-        } else {
-          $("#alert_medical_test").text("");
-        }
-      }
+      // if (!medical_test_field) {
+      //   if (medical_test === "") {
+      //     $("#alert_medical_test").text("Bạn chưa nhập thông tin xét nghiệm");
+      //     valid &= false;
+      //   } else {
+      //     $("#alert_medical_test").text("");
+      //   }
+      // }
 
       // if (!ValidateDate(last_menstrual_period)) {
       //   $("#alert_last_menstrual_period").text("Ngày không hợp lệ");
