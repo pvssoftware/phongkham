@@ -31,6 +31,7 @@ class MedicalRecord(models.Model):
 def locate_medical_ultrasonography_upload(instance,filename):
     # extension = re.sub(r".*\/","",instance.type_file_medical_ultrasonography)
     filename = ("%s_%s_%s.pdf")% ((instance.medical_record.full_name).replace(" ","_"),instance.medical_record.phone, instance.date_booked.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Asia/Ho_Chi_Minh")).strftime("%d-%m-%y--%H-%M"))
+    print(instance)
     return os.path.join("{}/{}/medical_ultrasonography/".format(instance.medical_record.pk,instance.pk),filename)
 
 def locate_endoscopy_upload(instance,filename):

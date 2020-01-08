@@ -12,7 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, BookedDay
-from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format
+from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list
 from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm
 
 
@@ -614,18 +614,21 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
                         
 
 
-                    histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
+                    # histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
                     
-                    html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories,"full_booked":full_booked})
+                    # html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories,"full_booked":full_booked})
 
-                    channel_layer = get_channel_layer()
-                    async_to_sync(channel_layer.group_send)(
-                        "patients"+str(pk_doctor),
-                        {
-                            "type":"patient_update",
-                            "html_patients":html_patients,
-                        }
-                    )
+                    # channel_layer = get_channel_layer()
+                    # async_to_sync(channel_layer.group_send)(
+                    #     "patients"+str(pk_doctor),
+                    #     {
+                    #         "type":"patient_update",
+                    #         "html_patients":html_patients,
+                    #     }
+                    # )
+
+                    # update list examination patients
+                    update_examination_patients_list(doctor,date_book,full_booked)
 
                     return redirect(reverse("list_examination",kwargs={"pk_doctor": pk_doctor}))
                 else:
@@ -777,17 +780,21 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                 if history_edit.is_waiting:
                     return redirect(reverse("list_examination",kwargs={"pk_doctor": pk_doctor}))
 
-                histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date.today()).order_by("date_booked")
-                html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories})
+                # histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date.today()).order_by("date_booked")
+                # html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories})
 
-                channel_layer = get_channel_layer()
-                async_to_sync(channel_layer.group_send)(
-                    "patients"+str(pk_doctor),
-                    {
-                        "type":"patient_update",
-                        "html_patients":html_patients,
-                    }
-                )
+                # channel_layer = get_channel_layer()
+                # async_to_sync(channel_layer.group_send)(
+                #     "patients"+str(pk_doctor),
+                #     {
+                #         "type":"patient_update",
+                #         "html_patients":html_patients,
+                #     }
+                # )
+
+                # update list examination patients
+                update_examination_patients_list(doctor,date.today(),False)
+
 
                 return redirect(reverse("prescription_drug", kwargs={"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": history_edit.pk}))
             else:
@@ -851,17 +858,20 @@ def medical_history_del(request,pk_doctor,pk_mrecord,pk_history):
                 except ObjectDoesNotExist:
                     pass
 
-            histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date.today())
-            html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories})
+            # histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date.today())
+            # html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories})
 
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                "patients"+str(pk_doctor),
-                {
-                    "type":"patient_update",
-                    "html_patients":html_patients,
-                }
-            )
+            # channel_layer = get_channel_layer()
+            # async_to_sync(channel_layer.group_send)(
+            #     "patients"+str(pk_doctor),
+            #     {
+            #         "type":"patient_update",
+            #         "html_patients":html_patients,
+            #     }
+            # )
+
+            # update list examination patients
+            update_examination_patients_list(doctor,date.today(),False)
             
             return redirect(reverse("list_examination",kwargs={"pk_doctor": pk_doctor}))
         else:

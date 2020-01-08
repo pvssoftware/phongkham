@@ -46,12 +46,13 @@ class ExaminationPatientsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MedicalHistory
         fields = ("id","date_booked","ordinal_number","medical_ultrasonography_file","medical_record")
+
 # upload medical ultrasonography file
 class UploadMedicalUltrasonographySerializer(serializers.ModelSerializer):
     # link = serializers.SerializerMethodField()
     class Meta:
         model = MedicalHistory
-        fields=("id","medical_ultrasonography","medical_ultrasonography_file",)
+        fields=("id","medical_ultrasonography","medical_ultrasonography_file","is_waiting")
         read_only_fields = ("id",)
 
     # def get_link(self, history):
@@ -77,6 +78,37 @@ class UploadMedicalUltrasonographySerializer(serializers.ModelSerializer):
         instance.medical_ultrasonography_file = file_upload
 
         instance.medical_ultrasonography = validated_data.get("medical_ultrasonography",instance.medical_ultrasonography)
+        instance.save()
+
+        return instance
+
+class CreateUploadMedicalUltrasonographySerializer(ExaminationPatientsSerializer):
+    # birth_date = serializers.DateField(format="%Y")
+    
+    class Meta:
+        model = MedicalHistory
+        fields=("id","medical_ultrasonography","medical_ultrasonography_file","is_waiting","date_booked","medical_record","ordinal_number")
+        read_only_fields = ("id",)
+
+    def get_fields(self, *args, **kwargs):
+        fields = super(CreateUploadMedicalUltrasonographySerializer, self).get_fields(*args, **kwargs)
+        request = self.context.get('request', None)
+        if request and getattr(request, 'method', None) == "POST":
+            fields['medical_record'].required = False
+            
+        return fields
+
+    def create(self,validated_data):
+        file_upload = validated_data.get("medical_ultrasonography_file",None)
+        if file_upload:
+            content_type = file_upload.content_type.split("/")[1]
+            if content_type in settings.CONTENT_TYPES:                
+                if file_upload.size > settings.MAX_UPLOAD_SIZE:
+                    raise ValidationError("File upload của bạn trên 5M.")
+            else:
+                raise ValidationError("Bạn nên upload định dạng PDF.")
+        instance = MedicalHistory.objects.create(medical_record=self.context.get("medical_record"),date_booked=validated_data.get("date_booked",None),medical_ultrasonography=validated_data.get("medical_ultrasonography",None),is_waiting=validated_data.get("is_waiting"),ordinal_number=validated_data.get("ordinal_number",None))
+        instance.medical_ultrasonography_file=file_upload
         instance.save()
 
         return instance

@@ -20,6 +20,23 @@ from .serializers import MedicalHistorySerializer
 from .bulk_sms import send_sms
 from user.models import DoctorProfile, SettingsService
 
+# update list examination patients function
+def update_examination_patients_list(doctor,date_book,full_booked):
+    histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
+                    
+    html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":doctor.pk,"histories":histories,"full_booked":full_booked})
+
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "patients"+str(doctor.pk),
+        {
+            "type":"patient_update",
+            "html_patients":html_patients,
+        }
+    )
+
+
+
 # check date format dd/mm/Y
 def check_date_format(date_string):
     if re.match(r"^([0-2]\d{1}|3[0-1])\/(0\d{1}|1[0-2])\/(19|20)\d{2}$",str(date_string)):
@@ -34,23 +51,25 @@ def history_serializer_mix(data_history,info_day,doctor,date_book,phone):
     if history_serializer.is_valid():
         history=history_serializer.save()
         
-        histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
+        # histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
 
+        # update list examination patients
+        update_examination_patients_list(doctor,date_book,False)
         
         # call send sms
         send_sms(doctor.doctor.full_name,doctor.pk,info_day.current_patients,history.date_booked,phone)
 
         
-        html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":doctor.pk,"histories":histories,"full_booked":False})
+        # html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":doctor.pk,"histories":histories,"full_booked":False})
 
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            "patients"+str(doctor.pk),
-            {
-                "type":"patient_update",
-                "html_patients":html_patients,
-            }
-        )
+        # channel_layer = get_channel_layer()
+        # async_to_sync(channel_layer.group_send)(
+        #     "patients"+str(doctor.pk),
+        #     {
+        #         "type":"patient_update",
+        #         "html_patients":html_patients,
+        #     }
+        # )
 
         return Response({
             "soTT":int(info_day.current_patients),
