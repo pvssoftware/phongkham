@@ -25,10 +25,10 @@ from .serializers import MedicalRecordSerializer, ExaminationPatientsSerializer,
 def download_xml_update(request):
     installer = AppWindow.objects.get(pk=1)
     file_path = installer.installer.path
-    file_xml = ET.parse(file_path)
-    
-    xml_content = ET.tostring(file_xml.getroot(),encoding='unicode')
-    return render(request,"doctors/xml_update_app.html",{"xml_content":xml_content})
+    # file_xml = ET.parse(file_path)
+    # print(file_path)
+    # xml_content = ET.tostring(file_xml.getroot(),encoding='unicode')
+    return HttpResponse(open(file_path).read(),content_type='text/xml')
     
 
 # update app desktop window
