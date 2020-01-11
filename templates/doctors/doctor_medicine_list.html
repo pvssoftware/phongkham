@@ -2,10 +2,10 @@
  {% block content %}
 
 <div class="container">
-    <form action="{% url 'medicine_list' doctor.pk %}" class="search_drug_form" method="post">
+    <form action="{% url 'search_drugs' doctor.pk %}" class="search_drug_form" method="get">
         {% csrf_token %}
         <div class="input-group my-3">
-        <input type="text" class="form-control" placeholder="Nhập tên thuốc hoặc ngày xuất thuốc" id="search_drug" name="search_drug">
+        <input type="text" class="form-control" placeholder="Nhập tên thuốc hoặc ngày xuất thuốc" id="search_drug" name="search_drug" autocomplete="off">
         <div class="input-group-append">
             <button class="btn btn-outline-secondary btn-finished" type="button">Tìm thuốc</button>
         </div>

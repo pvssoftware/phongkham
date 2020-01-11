@@ -298,7 +298,7 @@ def search_drugs(request,pk_doctor):
             search_drug_value = form.cleaned_data["search_drug"]
 
             try:
-                
+                print(1)
                 date_obj = datetime.strptime(search_drug_value,'%d/%m/%Y')
                 all_drugs = PrescriptionDrug.objects.filter(medicine__doctor=doctor,medical_history__date_booked__date=date_obj)
                 name_drugs = all_drugs.values("medicine__full_name").annotate(count_name_drug=Count('medicine__full_name'))
