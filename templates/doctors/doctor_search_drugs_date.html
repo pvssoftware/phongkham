@@ -4,7 +4,7 @@
     <form action="{% url 'search_drugs' pk_doctor %}" class="search_drug_form" method="get">
             
             <div class="input-group my-3">
-            <input type="text" class="form-control" placeholder="Nhập tên thuốc hoặc ngày xuất thuốc" id="search_drug" name="search_drug"
+            <input type="text" class="form-control" placeholder="Nhập tên thuốc hoặc chọn ngày xuất thuốc" id="search_drug" name="search_drug"
             {% if search_drug_value %}
             value="{{ search_drug_value }}"
             {% endif %}>
@@ -14,26 +14,34 @@
             </div>
             
         </form>
-    {% if drug_results %}
+    {% if results %}
         <h3 class="my-3">Kết quả tìm kiếm</h3>
         <div class="">
             <table class="table">
                 <thead>
                     <tr>
                         <th>Tên biệt dược</th>
-                        <th>Số lượng</th>
-                        <th>Giá bán (VNĐ)</th>
-                        <th>Giá mua (VNĐ)</th>
+                        <th>Số lượng xuất</th>
+                        <th>Doanh thu (VNĐ)</th>
+                        <th>Bệnh nhân</th>
                     </tr>
                 </thead>
-                {% for drug in drug_results %}
+                {% for item in results %}
                 <tbody>
                     <tr>
                         <td scope="row"><a
-                            class="page-link-mix" href="{% url 'medicine_edit' pk_doctor drug.pk %}">{{ drug.full_name }}</a></td>
-                        <td>{{ drug.quantity }}</td>
-                        <td class="sale_price">{{ drug.sale_price }}</td>
-                        <td class="import_price">{{ drug.import_price }}</td>
+                            class="page-link-mix" href="{% url 'medicine_edit' pk_doctor item.drugs.0.medicine.pk %}">{{ item.drugs.0.medicine.full_name }}</a></td>
+                        <td class="number">{{ item.quantity }}</td>
+                        <td class="number">{{ item.cost }}</td>
+                        <td class="import_price">
+                            
+                            {% for drug in item.drugs %}
+                            <a class="page-link-mix" href="{% url 'medical_record_edit' pk_doctor drug.medical_history.medical_record.pk %}">{{drug.medical_history.medical_record.full_name}},</a>
+                                
+                            {% endfor %}
+                                
+                        </td>
+                        <td></td>
                     </tr>
                     
                 </tbody>
@@ -46,7 +54,7 @@
 </div>
 <script>
     $(document).ready(function(){
-
+        
         // date picker
         $("#search_drug").datepicker({
         constrainInput: false,
@@ -58,16 +66,16 @@
         monthNamesShort: ["1","2","3","4","5","6","7","8","9","10","11","12"]
         });// end datepicker
 
-        $(".sale_price").each(function() {
+        $(".number").each(function() {
         
             let cost = parseInt($(this).text());
             $(this).text(cost.toLocaleString());
         }); // end each
-        $(".import_price").each(function() {
+        // $(".import_price").each(function() {
         
-            let cost = parseInt($(this).text());
-            $(this).text(cost.toLocaleString());
-        }); // end each
+        //     let cost = parseInt($(this).text());
+        //     $(this).text(cost.toLocaleString());
+        // }); // end each
 
         $(".btn-finished").click(function(){
             var search_drug = $("#search_drug").val();

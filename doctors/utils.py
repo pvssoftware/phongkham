@@ -20,6 +20,13 @@ from .serializers import MedicalHistorySerializer
 from .bulk_sms import send_sms
 from user.models import DoctorProfile, SettingsService
 
+# count and calculate ultrasonography, endoscopy, medical_test
+def count_and_calculate_service(count,settings_service_cost):
+    revenue = 0
+    if settings_service_cost:
+        revenue = count*int(settings_service_cost)
+    return revenue
+
 # update list examination patients function
 def update_examination_patients_list(doctor,date_book,full_booked):
     histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")

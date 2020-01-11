@@ -7,12 +7,12 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponse
 from django.views.generic import DetailView, ListView
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.core.exceptions import ObjectDoesNotExist
 
 from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, BookedDay
-from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list
+from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, count_and_calculate_service
 from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm
 
 
@@ -191,15 +191,29 @@ def cal_benefit(request,pk_doctor):
     if user.doctor:
         form = CalculateBenefitForm(request.GET)
         if form.is_valid():
-            
+            settings_service = user.doctor.settingsservice
+
             from_date = form.cleaned_data['from_date']
             to_date = form.cleaned_data['to_date']
             histories = MedicalHistory.objects.filter(medical_record__doctor = user).filter(date__gte=from_date).filter(date__lte=to_date+timedelta(days=1))
+
+            count_histories = histories.count()
+
+            count_ultrasonography = histories.filter(medical_ultrasonography_file__regex=r'[^-\s]').count()
+            ultrasonography_revenue = count_and_calculate_service(count_ultrasonography,settings_service.medical_ultrasonography_cost)
+            
+            count_endoscopy = histories.filter(endoscopy_file__regex=r'[^-\s]').count()
+            endoscopy_revenue = count_and_calculate_service(count_endoscopy ,settings_service.endoscopy_cost)
+            
+            count_medical_test = histories.filter(medical_test_file__regex=r'[^-\s]').count()
+            medical_test_revenue = count_and_calculate_service(count_medical_test,settings_service.medical_test_cost)
+
             histories_object = []
-            gross_revenue = 0
+            gross_revenue = ultrasonography_revenue + endoscopy_revenue + medical_test_revenue
             accrued_expenses = 0
             for history in histories:
                 his = {"history":history,"revenue":0,"expense":0,"benefit":0}
+                
                 if history.prescriptiondrug_set.all():
                     for pres_drug in history.prescriptiondrug_set.all():
                         gross_revenue += int(pres_drug.cost)
@@ -210,7 +224,7 @@ def cal_benefit(request,pk_doctor):
 
                 histories_object.append(his)
             gross_profit = gross_revenue - accrued_expenses
-            return render(request,'doctors/doctor_cal_benefit.html',{"histories_object":histories_object,"gross_revenue":gross_revenue,"accrued_expense":accrued_expenses,"gross_profit":gross_profit,"pk_doctor":pk_doctor,"form":form})
+            return render(request,'doctors/doctor_cal_benefit.html',{"histories_object":histories_object,"gross_revenue":gross_revenue,"accrued_expense":accrued_expenses,"gross_profit":gross_profit,"pk_doctor":pk_doctor,"form":form,"count_ultrasonography":count_ultrasonography,"ultrasonography_revenue":ultrasonography_revenue,"count_endoscopy":count_endoscopy,"endoscopy_revenue":endoscopy_revenue,"count_medical_test":count_medical_test,"medical_test_revenue":medical_test_revenue,"count_histories":count_histories})
         else:
             if user.doctor.settingsservice.password:
                 return redirect(reverse("cal_benefit_protect",kwargs={"pk_doctor":pk_doctor}))
@@ -283,9 +297,30 @@ def search_drugs(request,pk_doctor):
 
             search_drug_value = form.cleaned_data["search_drug"]
 
-            drug_results = Medicine.objects.filter(Q(name__icontains=search_drug_value)| Q(full_name__icontains=search_drug_value))
+            try:
+                
+                date_obj = datetime.strptime(search_drug_value,'%d/%m/%Y')
+                all_drugs = PrescriptionDrug.objects.filter(medicine__doctor=doctor,medical_history__date_booked__date=date_obj)
+                name_drugs = all_drugs.values("medicine__full_name").annotate(count_name_drug=Count('medicine__full_name'))
+                results = []
+                print(name_drugs)
+                for name in name_drugs:
+                    item = {"cost":0,"quantity":0,"full_name":name["medicine__full_name"]}
+                    drugs = all_drugs.filter(medicine__full_name=name["medicine__full_name"])
+                    for drug in drugs:
+                        item["cost"] += int(drug.cost)
+                        item["quantity"] += int(drug.quantity)
+                    item["drugs"] = drugs
+                    print(item)
 
-            return render(request,'doctors/doctor_search_drugs.html',{"pk_doctor":pk_doctor,"drug_results":drug_results,"search_drug_value":search_drug_value})
+                    results.append(item)
+                print(results)
+                return render(request,"doctors/doctor_search_drugs_date.html",{"pk_doctor":pk_doctor,"results":results,"search_drug_value":search_drug_value})
+            except ValueError:
+
+                drug_results = Medicine.objects.filter(Q(name__icontains=search_drug_value)| Q(full_name__icontains=search_drug_value))
+
+                return render(request,'doctors/doctor_search_drugs.html',{"pk_doctor":pk_doctor,"drug_results":drug_results,"search_drug_value":search_drug_value})
 
 # Medicine create view
 def medicine_create(request,pk_doctor):
