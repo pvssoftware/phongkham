@@ -1,0 +1,358 @@
+{% extends "base_patient.html" %}
+{% load staticfiles %} 
+{% load crispy_forms_tags %}
+
+
+    {% block content %}
+    <nav class="navbar navbar-expand-sm navbar-light bg-light">
+      <a class="navbar-brand" href="#" style="font-family:'Yellowtail', cursive; font-size: 30px;">Healthy Care</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <a class="navbar-text btn btn-link  my-2 my-sm-0 ml-md-auto" type="button" id="bt_logout_navbar" href="{% url 'patient_logout' %}">Đăng xuất</a>
+      </div>
+    
+      
+    </nav>
+  <div class="patient-profile">
+        <h2 class="mb-4 text-center">Xem thông tin bệnh nhân</h2>
+        
+        <table class="table box-shadow rounded">
+          <tbody>
+            <tr class="table-active">
+              <th>Họ tên</th>
+              <td>{{ mrecord.full_name }}</td>
+            </tr>
+            <tr class="table-active">
+              <th>Giới tính</th>
+              {% if mrecord.sex %}
+              <td>Nữ</td>
+              {% else %}
+              <td>Nam</td>
+              {% endif %}
+            </tr>
+            <tr class="table-active">
+              <th>Ngày sinh</th>
+              <td>{{ mrecord.birth_date|date:"Y" }}</td>
+            </tr>
+            <tr class="table-active">
+              <th>Điện thoại</th>
+              <td>{{ mrecord.phone }}</td>
+            </tr>
+            <tr class="table-active">
+              <th>Địa chỉ</th>
+              <td>{{ mrecord.address }}</td>
+            </tr>
+            
+          </tbody>
+        </table>
+      
+
+  {% if mrecord.medicalhistory_set.all %}
+    <h4>Các lần đi khám bệnh</h4>
+  {% for history in mrecord.medicalhistory_set.all %}
+  <div class="box-shadow rounded bg-light p-3 my-3">
+    <h6 style="cursor: pointer" class=" pb-2 mb-0">
+      <i class="fa fa-plus"></i><i class="fa fa-minus"></i> Lần khám vào thời
+      gian -- <i class="fa fa-calendar"></i>
+      {% if history.date_booked %}
+      {{ history.date_booked | date:"H:i D. d-m-Y" }}
+      {% else %}
+      {{ history.date | date:"H:i D. d-m-Y" }}
+      {% endif %}
+    </h6>
+    <div class="info_basic">
+      <div class="media pt-3 d-flex justify-content-between">
+        <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+          <strong class="d-block text-gray-dark">PARA</strong>
+          {% if history.PARA %}
+            {{ history.PARA }}
+            {% else %}
+            Bỏ trống
+          {% endif %}
+        </p>
+        <p
+          class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-center"
+        >
+          <strong class="d-block text-gray-dark">Kinh cuối</strong>
+          {% if history.last_menstrual_period %}
+          {{ history.last_menstrual_period | date:"d-m-Y" }}
+            {% else %}
+            Bỏ trống
+          {% endif %}
+          
+        </p>
+        <p
+          class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right"
+        >
+          <strong class="d-block text-gray-dark">Ngừa thai</strong>
+          {% if history.contraceptive != "Lựa chọn..." %}
+          {{ history.contraceptive }}
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    
+    <div class="media pt-3  info_blood_pressure" id="">
+      <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+        <strong class="d-block text-gray-dark">Huyết áp</strong>
+        {{ history.blood_pressure }}
+      </p>
+    </div>
+    
+    <div class="media pt-3 info_glycemic">
+      <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+        <strong class="d-block text-gray-dark">Đường huyết</strong>
+        {{ history.glycemic }}
+      </p>
+    </div>
+    
+    <div class="media pt-3  info_weight">
+      <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+        <strong class="d-block text-gray-dark">Cân nặng</strong>
+        {{ history.weight }}
+      </p>
+    </div>
+    
+    <div class="media pt-3 info_ph_meter">
+      <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+        <strong class="d-block text-gray-dark">Độ pH</strong>
+        {{ history.ph_meter }}
+      </p>
+    </div>
+    
+    <div class="info_medical_ultrasonography">
+      <div class="media pt-3 d-flex justify-content-between">
+        <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+          <strong class="d-block text-gray-dark">Siêu âm</strong>
+          {% if history.medical_ultrasonography %}
+          {{ history.medical_ultrasonography }}
+          {% else %}
+          Bỏ trống
+          {% endif %}
+        </p>
+        <p
+          class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right"
+        >
+        <strong class="d-block text-gray-dark">File siêu âm</strong>
+          {% if history.medical_ultrasonography_file %}
+          <a
+            class="view-pdf page-link-mix"
+            href="{{ history.medical_ultrasonography_file.url }}"
+            >Xem file</a
+          >
+          {% else %}
+          Không có file
+
+          {% endif %}
+        </p>
+      </div>
+    </div>
+    
+    
+    <div class="info_endoscopy">
+      <div class="media pt-3 d-flex justify-content-between">
+        <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+          <strong class="d-block text-gray-dark">Nội soi</strong>
+          {% if history.endoscopy %}
+          {{ history.endoscopy }}
+          {% else %}
+          Bỏ trống
+          {% endif %}
+          
+        </p>
+        <p
+          class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right"
+        >
+        <strong class="d-block text-gray-dark">File nội soi</strong>
+          {% if history.endoscopy_file %}
+          <a
+            class="view-pdf page-link-mix"
+            href="{{ history.endoscopy_file.url }}"
+            >Xem file</a
+          >
+          {% else %}
+          Không có file
+          {% endif %}
+        </p>
+      </div>
+    </div>
+    
+    <div class="info_medical_test">
+      <div class="media pt-3 d-flex justify-content-between">
+        <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+          <strong class="d-block text-gray-dark">Xét nghiệm</strong>
+          {% if history.medical_test %}
+          {{ history.medical_test }}
+          {% else %}
+          Bỏ trống
+          {% endif %}
+          
+        </p>
+        <p
+          class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right"
+        > 
+          <strong class="d-block text-gray-dark">File xét nghiệm</strong>
+          {% if history.medical_test_file %}
+          <a
+            class="view-pdf page-link-mix"
+            href="{{ history.medical_test_file.url }}"
+            >Xem file</a
+          >
+          {% else %}
+          Không có file
+          {% endif %}
+        </p>
+      </div>
+    </div>
+    
+
+    <div class="media pt-3 info_service">
+      <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+        <strong class="d-block text-gray-dark mb-2">{{history.service | title }}</strong>
+        {% if history.co_tu_cung_ps %}
+        <p class="mb-1">-Cổ tử cung: {{ history.note_co_tu_cung_ps }}</p>
+        {% endif %} {% if history.tim_thai_ps %}
+        <p class="mb-1">-Tim thai: {{ history.note_tim_thai_ps }}</p>
+        {% endif %} {% if history.can_go_ps %}
+        <p class="mb-1">-Cơn gò: {{ history.note_con_go_ps }}</p>
+        {% endif %} {% if history.co_tu_cung_pk %}
+        <p class="mb-1">-Cổ tử cung: {{ history.note_co_tu_cung_pk }}</p>
+        {% endif %} {% if history.am_dao_pk %}
+        <p class="mb-1">-Âm đạo: {{ history.note_am_dao_pk }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="media pt-3 info_disease_symptom ">
+      <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+        <strong class="d-block text-gray-dark">Triệu chứng</strong>
+        {{ history.disease_symptom }}
+      </p>
+    </div>
+    <div class="media pt-3 info_diagnostis">
+      <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+        <strong class="d-block text-gray-dark">Chẩn đoán</strong>
+        {{ history.diagnostis }}
+      </p>
+    </div>
+    
+  </div>
+  {% endfor %}
+   {% endif %}
+        <p class="mt-5 mb-3 text-center">
+          &copy; Software Foundation Company Limitted SFC 2020
+        </p>
+      
+  </div>
+  <script src="{% static 'js/easy-modal-plugin.js' %}"></script>
+<script>
+  $(document).ready(function(){
+
+    var info_basic = $(".info_basic");
+    var info_service = $(".info_service");
+    var info_blood_pressure = $(".info_blood_pressure");
+    var info_glycemic = $(".info_glycemic");
+    var info_weight = $(".info_weight");
+    var info_ph_meter = $(".info_ph_meter");
+    var info_medical_ultrasonography = $(".info_medical_ultrasonography");
+    var info_endoscopy = $(".info_endoscopy");
+    var info_medical_test = $(".info_medical_test");
+    var info_disease_symptom = $(".info_disease_symptom");
+    var info_diagnostis = $(".info_diagnostis");
+
+    $(".fa-minus").hide();
+    info_basic.hide();
+    info_service.hide();
+    info_blood_pressure.hide();
+    info_glycemic.hide();
+    info_weight.hide();
+    info_ph_meter.hide();
+    info_medical_ultrasonography.hide();
+    info_endoscopy.hide();
+    info_medical_test.hide();
+    info_disease_symptom.hide();
+    info_diagnostis.hide();
+
+    $("body").on("click", "h6", function() {
+      var fa_minus = $(this).children(".fa-minus");
+      var fa_plus = $(this).children(".fa-plus");
+      var info_basic = $(this).next(".info_basic");
+      var info_service = $(this).siblings(".info_service");
+      var info_blood_pressure = $(this).siblings(".info_blood_pressure");
+      var info_glycemic = $(this).siblings(".info_glycemic");
+      var info_weight = $(this).siblings(".info_weight");
+      var info_ph_meter = $(this).siblings(".info_ph_meter");
+      var info_medical_ultrasonography = $(this).siblings(
+        ".info_medical_ultrasonography"
+      );
+      var info_endoscopy = $(this).siblings(".info_endoscopy");
+      var info_medical_test = $(this).siblings(".info_medical_test");
+      var info_disease_symptom = $(this).siblings(".info_disease_symptom ");
+      var info_diagnostis = $(this).siblings(".info_diagnostis");
+
+      if (fa_minus.is(":hidden")) {
+        $(this).addClass("border-bottom border-gray");
+        fa_minus.show();
+        fa_plus.hide();
+        info_basic.show();
+        info_service.show();
+        info_blood_pressure.show();
+        info_glycemic.show();
+        info_weight.show();
+        info_ph_meter.show();
+        info_medical_ultrasonography.show();
+        info_endoscopy.show();
+        info_medical_test.show();
+        info_disease_symptom.show();
+        info_diagnostis.show();
+        
+      } else {
+        $(this).removeClass("border-bottom border-gray");
+        fa_minus.hide();
+        fa_plus.show();
+        info_basic.hide();
+        info_service.hide();
+        info_blood_pressure.hide();
+        info_glycemic.hide();
+        info_weight.hide();
+        info_ph_meter.hide();
+        info_medical_ultrasonography.hide();
+        info_endoscopy.hide();
+        info_medical_test.hide();
+        info_disease_symptom.hide();
+        info_diagnostis.hide();
+        
+      }
+    }); // end click
+
+    // modal plugin
+    $(function() {
+      $(".view-pdf").on("click", function() {
+        var pdf_link = $(this).attr("href");
+        console.log(pdf_link);
+        // var iframe = '<div class="iframe-container"><iframe src="'+pdf_link+'"></iframe></div>'
+        // var iframe = '<object data="'+pdf_link+'" type="application/pdf"><embed src="'+pdf_link+'" type="application/pdf" /></object>'
+        var iframe =
+          '<object type="application/pdf" data="' +
+          pdf_link +
+          '" width="100%" height="600">No Support</object>';
+        $.createModal({
+          title: "Xem file",
+          message: iframe,
+          closeButton: true,
+          scrollable: false
+        });
+        return false;
+      });
+    }); //end modal
+
+  }); // end ready
+
+    
+</script>
+
+
+      {% endblock %}

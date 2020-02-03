@@ -1,3 +1,4 @@
+import re
 from django import forms
 from django.core.exceptions import ValidationError, ObjectDoesNotExist 
 from django.conf import settings
@@ -5,6 +6,27 @@ from user.models import SettingsTime, SettingsService, WeekDay
 from .models import MedicalRecord, MedicalHistory, PrescriptionDrug, Medicine
 from .utils_forms import clean_upload_file
 
+
+
+class PatientLoginForm(forms.Form):
+    phone = forms.CharField(label="Số điện thoại",max_length=14,help_text="Số điện thoại cá nhân.")
+
+    password = forms.CharField(label=("Mật khẩu"),
+        widget=forms.PasswordInput,
+        help_text=("Mật khẩu được cấp bởi bác sĩ khi bệnh nhân khám bệnh."))
+    doctor = forms.CharField(label="Mã phòng khám",max_length=13,help_text="Mã phòng khám mà bệnh nhân đã khám bệnh.")
+
+    class Meta:
+        fields = ("phone","password","doctor")
+
+    def clean_phone(self):
+        phone = self.cleaned_data["phone"]
+        
+        valid_phone = re.match(r"^(0|\+84)(9|3|7|8|5)([0-9]{8})$",phone)
+        if not valid_phone:
+            raise forms.ValidationError('Số điện thoại không hợp lệ.',
+                code='invalid_phone',)
+        return phone
 
 class PasswordProtectForm(forms.Form):
     password = forms.CharField()
@@ -58,11 +80,12 @@ class SearchNavBarForm(forms.Form):
 class MedicalRecordForm(forms.ModelForm):
     sex = forms.CharField()
     birth_date = forms.DateField(input_formats=["%Y"])
+    password = forms.CharField(required=False)
 
     class Meta:
         model = MedicalRecord
         fields = ["full_name", "address", "birth_date",
-                  "sex","phone"]
+                  "sex","phone","password"]
     def __init__(self, *args, **kwargs):
         self.doctor = kwargs.pop('doctor',None)
         self.pk_mrecord = kwargs.pop('pk_mrecord',None)

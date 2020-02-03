@@ -17,7 +17,7 @@
                 >
                 <span id="alert_full_name" style="color: #d9534f;font-size:15px"></span>
             </div>
-            <div class="col-md-3 mb-3">
+            <div class="col-md-2 mb-3">
                 <label for="birth_date">Năm sinh<span class="required-input">*</span></label>
                 <input type="text" id="birth_date" name="birth_date" class="form-control" placeholder="Năm sinh" id="birth_date" autocomplete="off"
                 {% if form.birth_date.value %}
@@ -25,13 +25,23 @@
                 {% endif %}>
                 <span id="alert_birth_date" style="color: #d9534f;font-size:15px"></span>
             </div>
-            <div class="col-md-3 mb-3">
+            <div class="col-md-2 mb-3">
                 <label for="phone">Điện thoại<span class="required-input">*</span></label>
                 <input type="text" id="phone" name="phone" class="form-control" placeholder="Số điện thoại" id="phone"
                 {% if form.phone.value %}
                 value="{{ form.phone.value }}" 
                 {% endif %}>
                 {% for error in form.phone.errors %}
+                <span id="alert_phone" style="color: #d9534f;font-size:13px">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="col-md-2 mb-3">
+                <label for="password">Mật khẩu</label>
+                <input type="text" id="password" name="password" class="form-control" placeholder="Mật khẩu" id="password"
+                {% if form.password.value %}
+                value="{{ form.password.value }}" 
+                {% endif %}>
+                {% for error in form.password.errors %}
                 <span id="alert_phone" style="color: #d9534f;font-size:13px">{{ error }}</span>
                 {% endfor %}
             </div>

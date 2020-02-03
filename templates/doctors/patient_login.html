@@ -1,0 +1,28 @@
+{% extends "base_patient.html" %}
+{% load crispy_forms_tags %}
+
+
+      {% block login %}
+      <div class="patient-login">
+        <h2 class="mb-4 text-center">Xem thông tin bệnh nhân</h2>
+        
+      <form class="" action="{% url 'patient_login' %}" method="POST">
+
+          <h4 class="text-center">Đăng nhập</h4>
+          
+          {% if error %}
+             <h6 class="text-center" style="color: #d9534f;">Thông tin không hợp lệ</h6> 
+          {% endif %}
+                  
+        {% csrf_token %}
+        {{ form | crispy }}
+        <hr class="mb-4" />
+        <button class="btn btn-lg btn-primary btn-block" type="submit">
+          Xác nhận
+        </button>
+        <p class="mt-5 mb-3 text-center">
+          &copy; Software Foundation Company Limitted SFC 2020
+        </p>
+      </form>
+    </div>
+      {% endblock %}

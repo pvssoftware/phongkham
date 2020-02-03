@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, date
 from django.template.loader import render_to_string
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.views.generic import DetailView, ListView
 from django.db.models import Q, Count
 from django.core.exceptions import ObjectDoesNotExist
@@ -13,8 +13,52 @@ from django.core.exceptions import ObjectDoesNotExist
 from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, BookedDay
 from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, count_and_calculate_service
-from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm
+from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm, PatientLoginForm
 
+
+# patient logout view
+def patient_logout(request):
+    try:
+        del request.session['patient_id']
+    except KeyError:
+        pass
+
+    return redirect(reverse_lazy("patient_login"))
+
+# patient profile page
+def patient_profile(request,pk_mrecord):
+    print(type(request.session["patient_id"]))
+    print(type(pk_mrecord))
+    if "patient_id" in request.session and request.session["patient_id"] == int(pk_mrecord):
+        mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
+        return render(request,"doctors/patient_profile.html",{"mrecord":mrecord})
+    raise Http404("Page not found")
+
+# patient login page
+def patient_login(request):
+    if request.method == "POST":
+        form = PatientLoginForm(request.POST)
+        if form.is_valid():
+            phone = form.cleaned_data["phone"]
+            password = form.cleaned_data["password"]
+            doctor_id = form.cleaned_data["doctor"]
+            try:
+                mrecord = MedicalRecord.objects.get(doctor__pk=int(doctor_id),phone=phone)
+                if mrecord.password == password:
+                    request.session["patient_id"] = mrecord.id
+                    request.session.set_expiry(0)
+                    return redirect(reverse("patient_profile",kwargs={"pk_mrecord":mrecord.pk}))
+                else:
+                    form.add_error("password","Bạn nhập sai password.")
+                    return render(request,"doctors/patient_login.html",{"form":form,"error":False})
+            except MedicalRecord.DoesNotExist:
+                return render(request,"doctors/patient_login.html",{"form":form,"error":True})
+        return render(request,"doctors/patient_login.html",{"form":form,"error":False})
+    else:
+        if "patient_id" in request.session:
+            return redirect(reverse("patient_profile",kwargs={"pk_mrecord":request.session["patient_id"]}))
+        form = PatientLoginForm()
+        return render(request,"doctors/patient_login.html",{"form":form,"error":False})
 
 # changelog update app
 def changelog_update_app(request):
@@ -513,13 +557,14 @@ def medical_record_edit(request,pk_doctor,pk_mrecord):
                 mrecord.address = form.address
                 mrecord.sex = form.sex
                 mrecord.phone = form.phone
+                mrecord.password = form.password
                 
                 mrecord.save()
                 return redirect(reverse('medical_record_view',kwargs={"pk_doctor":pk_doctor,"pk_mrecord":pk_mrecord}))
             else:
                 return render(request,"doctors/doctor_medical_record_edit.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord})
         else:
-            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":mrecord.birth_date.year,"address":mrecord.address,"phone":mrecord.phone})
+            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":mrecord.birth_date.year,"address":mrecord.address,"phone":mrecord.phone,"password":mrecord.password})
             return render(request,"doctors/doctor_medical_record_edit.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord})
 # Medical record edit back history view
 def medical_record_edit_back_history(request,pk_doctor,pk_mrecord,pk_history):
@@ -539,6 +584,7 @@ def medical_record_edit_back_history(request,pk_doctor,pk_mrecord,pk_history):
                 mrecord.address = form.address
                 mrecord.sex = form.sex
                 mrecord.phone = form.phone
+                mrecord.password = form.password
                 
                 mrecord.save()
                 return redirect(reverse('medical_record_back_view',kwargs={"pk_doctor":pk_doctor,"pk_mrecord":pk_mrecord,"pk_history":pk_history}))
@@ -546,7 +592,7 @@ def medical_record_edit_back_history(request,pk_doctor,pk_mrecord,pk_history):
                 return render(request,"doctors/doctor_medical_record_edit_back_history.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord,"pk_history":pk_history})
         else:
             birth_date = lambda x: x.year if (x) else ""
-            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":birth_date(mrecord.birth_date),"address":mrecord.address,"phone":mrecord.phone})
+            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":birth_date(mrecord.birth_date),"address":mrecord.address,"phone":mrecord.phone,"password":mrecord.password})
             return render(request,"doctors/doctor_medical_record_edit_back_history.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord,"pk_history":pk_history})
 
 

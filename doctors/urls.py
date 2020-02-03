@@ -1,10 +1,14 @@
 from django.conf.urls import url
-from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_edit_back_history, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit,  medicine_edit_protect, medicine_del, upload_medicine_excel, search_drugs, cal_benefit, cal_benefit_protect, list_examination, settings_openingtime, settings_service, settings_service_protect, create_weekday, delete_weekday, download_medical_ultrasonography, download_endoscopy, merge_history_search, merge_history_confirm, merge_history, changelog_update_app
+from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_edit_back_history, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, final_info, export_final_info_excel, MedicineList, medicine_create, medicine_edit,  medicine_edit_protect, medicine_del, upload_medicine_excel, search_drugs, cal_benefit, cal_benefit_protect, list_examination, settings_openingtime, settings_service, settings_service_protect, create_weekday, delete_weekday, download_medical_ultrasonography, download_endoscopy, merge_history_search, merge_history_confirm, merge_history, changelog_update_app, patient_login, patient_profile, patient_logout
 from .views_api import download_xml_update
 
 
 
 urlpatterns = [
+
+    url(r"^patient-profile/(?P<pk_mrecord>\d+)/$",patient_profile,name="patient_profile"),
+    url(r"^patient-logout/$",patient_logout,name="patient_logout"),
+    url(r"^patient-login/$",patient_login,name="patient_login"),
     url(r"^changelog-update-app/$",changelog_update_app,name="changelog_update_app"),
     url(r"^download-xml-update/$",download_xml_update,name="download_xml_update"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/medical-record-merge/(?P<pk_mrecord>\d+)/medical-history-merge-confirm/(?P<pk_history>\d+)/$",merge_history_confirm,name="merge_history_confirm"),
