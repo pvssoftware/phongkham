@@ -609,7 +609,7 @@ def medical_record_del(request,pk_doctor,pk_mrecord):
 # Medical record view
 def medical_record_view(request, pk_mrecord, pk_doctor):
     doctor = User.objects.get(pk=pk_doctor)
-
+    
     if request.user == doctor:
         mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
         try:

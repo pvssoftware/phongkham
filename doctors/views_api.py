@@ -99,8 +99,9 @@ def get_info_patient(request):
    if request.method == "GET":
 
         data = request.data
+        phone = request.GET.get('phone')
         try:
-           mrecord = MedicalRecord.objects.get(phone=data['phone'],doctor=request.user)
+           mrecord = MedicalRecord.objects.get(phone=phone,doctor=request.user)
         except MedicalRecord.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
