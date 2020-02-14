@@ -168,7 +168,7 @@ def upload_medical_ultrasonography_file(request):
                 return Response({"alert":"Mã bệnh nhân không hợp lệ!!!"},status=status.HTTP_404_NOT_FOUND)
 
         else:
-            mrecord = MedicalRecord.objects.create(doctor=request.user,full_name=data['full_name'],birth_date=date(year=int(data["birth_date"]),month=1,day=1),sex=data['sex'],phone=data['phone'],address=data['address'])
+            mrecord = MedicalRecord.objects.create(doctor=request.user,full_name=data['full_name'],birth_date=date(year=int(data["birth_date"]),month=1,day=1),sex=json_file['sex'],phone=data['phone'],address=data['address'])
         
         try:
             settings_time = request.user.doctor.settings_time
