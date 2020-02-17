@@ -78,6 +78,8 @@ class UploadMedicalUltrasonographySerializer(serializers.ModelSerializer):
         instance.medical_ultrasonography_file = file_upload
 
         instance.medical_ultrasonography = validated_data.get("medical_ultrasonography",instance.medical_ultrasonography)
+
+        instance.is_waiting = self.context.get("is_waiting")
         instance.save()
 
         return instance
