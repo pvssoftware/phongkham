@@ -141,7 +141,7 @@ def upload_medical_ultrasonography_file(request):
             if history_serializer.is_valid():
                 history_serializer.save()
 
-                update_examination_patients_list(request.user,history.date_booked,False)
+                update_examination_patients_list(request.user,date.today(),False)
 
                 history = MedicalHistory.objects.get(pk=history_serializer.data["id"])
                 response_data = CreateUploadMedicalUltrasonographySerializer(history,context={"request": request})
