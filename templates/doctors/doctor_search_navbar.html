@@ -36,6 +36,7 @@
             {% else %}
             <span class="page-link-mix">Chưa khám</span>
             {% endif %} -->
+            <a href="{% url 'export_final_info_excel_patient' pk_doctor result.medical_record.pk result.pk %}" class="page-link-mix">Xem toa thuốc</a>
           
           </div>
           <div class="d-flex justify-content-between align-items-center">

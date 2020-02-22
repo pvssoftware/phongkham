@@ -11,9 +11,9 @@ from django.db.models import Q, Count
 from django.core.exceptions import ObjectDoesNotExist
 
 from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
-from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, BookedDay
+from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, PrescriptionDrugOutStock, BookedDay
 from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, count_and_calculate_service
-from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm, PatientLoginForm
+from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, TakeDrugOutStockForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm, PatientLoginForm
 
 
 # patient logout view
@@ -962,8 +962,26 @@ def medical_history_del(request,pk_doctor,pk_mrecord,pk_history):
 def prescription_drug(request, pk_doctor, pk_mrecord, pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+
         history = MedicalHistory.objects.get(pk=pk_history)
         medicine_list = Medicine.objects.filter(doctor=doctor)
+        if request.method == "POST":
+            form = TakeDrugOutStockForm(request.POST)
+            if form.is_valid():
+                form = form.save(commit=False)
+                try:
+                    drug = history.prescriptiondrugoutstock_set.get(name=form.name)
+                    drug.quantity = form.quantity
+                    drug.dose = form.dose
+                    drug.time_take_medicine = form.time_take_medicine
+                    drug.cost = form.cost
+                    drug.save()
+                except PrescriptionDrugOutStock.DoesNotExist:
+                    form.medical_history = history
+                    form.save()
+
+                return redirect(reverse("prescription_drug", kwargs={"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": pk_history}))
+        
         
         return render(request, "doctors/doctor_prescription.html", {"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": pk_history,"history":history,"medicine_list":medicine_list})
 
@@ -975,7 +993,7 @@ def take_drug(request,pk_doctor,pk_mrecord,pk_history,pk_drug):
     if doctor == request.user:
         drug = Medicine.objects.get(pk=pk_drug)
         if request.method == "POST":
-            form = TakeDrugForm(request.POST)
+            form = TakeDrugForm(request.POST,drug=drug)
             if form.is_valid():
                 history = MedicalHistory.objects.get(pk=pk_history)
                 form = form.save(commit=False)
@@ -983,12 +1001,10 @@ def take_drug(request,pk_doctor,pk_mrecord,pk_history,pk_drug):
                 duplicate = False
                 for pres_drug in history.prescriptiondrug_set.all():
                     if pres_drug.medicine == drug:
-                        if int(form.quantity) >= int(drug.quantity):
-                            pres_drug.quantity = str(int(pres_drug.quantity)+int(drug.quantity))
-                            drug.quantity = "0"
-                        else:
-                            pres_drug.quantity = str(int(pres_drug.quantity)+int(form.quantity))
-                            drug.quantity = str(int(drug.quantity) - int(form.quantity))
+                        
+                        pres_drug.quantity = str(int(pres_drug.quantity)+int(form.quantity))
+                        drug.quantity = str(int(drug.quantity) - int(form.quantity))
+
                         pres_drug.time_take_medicine = form.time_take_medicine
                         pres_drug.dose = form.dose
                         
@@ -998,11 +1014,9 @@ def take_drug(request,pk_doctor,pk_mrecord,pk_history,pk_drug):
                         break
                 
                 if not duplicate:
-                    if int(form.quantity) >= int(drug.quantity):
-                        form.quantity = drug.quantity
-                        drug.quantity = "0"
-                    else:
-                        drug.quantity = str(int(drug.quantity) - int(form.quantity))
+                    
+                    drug.quantity = str(int(drug.quantity) - int(form.quantity))
+
                     form.cost = str(int(drug.sale_price)*int(form.quantity))
                     
                     form.medical_history = history
@@ -1014,6 +1028,8 @@ def take_drug(request,pk_doctor,pk_mrecord,pk_history,pk_drug):
 
                 return redirect(reverse("prescription_drug", kwargs={"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": pk_history}))
 
+            return render(request,'doctors/doctor_take_drug.html',{"drug":drug,"pk_doctor":pk_doctor,"pk_history":pk_history, "pk_mrecord":pk_mrecord,"form":form})  
+
         return render(request,'doctors/doctor_take_drug.html',{"drug":drug,"pk_doctor":pk_doctor,"pk_history":pk_history, "pk_mrecord":pk_mrecord})
 #  remove drug out of prescription drug
 
@@ -1024,6 +1040,16 @@ def remove_drug(request,pk_prescriptiondrug,pk_doctor,pk_mrecord,pk_history):
 
         prescription_drug.medicine.quantity = str(int(prescription_drug.medicine.quantity) + int(prescription_drug.quantity))
         prescription_drug.medicine.save()
+
+        prescription_drug.delete()
+
+        return redirect(reverse("prescription_drug",kwargs={"pk_doctor":pk_doctor,"pk_mrecord":pk_mrecord,"pk_history":pk_history}))
+
+# remove drug out stock out of prescription drug
+def remove_drug_out_stock(request,pk_prescriptiondrugoutstock,pk_doctor,pk_mrecord,pk_history):
+    doctor = User.objects.get(pk=pk_doctor)
+    if doctor == request.user:
+        prescription_drug = PrescriptionDrugOutStock.objects.get(pk=pk_prescriptiondrugoutstock)
 
         prescription_drug.delete()
 
@@ -1110,6 +1136,15 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
             ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),"Mỗi lần "+drug.dose+" viên"+", "+drug.time_take_medicine,normal_style)
             row_drug += 2
             total_cost += int(drug.cost)
+
+        for drug in history.prescriptiondrugoutstock_set.all():
+            ws.merge_range("B{}:F{}".format(str(row_drug),str(row_drug)),str(index)+". "+drug.name,header_style)
+            ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" viên",normal_style)
+            index += 1
+
+            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),"Mỗi lần "+drug.dose+" viên"+", "+drug.time_take_medicine,normal_style)
+            row_drug += 2
+            total_cost += int(drug.cost)
         # information prescription drug worksheet doctor #
         ws1.merge_range("A13:G13","Chỉ định dùng thuốc:",normal_style)
 
@@ -1132,6 +1167,22 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
             ws1.merge_range("I{}:K{}".format(str(row_drug1+2),str(row_drug1+2)),int(drug.medicine.import_price)*int(drug.quantity),number_style)
             row_drug1 += 3
             total_import_price += int(drug.medicine.import_price)*int(drug.quantity)
+
+        for drug in history.prescriptiondrugoutstock_set.all():
+            ws1.merge_range("B{}:F{}".format(str(row_drug1),str(row_drug1)),str(index)+". "+drug.name,header_style)
+            ws1.merge_range("J{}:K{}".format(str(row_drug1),str(row_drug1)),drug.quantity+" viên",normal_style)
+            index += 1
+
+            ws1.merge_range("B{}:K{}".format(str(row_drug1+1),str(row_drug1+1)),"Mỗi lần "+drug.dose+" viên"+", "+drug.time_take_medicine,normal_style)
+
+            ws1.merge_range("B{}:C{}".format(str(row_drug1+2),str(row_drug1+2)),"Giá bán (VNĐ)",normal_style)
+            ws1.merge_range("D{}:F{}".format(str(row_drug1+2),str(row_drug1+2)),int(drug.cost),number_style)
+
+
+            ws1.merge_range("G{}:H{}".format(str(row_drug1+2),str(row_drug1+2)),"Giá mua (VNĐ)",normal_style)
+            ws1.merge_range("I{}:K{}".format(str(row_drug1+2),str(row_drug1+2)),0,number_style)
+            row_drug1 += 3
+            # total_import_price += int(drug.medicine.import_price)*int(drug.quantity)
             
 
         # informtation total cost at worksheet patient #
@@ -1185,4 +1236,89 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
 
         return response
 
+# export excel file just for patient
+def export_final_info_excel_patient(request,pk_mrecord, pk_doctor, pk_history):
+    doctor = User.objects.get(pk=pk_doctor)
+    if doctor == request.user:
+        mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
+        history = MedicalHistory.objects.get(pk=pk_history)
+        settings_service = doctor.doctor.settingsservice
+        output = io.BytesIO()
+        wb = xlsxwriter.Workbook(output,{'remove_timezone': True})
 
+        ws = wb.add_worksheet("Bệnh nhân")
+        ws.fit_to_pages(1,1)
+        ws.set_paper(11)
+
+        # format 
+        header_style = wb.add_format({"bold":True,"font_name":'Times New Roman','font_size':15, 'bold':True,'text_wrap':True,"valign":"vcenter"})
+        normal_style = wb.add_format({"font_name":'Times New Roman','font_size':13,'text_wrap':True,"valign":"vcenter"})
+        number_style = wb.add_format({"font_name":'Times New Roman','font_size':13,"border":1,'text_wrap':True,"align":"center","valign":"vcenter","num_format":'#,##0 ;[Red]General'})
+
+        # information doctor at worksheet patient #
+        ws.merge_range('A2:K2',"Phòng Khám "+(doctor.doctor.get_kind_display()).upper()+" - "+doctor.doctor.full_name.upper(),header_style)
+        ws.merge_range("A3:K3","Địa chỉ: "+doctor.doctor.clinic_address,normal_style)
+        ws.merge_range("A4:I4","Điện thoại đăng ký khám bệnh: "+doctor.doctor.phone,normal_style)
+
+        # artical at worksheet patient #
+        ws.merge_range("E6:F6","TOA THUỐC",header_style)
+
+        # information patient at worksheet patient #
+        ws.merge_range("A9:G9","Họ và tên: "+mrecord.full_name.upper(),header_style)
+        ws.merge_range("I9:K9","Năm sinh: "+str(mrecord.birth_date.year),header_style)
+        ws.merge_range("A11:H11","Địa chỉ: "+mrecord.address,normal_style)
+        ws.merge_range("A12:H12","Chẩn đoán: "+history.diagnostis,normal_style)
+
+        # information prescription drug worksheet patient #
+        ws.merge_range("A13:G13","Chỉ định dùng thuốc:",normal_style)
+
+        row_drug = 14
+        total_cost = 0
+        index = 1
+
+        for drug in history.prescriptiondrug_set.all():
+            ws.merge_range("B{}:F{}".format(str(row_drug),str(row_drug)),str(index)+". "+drug.medicine.full_name,header_style)
+            ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" viên",normal_style)
+            index += 1
+
+            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),"Mỗi lần "+drug.dose+" viên"+", "+drug.time_take_medicine,normal_style)
+            row_drug += 2
+            total_cost += int(drug.cost)
+
+        for drug in history.prescriptiondrugoutstock_set.all():
+            ws.merge_range("B{}:F{}".format(str(row_drug),str(row_drug)),str(index)+". "+drug.name,header_style)
+            ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" viên",normal_style)
+            index += 1
+
+            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),"Mỗi lần "+drug.dose+" viên"+", "+drug.time_take_medicine,normal_style)
+            row_drug += 2
+            total_cost += int(drug.cost)
+        
+        # informtation total cost at worksheet patient #
+        if total_cost >0:
+            ws.merge_range("A{}:C{}".format(str(row_drug+1),str(row_drug+1)),"Tổng tiền thuốc (VNĐ)",normal_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+1),str(row_drug+1)),total_cost,number_style)
+
+        if settings_service.medical_ultrasonography_cost:
+            ws.merge_range("A{}:C{}".format(str(row_drug+2),str(row_drug+2)),"Tiền siêu âm (VNĐ)",normal_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+2),str(row_drug+2)),int(settings_service.medical_ultrasonography_cost),number_style)
+        if settings_service.endoscopy_cost:
+            ws.merge_range("A{}:C{}".format(str(row_drug+3),str(row_drug+3)),"Tiền nội soi (VNĐ)",normal_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+3),str(row_drug+3)),int(settings_service.endoscopy_cost),number_style)
+        if settings_service.medical_test_cost:
+            ws.merge_range("A{}:C{}".format(str(row_drug+4),str(row_drug+4)),"Tiền xét nghiệm (VNĐ)",normal_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+4),str(row_drug+4)),int(settings_service.medical_test_cost),number_style)
+
+        # information date in worksheet patient #
+        day_name={0:"Thứ Hai",1:"Thứ Ba",2:"Thứ Tư",3:"Thứ Năm",4:"Thứ Sáu",5:"Thứ Bảy",6:"Chủ Nhật"}
+        ws.merge_range("H{}:K{}".format(str(row_drug+6),str(row_drug+6)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
+
+
+        wb.close()
+
+        output.seek(0)
+
+        response = HttpResponse(output, content_type='application/vnd.ms-excel')
+        response['Content-Disposition'] = 'attachment;filename=Toa thuoc_{}_{}.xlsx'.format(mrecord.phone,history.date_booked.strftime("%d/%m/%Y"))
+
+        return response

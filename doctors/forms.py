@@ -3,7 +3,7 @@ from django import forms
 from django.core.exceptions import ValidationError, ObjectDoesNotExist 
 from django.conf import settings
 from user.models import SettingsTime, SettingsService, WeekDay
-from .models import MedicalRecord, MedicalHistory, PrescriptionDrug, Medicine
+from .models import MedicalRecord, MedicalHistory, PrescriptionDrug, PrescriptionDrugOutStock, Medicine
 from .utils_forms import clean_upload_file
 
 
@@ -190,7 +190,7 @@ class UploadMedicineForm(forms.Form):
         file_excel = self.cleaned_data.get("file_excel")
         if file_excel:
             if file_excel.name.endswith((".xls",".xlsx")):
-                print("excel")
+                
                 return file_excel
             else:
                 raise ValidationError("The File is not a excel file. Please upload only excel file.")
@@ -208,3 +208,25 @@ class TakeDrugForm(forms.ModelForm):
     class Meta:
         model = PrescriptionDrug
         fields = ["dose", "time_take_medicine", "quantity"]
+
+    def __init__(self, *args, **kwargs):
+        self.drug = kwargs.pop('drug',None)
+        super(TakeDrugForm, self).__init__(*args, **kwargs)
+    def clean_quantity(self):
+        quantity = self.cleaned_data['quantity']
+        if int(quantity) > int(self.drug.quantity):
+            raise forms.ValidationError("Số thuốc trong kho không đủ để thêm vào toa",code="invalid")
+        return quantity
+
+
+class TakeDrugOutStockForm(forms.ModelForm):
+    cost = forms.CharField(required=False)
+    class Meta:
+        model = PrescriptionDrugOutStock
+        fields = ["dose", "time_take_medicine", "quantity","cost","name"]
+
+    def clean_cost(self):
+        cost = self.cleaned_data["cost"]
+        if not cost:
+            cost = "0"
+        return cost

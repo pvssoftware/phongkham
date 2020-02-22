@@ -243,7 +243,7 @@ def upload_medical_ultrasonography_file(request):
 
         else:
             date_booked = datetime.now()
-            ordinal_number = None
+            ordinal_number = "-1"
         
         data_history = {
             # "medical_record":mrecord,

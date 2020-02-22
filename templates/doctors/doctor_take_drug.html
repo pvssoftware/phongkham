@@ -34,19 +34,31 @@
             <div class="col-md-4 form-group">
                 <label for="dose">Liều lượng<span class="required-input">*</span></label>
                 <input type="text" name="dose" class="form-control" id="dose"
-                    placeholder="Mỗi lần dùng bao nhiêu viên?" />
+                    placeholder="Mỗi lần dùng bao nhiêu viên?" 
+                    {% if form.dose.value %} 
+                    value="{{ form.dose.value }}" 
+                    {% endif %}/>
                 <span id="alert_dose" style="color: #d9534f;font-size:15px"></span>
             </div>
             <div class="col-md-4 form-group">
                 <label for="quantity">Số lượng<span class="required-input">*</span></label>
-                <input type="text" name="quantity" class="form-control" id="quantity"
-                    placeholder="Số lượng bao nhiêu?" />
-                <span id="alert_quantity" style="color: #d9534f;font-size:15px"></span>
+                <input type="text" name="quantity" class="form-control" id="quantity" placeholder="Số lượng bao nhiêu?" 
+                {% if form.quantity.value %} 
+                    value="{{ form.quantity.value }}" 
+                {% endif %}/>
+                <span id="alert_quantity" style="color: #d9534f;font-size:15px">                   
+                    {% if form.errors.quantity %}
+                        {{ form.errors.quantity.0 }}
+                    {% endif %}                        
+                </span>
             </div>
             <div class="col-md-4  form-group">
                 <label for="time_take_medicine">Đường dùng và Thời gian<span class="required-input">*</span></label>
                 <input type="text" name="time_take_medicine" class="form-control" id="time_take_medicine"
-                    placeholder="Uống khi nào?" />
+                    placeholder="Uống khi nào?" 
+                    {% if form.time_take_medicine.value %} 
+                    value="{{ form.time_take_medicine.value }}" 
+                    {% endif %}/>
                 <span id="alert_time_take_medicine" style="color: #d9534f;font-size:15px"></span>
             </div>
         </div>
@@ -113,7 +125,7 @@
                 if (parseInt(quantity) === 0) {
                     $(this)
                         .css({ color: "#d9534f" })
-                        .append("<span> ( Thuốc trong kho đã hết! )</span>");
+                        .append("<span> ( Thuốc không có trong kho )</span>");
                     $("#bt_take_drug").attr("disabled", true);
                 } else {
                     $(this)

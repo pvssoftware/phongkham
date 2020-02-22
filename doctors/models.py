@@ -129,6 +129,18 @@ class PrescriptionDrug(models.Model):
         return self.medicine.name
 
 
+class PrescriptionDrugOutStock(models.Model):
+    name = models.CharField(max_length=50)
+    dose = models.CharField(max_length=10)
+    time_take_medicine = models.CharField(max_length=30)
+    quantity = models.CharField(max_length=10)
+    cost = models.CharField(max_length=50,default="0")
+    medical_history = models.ForeignKey(MedicalHistory,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+
 class AppWindow(models.Model):
     installer = models.FileField(upload_to="installer_win/")
     version = models.CharField(max_length=20)

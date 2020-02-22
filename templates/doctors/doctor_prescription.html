@@ -2,8 +2,8 @@
 
 <div class="container">
   <h2 class="mt-3">Kê toa thuốc</h2>
-
-  <div class="input-group mb-3 search_drug_form">
+  <div class="row">
+    <div class="input-group mb-3 search_drug_form col-8">
     <input
       type="text"
       class="form-control"
@@ -17,6 +17,16 @@
       >
     </div>
   </div>
+  <div class="col-4">
+    <!-- Button trigger modal -->
+  <button type="button" class="btn btn-finished" data-toggle="modal" data-target="#exampleModal">
+    Thêm thuốc
+  </button>
+  </div>
+    
+  </div>
+
+  
 
   {% if medicine_list %}
 
@@ -51,7 +61,7 @@
       </tbody>
     </table>
   </div>
-  {% endif %} {% if history.prescriptiondrug_set.all %}
+  {% endif %} {% if history.prescriptiondrug_set.all or history.prescriptiondrugoutstock_set.all %}
   <h6>Danh sách thuốc đã thêm vào toa</h6>
 
   <table class="table text-center">
@@ -83,6 +93,25 @@
       </tr>
     </tbody>
     {% endfor %}
+
+    {% for drug in history.prescriptiondrugoutstock_set.all %}
+    <tbody>
+      <tr>
+        <td scope="row">{{ drug.name }}</td>
+        <td>{{ drug.dose }}</td>
+        <td>{{ drug.quantity }}</td>
+        <td class="cost_drug">{{ drug.cost }}</td>
+        <td>{{ drug.time_take_medicine }}</td>
+        <td>
+          <a
+            class="icon_remove"
+            href="{% url 'remove_drug_out_stock' pk_doctor pk_mrecord pk_history drug.pk %}"
+            ><i class="fa fa-times-circle"></i
+          ></a>
+        </td>
+      </tr>
+    </tbody>
+    {% endfor %}
   </table>
   {% else %}
   <h5 class="mt-3">Chưa thêm thuốc vào toa!</h5>
@@ -106,8 +135,141 @@
   </button>
 </div>
 
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Thêm thuốc (thuốc không có trong kho)</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'prescription_drug' pk_doctor pk_mrecord pk_history %}" id="add_drug_form" method="post">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="name">Tên thuốc<span class="required-input">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              id="name"
+              name="name"
+            />
+            <span id="alert_name" style="color: red;font-size:15px"></span>
+          </div>
+          <div class="form-group">
+            <label for="dose">Liều lượng<span class="required-input">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              id="dose"
+              name="dose"
+            />
+            <span id="alert_dose" style="color: red;font-size:15px"></span>
+          </div>
+          <div class="form-group">
+            <label for="quantity">Số lượng<span class="required-input">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              id="quantity"
+              name="quantity"
+            />
+            <span id="alert_quantity" style="color: red;font-size:15px"></span>
+          </div>
+          <div class="form-group">
+            <label for="time_take_medicine">Cách dùng<span class="required-input">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              id="time_take_medicine"
+              name="time_take_medicine"
+            />
+            <span id="alert_time_take_medicine" style="color: red;font-size:15px"></span>
+          </div>
+          <div class="form-group">
+            <label for="cost">Giá tiền</label>
+            <input
+              type="text"
+              class="form-control"
+              id="cost"
+              name="cost"
+              placeholder="Nhập giá tiền hoặc để trống"
+            />
+            <span id="alert_cost" style="color: red;font-size:15px"></span>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+        <button type="button" class="btn btn-finished submit-form">Thêm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   $(document).ready(function() {
+
+    // validate digital
+    function ValidateDigit(value) {
+      // regex = new RegExp("^[1-9][0-9]*$");
+      regex = new RegExp("^[0-9]*$");
+      var isValid = regex.test(value);
+      return isValid;
+    }
+    // submit form add drug
+    $(".submit-form").click(function(){
+      var name = $("#name").val();
+
+      var dose = $("#dose").val();
+      var time_take_medicine = $("#time_take_medicine").val();
+      var cost = $("#cost").val();
+      var quantity = $("#quantity").val();
+      var valid = true;
+
+      if (name === "") {
+        $("#alert_name").text("Bạn nên nhập tên thuốc");
+        valid &= false;
+      } else {
+        $("#alert_name").text("");
+      }
+      if (dose === "") {
+        $("#alert_dose").text("Bạn nên nhập liều lượng thuốc");
+        valid &= false;
+      } else {
+        $("#alert_dose").text("");
+      }
+      if (time_take_medicine === "") {
+        $("#alert_time_take_medicine").text("Bạn nên nhập cách dùng thuốc");
+        valid &= false;
+      } else {
+        $("#alert_time_take_medicine").text("");
+      }
+      if (quantity === "") {
+        $("#alert_quantity").text("Bạn nên nhập số lượng thuốc");
+        valid &= false;
+      } else {
+        $("#alert_quantity").text("");
+      }
+      if (cost !== "") {
+        if(!ValidateDigit(cost)){
+          $("#alert_cost").text("Bạn nên nhập số tiền hoặc để trống");
+          valid &= false;
+        } else {
+          $("#alert_cost").text("");
+        }
+      } 
+
+      if (valid) {
+        $(this).prop("disabled",true);
+        $("#add_drug_form").submit();
+      }
+    }); // submit form
+
     $(".sale_price").each(function() {
       let cost = parseInt($(this).text());
       $(this).text(cost.toLocaleString());
@@ -118,8 +280,13 @@
     }); // end each
 
     $(".cost_drug").each(function() {
-      let cost = parseInt($(this).text());
+      if ($(this).text()===""){
+        $(this).text("0 VNĐ")
+      } else{
+        let cost = parseInt($(this).text());
       $(this).text(cost.toLocaleString() + " VNĐ");
+      }
+      
     }); // end each
 
     // search drug

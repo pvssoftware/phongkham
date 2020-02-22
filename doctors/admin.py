@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, BookedDay, AppWindow
+from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, PrescriptionDrugOutStock, BookedDay, AppWindow
 
 # Register your models here.
 
@@ -23,6 +23,9 @@ class MedicineAdmin(admin.ModelAdmin):
 class PrescriptionDrugAdmin(admin.ModelAdmin):
     list_display = ["id","medical_history",]
     model = PrescriptionDrug
+class PrescriptionDrugOutStockAdmin(admin.ModelAdmin):
+    list_display = ["id","medical_history",]
+    model = PrescriptionDrugOutStock
 
 class BookedDayAdmin(admin.ModelAdmin):
     list_display = ["doctor","date","max_patients","current_patients"]
@@ -33,6 +36,7 @@ admin.site.register(MedicalRecord,MedicalRecordAdmin)
 admin.site.register(MedicalHistory,MedicalHistoryAdmin)
 admin.site.register(Medicine,MedicineAdmin)
 admin.site.register(PrescriptionDrug,PrescriptionDrugAdmin)
+admin.site.register(PrescriptionDrugOutStock,PrescriptionDrugOutStockAdmin)
 admin.site.register(BookedDay,BookedDayAdmin)
 admin.site.register(AppWindow,AppWindowAdmin)
 
