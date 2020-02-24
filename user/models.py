@@ -27,6 +27,9 @@ class DoctorProfile(models.Model):
     def __str__(self):
         return "{}-{}".format(self.full_name,self.get_kind_display())
 
+class License(models.Model):
+    doctor = models.ForeignKey(DoctorProfile,on_delete=models.CASCADE)
+    license_end = models.DateField()
 
 
 class UserManager(BaseUserManager):
