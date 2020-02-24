@@ -61,7 +61,9 @@
       </tbody>
     </table>
   </div>
-  {% endif %} {% if history.prescriptiondrug_set.all or history.prescriptiondrugoutstock_set.all %}
+  {% endif %}
+
+  {% if history.prescriptiondrug_set.all or history.prescriptiondrugoutstock_set.all %}
   <h6>Danh sách thuốc đã thêm vào toa</h6>
 
   <table class="table text-center">

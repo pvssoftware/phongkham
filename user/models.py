@@ -27,6 +27,8 @@ class DoctorProfile(models.Model):
     def __str__(self):
         return "{}-{}".format(self.full_name,self.get_kind_display())
 
+
+
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
