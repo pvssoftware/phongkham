@@ -5,17 +5,38 @@ from datetime import datetime, timedelta, date
 from django.template.loader import render_to_string
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 from django.views.generic import DetailView, ListView
 from django.db.models import Q, Count
 from django.core.exceptions import ObjectDoesNotExist
 
 from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
+from user.license import check_licenses, check_premium_licenses
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, PrescriptionDrugOutStock, BookedDay
 from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, count_and_calculate_service
 from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, TakeDrugOutStockForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm, PatientLoginForm
 
 
+# check license popup
+def check_license(request,pk_doctor):
+    try:
+        doctor = DoctorProfile.objects.get(user__pk=pk_doctor)
+    except:
+        return JsonResponse({"license":"invalid"})
+    
+    if doctor.license and doctor.license.license_end > date.today():
+        remain_days = (doctor.license.license_end - date.today()).days
+        license = "premium"
+    elif doctor.is_trial and doctor.time_end_trial > date.today():       
+        remain_days = (doctor.time_end_trial - date.today()).days
+        license = "trial"
+    else:
+        remain_days = 0
+        license = "no"
+    
+    return JsonResponse({"license":license,"remain_days":str(remain_days),"license_ultrasound":doctor.license_ultrasound})
+
+    
 # patient logout view
 def patient_logout(request):
     try:
@@ -27,8 +48,7 @@ def patient_logout(request):
 
 # patient profile page
 def patient_profile(request,pk_mrecord):
-    print(type(request.session["patient_id"]))
-    print(type(pk_mrecord))
+    
     if "patient_id" in request.session and request.session["patient_id"] == int(pk_mrecord):
         mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
         return render(request,"doctors/patient_profile.html",{"mrecord":mrecord})
@@ -106,14 +126,18 @@ def merge_history(request,pk_doctor,pk_mrecord,pk_history):
 
 def settings_service_protect(request,pk_doctor):
     user = User.objects.get(pk=pk_doctor)
+    
     return password_protect(request,pk_doctor,"doctors/doctor_settings_service.html","doctors/doctor_settings_service_protect.html",{"doctor":user.doctor,"pk_doctor":pk_doctor})
 
 # settings services
 
 def settings_service(request,pk_doctor):
-    user = User.objects.get(pk=pk_doctor)
-    
-    if user.doctor:
+    user = User.objects.get(pk=pk_doctor)   
+    if user == request.user:
+        # check license
+        if check_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         if request.method == "POST":
             form = SettingsServiceForm(request.POST)
             
@@ -153,7 +177,10 @@ def settings_service(request,pk_doctor):
 # settings opening time
 def settings_openingtime(request,pk_doctor):
     user = User.objects.get(pk=pk_doctor)
-    if user.doctor:
+    if user == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
         if request.method == "POST":
             form = SettingsTimeForm(request.POST)
             
@@ -188,7 +215,10 @@ def settings_openingtime(request,pk_doctor):
 # create weekday
 def create_weekday(request,pk_doctor):
     user = User.objects.get(pk=pk_doctor)
-    if user.doctor:
+    if user == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
         if request.method == "POST":
             form = WeekDayForm(request.POST)
             
@@ -217,6 +247,10 @@ def delete_weekday(request,pk_doctor,pk_weekday):
     user = User.objects.get(pk=pk_doctor)
     day = WeekDay.objects.get(pk=pk_weekday)
     if user == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         day.delete()
         return redirect(reverse('settings_openingtime',kwargs={'pk_doctor':pk_doctor}))
 
@@ -232,7 +266,11 @@ def cal_benefit_protect(request,pk_doctor):
 
 def cal_benefit(request,pk_doctor):
     user = User.objects.get(pk=pk_doctor)
-    if user.doctor:
+    if user == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         form = CalculateBenefitForm(request.GET)
         if form.is_valid():
             settings_service = user.doctor.settingsservice
@@ -282,7 +320,10 @@ def cal_benefit(request,pk_doctor):
 
 def search_navbar(request,pk_doctor):
     user = User.objects.get(pk=pk_doctor)
-    if user.doctor:
+    if user == request.user:
+        # check premium license
+        if check_licenses(request):
+            return render(request,"user/not_license.html",{})
         form = SearchNavBarForm(request.GET)
         if form.is_valid():
             search_value = form.cleaned_data['search_navbar']
@@ -336,6 +377,10 @@ class MedicineList(MedicineMixin,PageLinksMixin):
 def search_drugs(request,pk_doctor):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         form = SearchDrugForm(request.GET)
         if form.is_valid():
 
@@ -370,6 +415,10 @@ def search_drugs(request,pk_doctor):
 def medicine_create(request,pk_doctor):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         form_upload_excel = UploadMedicineForm()
         if request.method == "POST":
             form = MedicineForm(request.POST)
@@ -408,6 +457,10 @@ def medicine_edit_protect(request,pk_doctor,pk_medicine):
 def medicine_edit(request,pk_doctor,pk_medicine):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         medicine = Medicine.objects.get(pk=pk_medicine)
         if request.method == "POST":
             form = MedicineEditForm(request.POST)
@@ -446,6 +499,10 @@ def medicine_edit(request,pk_doctor,pk_medicine):
 def medicine_del(request,pk_doctor,pk_medicine):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         medicine_del = Medicine.objects.get(pk=pk_medicine)
         medicine_del.delete()
 
@@ -455,6 +512,10 @@ def medicine_del(request,pk_doctor,pk_medicine):
 def upload_medicine_excel(request,pk_doctor):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         if request.method == "POST":
             form = UploadMedicineForm(request.POST,request.FILES)
             if form.is_valid():
@@ -520,8 +581,12 @@ class DoctorProfileView(DoctorProfileMixin,PageLinksMixin):
 #  Medical Record create view
 def medical_record_create(request,pk_doctor):
     doctor = User.objects.get(pk=pk_doctor)
-
+    print("expired")
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         if request.method == "POST":
             form = MedicalRecordForm(request.POST,doctor=doctor)
             print(form)
@@ -544,6 +609,10 @@ def medical_record_edit(request,pk_doctor,pk_mrecord):
     doctor = User.objects.get(pk=pk_doctor)
 
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         mrecord  = MedicalRecord.objects.get(pk=pk_mrecord)
         if request.method == "POST":
             form = MedicalRecordForm(request.POST,doctor=doctor,pk_mrecord=pk_mrecord)
@@ -571,6 +640,10 @@ def medical_record_edit_back_history(request,pk_doctor,pk_mrecord,pk_history):
     doctor = User.objects.get(pk=pk_doctor)
 
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         mrecord  = MedicalRecord.objects.get(pk=pk_mrecord)
         if request.method == "POST":
             form = MedicalRecordForm(request.POST,doctor=doctor,pk_mrecord=pk_mrecord)
@@ -601,6 +674,10 @@ def medical_record_edit_back_history(request,pk_doctor,pk_mrecord,pk_history):
 def medical_record_del(request,pk_doctor,pk_mrecord):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         mrecord_del = MedicalRecord.objects.get(pk=pk_mrecord)
         mrecord_del.delete()
         return redirect(reverse("doctor_profile",kwargs={"pk_doctor":pk_doctor}))
@@ -611,6 +688,10 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
     doctor = User.objects.get(pk=pk_doctor)
     
     if request.user == doctor:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
         try:
             settings_time = doctor.doctor.settings_time
@@ -764,6 +845,10 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
 def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         if request.method == "POST":
             form = MedicalHistoryFormMix(request.POST,request.FILES)
             if form.is_valid():
@@ -896,6 +981,10 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
 
 # List examination
 def list_examination(request,pk_doctor):
+    # check  license
+    if check_licenses(request):
+        return render(request,"user/not_license.html",{})
+
     doctor = User.objects.get(pk=pk_doctor)
     histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date.today()).order_by("date_booked")
 
@@ -921,6 +1010,10 @@ def download_endoscopy(request,pk_doctor,pk_history):
 def medical_history_del(request,pk_doctor,pk_mrecord,pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         settings_time = doctor.doctor.settings_time
         history_del = MedicalHistory.objects.get(pk=pk_history)
         date_book = history_del.date.date()
@@ -962,6 +1055,9 @@ def medical_history_del(request,pk_doctor,pk_mrecord,pk_history):
 def prescription_drug(request, pk_doctor, pk_mrecord, pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
 
         history = MedicalHistory.objects.get(pk=pk_history)
         medicine_list = Medicine.objects.filter(doctor=doctor)
@@ -991,6 +1087,10 @@ def take_drug(request,pk_doctor,pk_mrecord,pk_history,pk_drug):
     
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         drug = Medicine.objects.get(pk=pk_drug)
         if request.method == "POST":
             form = TakeDrugForm(request.POST,drug=drug)
@@ -1036,6 +1136,10 @@ def take_drug(request,pk_doctor,pk_mrecord,pk_history,pk_drug):
 def remove_drug(request,pk_prescriptiondrug,pk_doctor,pk_mrecord,pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         prescription_drug = PrescriptionDrug.objects.get(pk=pk_prescriptiondrug)
 
         prescription_drug.medicine.quantity = str(int(prescription_drug.medicine.quantity) + int(prescription_drug.quantity))
@@ -1049,6 +1153,10 @@ def remove_drug(request,pk_prescriptiondrug,pk_doctor,pk_mrecord,pk_history):
 def remove_drug_out_stock(request,pk_prescriptiondrugoutstock,pk_doctor,pk_mrecord,pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         prescription_drug = PrescriptionDrugOutStock.objects.get(pk=pk_prescriptiondrugoutstock)
 
         prescription_drug.delete()
@@ -1059,6 +1167,10 @@ def remove_drug_out_stock(request,pk_prescriptiondrugoutstock,pk_doctor,pk_mreco
 def final_info(request,pk_doctor,pk_mrecord,pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
         history = MedicalHistory.objects.get(pk=pk_history)
         settings_service = doctor.doctor.settingsservice
@@ -1072,6 +1184,10 @@ def final_info(request,pk_doctor,pk_mrecord,pk_history):
 def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
         history = MedicalHistory.objects.get(pk=pk_history)
         settings_service = doctor.doctor.settingsservice
@@ -1240,6 +1356,10 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
 def export_final_info_excel_patient(request,pk_mrecord, pk_doctor, pk_history):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
+        # check license
+        if check_licenses(request):
+            return render(request,"user/not_license.html",{})
+        
         mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
         history = MedicalHistory.objects.get(pk=pk_history)
         settings_service = doctor.doctor.settingsservice

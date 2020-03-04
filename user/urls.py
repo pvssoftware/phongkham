@@ -2,13 +2,16 @@ from django.conf.urls import url
 from django.urls import reverse_lazy
 from django.contrib.auth import views as auth_views
 from django.views.generic import (RedirectView, TemplateView)
-from .views import LoginViewMix, CreateAccount, ActivateAccount, ResendActivationEmail
+from .views import LoginViewMix, CreateAccount, ActivateAccount, ResendActivationEmail, license_page, verify_email
 from .forms import SetPasswordFormMix
 
 
 
 
 urlpatterns = [
+
+    url(r"^verify-email/$",verify_email,name="verify_email"),
+    url(r"^license/$",license_page,name="license"),
     url(r"^login/$",LoginViewMix.as_view(),name="login"),
     url(r'^logout/$',
         auth_views.LogoutView.as_view(),

@@ -43,13 +43,13 @@ class ExpiringTokenAuthentication(TokenAuthentication):
             raise AuthenticationFailed("Invalid Token")
         
         if not token.user.is_active:
-            raise AuthenticationFailed("User is not active")
+            raise AuthenticationFailed("User is not active or expired license.")
 
         # is_expired, token = token_expire_handler(token)
         is_expired = is_token_expired(token)
         if is_expired:
             print("expired")
             token.delete()
-            raise AuthenticationFailed("The Token is expired")
+            raise AuthenticationFailed("The Token is expired.")
         
         return (token.user, token)

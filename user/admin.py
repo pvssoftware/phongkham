@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, DoctorProfile, SettingsTime, SettingsService
+from .models import User, DoctorProfile, SettingsTime, SettingsService, Payment, License
 from .forms import CustomUserChangeForm, CustomUserCreationForm
 
 # Register your models here.
@@ -50,7 +50,19 @@ class SettingsServiceAdmin(admin.ModelAdmin):
 	model = SettingsService
 	list_display = ["doctor",]
 
+class PaymentAdmin(admin.ModelAdmin):
+	model = Payment
+	list_display = ["email","license","order_id"]
+	search_fields = ('email',"order_id")
+
+class LicenseAdmin(admin.ModelAdmin):
+	model = License
+	list_display = ["doctor","license_end"]
+	search_fields = ("doctor",)
+
 admin.site.register(User,CustomUserAdmin)
 admin.site.register(DoctorProfile,DoctorProfileAdmin)
 admin.site.register(SettingsTime,SettingsTimeAdmin)
 admin.site.register(SettingsService,SettingsServiceAdmin)
+admin.site.register(Payment,PaymentAdmin)
+admin.site.register(License,LicenseAdmin)

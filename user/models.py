@@ -1,4 +1,5 @@
 import re
+from datetime import date
 from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -22,15 +23,53 @@ class DoctorProfile(models.Model):
     clinic_address = models.CharField(max_length=70)
     kind = models.CharField(max_length=30, choices=KIND_DOCTOR)
     is_trial = models.BooleanField(default=False)
-    time_start_trial = models.DateField(blank=True,null=True)
+    time_end_trial = models.DateField(blank=True,null=True)
+    license_ultrasound = models.BooleanField(default=False)
 
     def __str__(self):
         return "{}-{}".format(self.full_name,self.get_kind_display())
 
+    def has_license(self):
+        try:
+            license = self.license
+        except:
+            return False
+        
+        return license.license_end > date.today()
+
 class License(models.Model):
-    doctor = models.ForeignKey(DoctorProfile,on_delete=models.CASCADE)
+    doctor = models.OneToOneField(DoctorProfile,on_delete=models.CASCADE,related_name="license")
     license_end = models.DateField()
 
+class Payment(models.Model):
+    email = models.EmailField()
+    order_id = models.CharField(max_length=100,unique=True)
+    amount = models.CharField(max_length=200)
+    order_desc = models.CharField(max_length=100)
+    bank_code = models.CharField(max_length=20,blank=True)
+    success = models.BooleanField(default=False)
+    status = models.IntegerField(default=0)
+    created = models.DateTimeField(auto_now_add=True)
+    license = models.CharField(max_length=50)
+
+    def save(self, *args, **kwargs):
+        # check whether this payment is created or update
+        if self.pk is None:
+            # get datetime string 
+            date_time_string = date.today().strftime("%d%m%y")
+            # get all order id numbers of all payments in one day
+            order_id_list = Payment.objects.filter(created__date=date.today()).values_list("order_id",flat=True)
+            # calculate ordinal_number_string 
+            if order_id_list:
+                ordinal_number = 1 + max([int(i[14:]) for i in order_id_list])
+                ordinal_number_string = (4 - len(str(ordinal_number)))*"0" + str(ordinal_number)
+            else:
+                ordinal_number_string = "0001"
+            # create ticket_id
+            self.order_id = "SFCVNPAY"+date_time_string+ordinal_number_string
+            print(self.order_id)
+
+        super(Payment, self).save(*args, **kwargs)
 
 class UserManager(BaseUserManager):
     use_in_migrations = True

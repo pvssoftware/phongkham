@@ -1,9 +1,9 @@
 {% extends "user/base_user.html" %}
 {% load crispy_forms_tags %}
 
-
       {% block content %}
-      <div class="form-signup">
+      <div class="body-content">
+        <div class="form-signup">
         <h2 class="mb-4 text-center">Đăng ký tài khoản</h2>
         <p class="lead text-center">Nếu bạn đã đăng ký tài khoản nhưng chưa xác nhận qua email hoặc chưa nhận được email xác nhận, xin hãy bấm vào <a href="{% url 'resend_activation' %}">đây để gửi lại email xác nhận.</a></p>
       <form class="" action="{% url 'create_account' %}" method="POST">
@@ -14,9 +14,9 @@
         <button class="btn btn-lg btn-primary btn-block" type="submit">
           Tạo tài khoản
         </button>
-        <p class="mt-5 mb-3 text-center">
-          &copy; Software Foundation Company Limitted SFC 2020
-        </p>
+
       </form>
     </div>
+      </div>
+      
       {% endblock %}

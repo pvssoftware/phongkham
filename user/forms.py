@@ -1,13 +1,28 @@
 import re, logging
-from datetime import date
+from datetime import date,timedelta
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPasswordForm
-from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPasswordForm, AuthenticationForm
+from django.contrib.auth import get_user_model, authenticate
+from django.utils.translation import gettext_lazy as _
 from .utils import ActivationMailFormMixin
 from .models import User, DoctorProfile
 
 logger = logging.getLogger(__name__)
 
+
+class VerifyEmailForm(forms.Form):
+    email = forms.EmailField()
+
+
+class AuthenticationFormMix(AuthenticationForm):
+    def get_invalid_login_error(self):
+        
+        return forms.ValidationError(
+            _("Sai thôg tin đăng nhập hoặc tài khoản hết license."),
+            code='inactive',
+            params={'username': self.username_field.verbose_name},)
+
+    
 
 class CustomUserCreationForm(UserCreationForm):
 
@@ -80,7 +95,7 @@ class UserCreationFormMix(
         else:
             send_mail = False
         
-        user.doctor=DoctorProfile.objects.create(phone= self.cleaned_data['phone'], full_name= self.cleaned_data['full_name'], clinic_address= self.cleaned_data['clinic_address'], kind= self.cleaned_data['kind'],is_trial=True,time_start_trial = date.today())
+        user.doctor=DoctorProfile.objects.create(phone= self.cleaned_data['phone'], full_name= self.cleaned_data['full_name'], clinic_address= self.cleaned_data['clinic_address'], kind= self.cleaned_data['kind'],is_trial=True,time_end_trial = (date.today()+timedelta(days=30)))
         user.save()
         self.save_m2m()
         if send_mail:

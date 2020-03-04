@@ -7,19 +7,31 @@ from django.conf import settings
 from django.shortcuts import render
 
 from rest_framework import status, generics
-from rest_framework.decorators import api_view, authentication_classes
+from rest_framework.decorators import api_view, authentication_classes, renderer_classes
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 # from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from user.models import User, DoctorProfile, SettingsTime
+from user.license import check_licenses, check_premium_licenses
 from .utils import get_days_detail, history_serializer_mix, update_examination_patients_list
 from .custom_token import ExpiringTokenAuthentication,is_token_expired
 from .models import BookedDay, MedicalRecord, MedicalHistory, AppWindow
 from .serializers import MedicalRecordSerializer, ExaminationPatientsSerializer, MedicalRecordExaminationSerializer,UploadMedicalUltrasonographySerializer, CreateUploadMedicalUltrasonographySerializer
+
+
+# update status merchant
+# @api_view(["POST"])
+# @renderer_classes([TemplateHTMLRenderer])
+# def update_status_merchant(request):
+#     if request.method == "POST":
+#         data = request.data
+#         return Response({"user":data['test']},template_name="user/update_status_merchant.html")
+
 
 # link download file xml
 def download_xml_update(request):
@@ -133,7 +145,7 @@ def upload_medical_ultrasonography_file(request):
             history = MedicalHistory.objects.get(pk=int(data["id"]))
         except MedicalHistory.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        
+        print(data)
         if request.user.pk == history.medical_record.doctor.pk:
 
             history_serializer = UploadMedicalUltrasonographySerializer(history,data=data,context={"request": request,"is_waiting":json_file["is_waiting"]})
@@ -244,16 +256,20 @@ def upload_medical_ultrasonography_file(request):
         else:
             date_booked = datetime.now()
             ordinal_number = "-1"
-        
+            
+        if not data['medical_ultrasonography_file']:
+            medical_ultrasonography_file = None
+
         data_history = {
             # "medical_record":mrecord,
             "date_booked":date_booked,
-            "medical_ultrasonography_file":data['medical_ultrasonography_file'],
+            "medical_ultrasonography_file":medical_ultrasonography_file,
             "medical_ultrasonography":data["medical_ultrasonography"],
             "is_waiting":json_file["is_waiting"],
             "ordinal_number":ordinal_number
 
         }
+        print(data_history)
         history_serializer = CreateUploadMedicalUltrasonographySerializer(data=data_history,context={"request": request,"medical_record":mrecord})
         if history_serializer.is_valid():
             history_serializer.save()
@@ -277,6 +293,10 @@ def get_doctor(request):
         data = request.data
         try:
             doctor=User.objects.get(pk=int(data["maBS"]))
+            # check license
+            if not doctor.is_active:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
             if doctor.doctor.settings_time.enable_voice:
                 return Response({
                     "maBS":int(data["maBS"]),
@@ -293,6 +313,11 @@ def create_record_ticket(request):
     if request.method == "POST":
         data = request.data
 
+        doctor = User.objects.get(pk=int(data["maBS"]))
+        # check license
+        if not doctor.is_active:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+            
         date_book = data["ngay"]
         date_book = datetime.strptime(date_book,"%d/%m/%Y")
 
@@ -301,7 +326,6 @@ def create_record_ticket(request):
         if date(day=date_book.day,month=date_book.month,year=date_book.year) < today:
             return Response({"alert":"Nhập ngày không hợp lệ!!!"},status=status.HTTP_406_NOT_ACCEPTABLE)
         
-        doctor = User.objects.get(pk=int(data["maBS"]))
         try:
             settings_time = doctor.doctor.settings_time
         except:

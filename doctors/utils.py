@@ -12,13 +12,12 @@ from rest_framework import status
 from rest_framework.response import Response
 from dateutil.parser import parse
 
-from user.models import User
-
 from .forms import SearchDrugForm, PasswordProtectForm
 from .models import Medicine, MedicalHistory
 from .serializers import MedicalHistorySerializer
 from .bulk_sms import send_sms
-from user.models import DoctorProfile, SettingsService
+from user.models import DoctorProfile, SettingsService, User
+from user.license import check_licenses, check_premium_licenses
 
 # count and calculate ultrasonography, endoscopy, medical_test
 def count_and_calculate_service(count,settings_service_cost):
@@ -88,10 +87,12 @@ def history_serializer_mix(data_history,info_day,doctor,date_book,phone):
 
 # password protect mixin
 def password_protect(request,pk_doctor,template_service,template_protect,context):
+    if check_licenses(request):
+        return render(request,"user/not_license.html",{})
     user = User.objects.get(pk=pk_doctor)
     settings_service = user.doctor.settingsservice
     error = ""
-    if user.doctor:
+    if user == request.user:
         if request.method == "POST":
             form = PasswordProtectForm(request.POST)
             if form.is_valid():
@@ -214,6 +215,10 @@ class PageLinksMixin(ListView):
 
 class DoctorProfileMixin:
     def get(self,request,pk_doctor,*args,**kwargs):
+        # check license
+        if check_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         doctor = User.objects.get(pk=pk_doctor)
         try:
             doctor.doctor.settingsservice
@@ -299,6 +304,10 @@ class MedicineMixin:
     #         return password_protect(request,"doctors/doctor_medicine_list.html","doctors/doctor_medicine_list_protect.html",context)
 
     def get(self,request,pk_doctor,*args,**kwargs):
+        # check premium license
+        if check_premium_licenses(request):
+            return render(request,"user/not_license.html",{})
+
         doctor = User.objects.get(pk=pk_doctor)
 
         if doctor == request.user:
@@ -344,6 +353,10 @@ class MedicineMixin:
     def post(self,request,pk_doctor):
         doctor = User.objects.get(pk=pk_doctor)
         if doctor == request.user:
+            # check premium license
+            if check_premium_licenses(request):
+                return render(request,"user/not_license.html",{})
+
             form = SearchDrugForm(request.POST)
             if form.is_valid():
                 search_drug_value = form.cleaned_data["search_drug"]

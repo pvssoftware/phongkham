@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as ET
-import requests, re
+import requests, re, pytz
 from urllib import request
 from datetime import datetime
 
@@ -35,6 +35,7 @@ def send_sms(tenBS,maPK,soTT,ngayKham,phone):
 
    xml = ET.fromstring(xmlData)
    phone = re.sub(r"^0","84",phone)
+   ngayKham = ngayKham.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Asia/Ho_Chi_Minh"))
    # for child in xml:
    #     print(child.tag)
 
@@ -43,7 +44,7 @@ def send_sms(tenBS,maPK,soTT,ngayKham,phone):
    content = "Bạn đã đặt lịch hẹn thành công bác sỹ "+tenBS+", mã phòng khám "+str(maPK)+", số thứ tự "+soTT+ ", giờ khám " +ngayKham.strftime("%H:%M")+" ngày "+ngayKham.strftime("%d/%m")+". Cảm ơn Quý khách đã sử dụng dịch vụ của chúng tôi. Trân trọng!"
 
    content1 = "Bạn đã đặt lịch hẹn thành công bác sỹ "+tenBS+", mã phòng khám "+str(maPK)+", số thứ tự "+soTT+ ", ngày "+ngayKham.strftime("%d/%m")+". Cảm ơn Quý khách đã sử dụng dịch vụ của chúng tôi. Trân trọng!"
-   now = datetime.now()
+   now = datetime.now().replace(tzinfo=pytz.timezone("Asia/Ho_Chi_Minh"))
    # content1 = "Ban da dat lich hen thanh cong phong kham bac si Nguyen Van A, ma phong kham x, so thu tu xx, gio kham hh:mm ngay dd/mm"+ngayKham.strftime("%d/%m/%Y")
    # print(type(body.find("UserID").text))
    if now < ngayKham:

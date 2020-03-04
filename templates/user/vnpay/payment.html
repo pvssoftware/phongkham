@@ -1,0 +1,167 @@
+{% extends "user/base_user.html" %}
+ 
+ {% block content%}
+ <div class="container">
+  <div class="py-5 text-center">
+    <h2>Checkout form</h2>
+    <p class="lead">Below is an example form built entirely with Bootstrap's form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p>
+  </div>
+
+  <div class="row">
+    <div class="col-md-4 order-md-2 mb-4">
+      <h4 class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted">Đơn hàng</span>
+        <span class="badge badge-secondary badge-pill"></span>
+      </h4>
+      <ul class="list-group mb-3">
+        <li class="list-group-item d-flex justify-content-between lh-condensed">
+          <div>
+            <h6 class="my-0">{{ cart.cart.license }}</h6>
+            <small class="text-muted">{{ cart.cart.order_desc }}</small>
+          </div>
+          <span class="text-muted number">{{ cart.cart.money }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <span>Total (VNĐ)</span>
+          <strong class="number">{{ cart.cart.money }}</strong>
+        </li>
+      </ul>
+
+    </div>
+    <div class="col-md-8 order-md-1">
+      <h4 class="mb-3">Thông tin bác sĩ</h4>
+      <form action="{% url 'payment' %}" id="payment-form" method="post">
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-7 mb-3">
+            <label for="email">Email</label>
+            <input type="email" class="form-control" id="email" placeholder="Email" required name="email" value="{{doctor.user.email}}" readonly>
+            <div class="alert-email" style="color: #d9534f;font-size:15px">
+              
+              {% if form.errors.email %}
+                {{ form.errors.email.0 }}
+              {% endif %}
+                
+            </div>
+          </div>
+          <div class="col-md-5 mb-3">
+            <label for="bank_code">Ngân hàng</label>
+            <select class="custom-select d-block w-100" id="bank_code" name="bank_code">
+                <option value="">Không chọn</option>
+                <option value="NCB"> Ngan hang NCB</option>
+                <option value="AGRIBANK"> Ngan hang Agribank</option>
+                <option value="SCB"> Ngan hang SCB</option>
+                <option value="SACOMBANK">Ngan hang SacomBank</option>
+                <option value="EXIMBANK"> Ngan hang EximBank</option>
+                <option value="MSBANK"> Ngan hang MSBANK</option>
+                <option value="NAMABANK"> Ngan hang NamABank</option>
+                <option value="VNMART"> Vi dien tu VnMart</option>
+                <option value="VIETINBANK">Ngan hang Vietinbank</option>
+                <option value="VIETCOMBANK"> Ngan hang VCB</option>
+                <option value="HDBANK">Ngan hang HDBank</option>
+                <option value="DONGABANK"> Ngan hang Dong A</option>
+                <option value="TPBANK"> Ngân hàng TPBank</option>
+                <option value="OJB"> Ngân hàng OceanBank</option>
+                <option value="BIDV"> Ngân hàng BIDV</option>
+                <option value="TECHCOMBANK"> Ngân hàng Techcombank</option>
+                <option value="VPBANK"> Ngan hang VPBank</option>
+                <option value="MBBANK"> Ngan hang MBBank</option>
+                <option value="ACB"> Ngan hang ACB</option>
+                <option value="OCB"> Ngan hang OCB</option>
+                <option value="IVB"> Ngan hang IVB</option>
+                <option value="VISA"> Thanh toan qua VISA/MASTER</option>
+            </select>
+            <div class="invalid-feedback">
+              Please select a valid country.
+            </div>
+          </div>
+        </div>
+        <table class="table">
+          <tr>
+            <th scope="col">Tên bác sĩ</th>
+            <td>{{ doctor.full_name }}</td>
+          </tr>
+          <tr>
+            <th scope="col">Mã phòng khám</th>
+            <td>{{ doctor.user.pk }}</td>
+          </tr>
+          <tr>
+            <th scope="col">Số điện thoại</th>
+            <td>{{ doctor.phone }}</td>
+          </tr>
+          <tr>
+            <th scope="col">Địa chỉ</th>
+            <td>{{ doctor.clinic_address }}</td>
+          </tr>
+        </table>
+
+        <hr class="mb-4">
+        <button class="btn btn-primary btn-lg btn-block" type="button">Thanh toán</button>
+      </form>
+    </div>
+  </div>
+</div>
+<link href="https://pay.vnpay.vn/lib/vnpay/vnpay.css" rel="stylesheet"/>
+    <script src="https://pay.vnpay.vn/lib/vnpay/vnpay.js"></script>
+  <script>
+    $(document).ready(function(){
+      // human readale
+      $(".number").each(function() {
+      
+      let cost = parseInt($(this).text());
+      $(this).text(cost.toLocaleString());
+      }); // end each
+
+      // validate email
+      function ValidateEmail(value){
+          regex = new RegExp("^\\w+([\.-]?\\w+)*@\\w+([\.-]?\\w+)*(\.\\w{2,3})+$");
+          var isValid =  regex.test(value);
+          return isValid;
+      }
+
+      $(".btn-block").click(function(){
+        email = $("#email").val();
+        valid = true;
+
+        if(!ValidateEmail(email)){
+            $(".alert-email").text("email không hợp lệ");
+            valid &= false;
+        } else{
+            $(".alert-email").text("");
+        }
+
+        if (valid){
+          // $(this).prop("disabled",true);
+          
+          var postData = $("#payment-form").serialize();
+          
+          var submitUrl = $("#payment-form").attr("action");
+          $("#payment-form").submit(); // submit form
+          // $.ajax({
+          //     type: "POST",
+          //     url: submitUrl,
+          //     data: postData,
+          //     dataType: 'JSON',
+          //     success: function (x) {
+          //         if (x.code === '00') {
+          //             if (window.vnpay) {
+          //                 vnpay.open({width: 768, height: 600, url: x.data});
+                          
+          //             }
+          //             else {
+                        
+          //               location.href = x.data;
+          //             }
+          //             return false;
+          //         } else {
+          //             alert(x.Message);
+          //         }
+          //     }
+          // });
+          // return false;
+
+        }
+      });// end click
+    });// end ready
+  </script>
+{% endblock %}

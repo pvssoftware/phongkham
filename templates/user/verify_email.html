@@ -1,0 +1,20 @@
+{% extends "user/base_user.html" %}
+ {% load crispy_forms_tags %} 
+ {% block content%}
+<div class="body-content">
+  <div class="verify-email">
+    <h2 class="mb-4 text-center">Xác nhận thông tin bác sĩ</h2>
+    <p class="lead text-center">Bạn hãy dùng email đã đăng ký tài khoản bác sĩ để điền vào bên dưới để xác nhận. Nếu chưa đăng ký hãy bấm vào <a href="{% url 'create_account' %}">đây để đăng ký.</a></p>
+    <form class="" action="{% url 'verify_email' %}" method="POST">     
+
+      {% csrf_token %}
+       {{ form | crispy }}
+      <hr class="mb-4" />
+      <button class="btn btn-lg btn-primary btn-block" type="submit">
+        Xác nhận
+      </button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

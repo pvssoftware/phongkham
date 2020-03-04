@@ -16,4 +16,5 @@ urlpatterns = format_suffix_patterns([
     url(r'^get-info-patient/', get_info_patient),
     url(r'^upload-medical-ultrasonography-file/', upload_medical_ultrasonography_file),
     url(r'^check-update-app-win/', check_version_app),
+    # url(r'^update-status-merchant/', update_status_merchant,name="update_status_merchant"),
 ])

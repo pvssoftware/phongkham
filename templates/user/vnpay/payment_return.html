@@ -1,0 +1,50 @@
+{% extends "user/base_user.html" %}
+
+
+{% block content %}
+    <div class="body-content">
+      <div class="card  
+      
+      {% if vnp_ResponseCode == '00' %}
+            border-primary
+       {% else %}
+            border-danger
+      {% endif %}
+          " style="max-width: 20rem;width: 100%;">
+        <div class="card-header">
+            <h6>{{ title }}: {{ result }}</h6>
+            
+        </div>
+        <div class="card-body">
+            <p>Mã đơn hàng: <span class="font-weight-bold">
+                
+                {% if id %}
+                    {{ id }}
+                {% endif %}
+                    
+            </span></p>
+            <p>Số tiền: <span class="number font-weight-bold">{{ amount }}</span> VNĐ </p>
+            <p>Thời gian: <span class="font-weight-bold">{{ vnp_PayDate | date:"H:i d/m/Y" }}</span> </p>
+            <p>Mã giao dịch VNPAY: <span class="font-weight-bold">{{ vnp_TransactionNo }}</span> </p>
+            {% if vnp_ResponseCode == '00' %}
+                <p>Trạng thái thanh toán: <span class="font-weight-bold">Thành công</span> </p>
+            {% else %}
+                <p>Trạng thái thanh toán: <span class="font-weight-bold">Lỗi</span> </p>
+            {% endif %}
+            {% if msg %}
+                <p class="alert-warning"> {{ msg }}</p>
+            {% endif %}
+        </div>
+        </div>  
+    </div>
+    <script>
+        $(document).ready(function(){
+            // human readale
+            $(".number").each(function() {
+            
+            let cost = parseInt($(this).text());
+            $(this).text(cost.toLocaleString());
+            }); // end each
+        }); // end ready
+    </script>
+{% endblock %}

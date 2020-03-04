@@ -29,19 +29,50 @@ from django.template.loader import get_template
 from django.core.mail import EmailMessage, send_mail, get_connection
 from django.views.generic import View
 
-from .forms import UserCreationFormMix, ResendActivationEmailForm
+from .forms import UserCreationFormMix, ResendActivationEmailForm, VerifyEmailForm, AuthenticationFormMix
+from .models import DoctorProfile
 
 from .utils import MailContextViewMixin
+from .vnpay.forms_vnpay import ProductForm
+from  .cart.cart import Cart
 # Create your views here.
 
+def license_page(request):
+    if request.method == "POST":
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            cart = Cart(request)
+            cart.choose(form.cleaned_data['license'],form.cleaned_data["money"],form.cleaned_data['order_desc'])
 
-def login(request):
-    return render(request, "user/login.html", {})
+            return redirect("verify_email")
+    return render(request,"user/license_product.html",{})
+
+def verify_email(request):
+    form = VerifyEmailForm()
+    if request.method == "POST":
+        form = VerifyEmailForm(request.POST)
+        if form.is_valid():
+            
+            email = form.cleaned_data["email"]
+            try:
+                doctor = DoctorProfile.objects.get(user__email=email)
+                cart = Cart(request)
+                # check whether doctor bought ultrasound adn buy again
+                if doctor.license_ultrasound and cart.cart["license"] == "ultrasound_app":
+                    form.errors["email"] = ["Bạn đã mua license ultrasound app"] 
+                    return render(request,"user/verify_email.html",{"form":form})
+
+                cart.add_email(email)
+                return redirect("payment")
+            except:
+                form.errors["email"] = ["Bạn chưa đăng ký email này"]
+                return render(request,"user/verify_email.html",{"form":form})
+    return render(request,"user/verify_email.html",{"form":form})
 
 
 class LoginViewMix(LoginView):
     template_name = "user/login.html"
-
+    form_class = AuthenticationFormMix
     def get_success_url(self):
         user = self.request.user
         # return reverse_lazy("doctor_profile",kwargs={"pk_doctor":user.pk})

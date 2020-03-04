@@ -1,0 +1,147 @@
+{% extends "user/base_user.html" %}
+
+{% block content %}
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+  <h1 class="display-4">License</h1>
+  <p class="lead">Quickly build an effective pricing table for your potential customers with this Bootstrap example. It's built with default Bootstrap components and utilities with little customization.</p>
+</div>
+
+<div class="container-fluid">
+      
+  <div class="row mb-3 text-center">
+    <div class="col-xl-3 col-sm-6 py-2">
+    <div class="card mb-4 box-shadow">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Free</h4>
+      </div>
+      <div class="card-body">
+        <h1 class="card-title pricing-card-title">$0 <small class="text-muted">/ mo</small></h1>
+        <ul class="list-unstyled mt-3 mb-4">
+          <li>10 users included</li>
+          <li>2 GB of storage</li>
+          <li>Email support</li>
+          <li>Help center access</li>
+        </ul>
+        <button id="one_month" type="button" class="btn btn-lg btn-block btn-outline-primary">Sign up for free</button>
+      </div>
+    </div>
+  </div>
+    <div class="col-xl-3 col-sm-6 py-2">
+    <div class="card mb-4 box-shadow">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Free</h4>
+      </div>
+      <div class="card-body">
+        <h1 class="card-title pricing-card-title">$0 <small class="text-muted">/ mo</small></h1>
+        <ul class="list-unstyled mt-3 mb-4">
+          <li>10 users included</li>
+          <li>2 GB of storage</li>
+          <li>Email support</li>
+          <li>Help center access</li>
+        </ul>
+        <button id="one_year" type="button" class="btn btn-lg btn-block btn-outline-primary">Sign up for free</button>
+      </div>
+    </div>
+  </div>
+    <div class="col-xl-3 col-sm-6 py-2">
+    <div class="card mb-4 box-shadow">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Free</h4>
+      </div>
+      <div class="card-body">
+        <h1 class="card-title pricing-card-title">$0 <small class="text-muted">/ mo</small></h1>
+        <ul class="list-unstyled mt-3 mb-4">
+          <li>10 users included</li>
+          <li>2 GB of storage</li>
+          <li>Email support</li>
+          <li>Help center access</li>
+        </ul>
+        <button id="three_years" type="button" class="btn btn-lg btn-block btn-outline-primary">Sign up for free</button>
+      </div>
+    </div>
+  </div>
+    <div class="col-xl-3 col-sm-6 py-2">
+    <div class="card mb-4 box-shadow">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Free</h4>
+      </div>
+      <div class="card-body">
+        <h1 class="card-title pricing-card-title">$0 <small class="text-muted">/ mo</small></h1>
+        <ul class="list-unstyled mt-3 mb-4">
+          <li>10 users included</li>
+          <li>2 GB of storage</li>
+          <li>Email support</li>
+          <li>Help center access</li>
+        </ul>
+        <button id="ultrasound" type="button" class="btn btn-lg btn-block btn-outline-primary">Sign up for free</button>
+      </div>
+    </div>
+  </div>
+    
+  <form action="{% url 'license' %}" class="hidden-part" method="post">
+    {% csrf_token %}
+    <input type="text" id="license" name="license" >
+    <input type="text" id="money" name="money">
+    <input type="text" id="order_desc" name="order_desc">
+  </form>
+    
+    
+  </div>
+
+  <script>
+    $(document).ready(function(){
+      $(".hidden-part").hide();
+
+      $("#one_month").click(function(){
+        $("#license").val("1month_premium");
+        $("#money").val("500000");
+        $("#order_desc").val("su dung premitum account trong 1 thang");
+
+        $(this).prop("disabled",true);
+        $("#one_year").prop("disabled",true);
+        $("#three_years").prop("disabled",true);
+        $("#ultrasound").prop("disabled",true);
+        $(".hidden-part").submit();
+      }); // end click one month
+
+      $("#one_year").click(function(){
+        $("#license").val("1year_premium");
+        $("#money").val("5000000");
+        $("#order_desc").val("su dung premitum account trong 1 nam");
+
+        $(this).prop("disabled",true);
+        $("#one_month").prop("disabled",true);
+        $("#three_years").prop("disabled",true);
+        $("#ultrasound").prop("disabled",true);
+        $(".hidden-part").submit();
+      }); // end click one year
+
+      $("#three_years").click(function(){
+        $("#license").val("3years_premium");
+        $("#money").val("1200000");
+        $("#order_desc").val("su dung premitum account trong 3 nam");
+
+        $(this).prop("disabled",true);
+        $("#one_year").prop("disabled",true);
+        $("#one_month").prop("disabled",true);
+        $("#ultrasound").prop("disabled",true);
+        $(".hidden-part").submit();
+      }); // end click three years
+      
+      $("#ultrasound").click(function(){
+        $("#license").val("ultrasound_app");
+        $("#money").val("5000000");
+        $("#order_desc").val("su dung ultrasound app khong gioi han thoi gian");
+
+        $(this).prop("disabled",true);
+        $("#one_year").prop("disabled",true);
+        $("#three_years").prop("disabled",true);
+        $("#one_month").prop("disabled",true);
+        $(".hidden-part").submit();
+      }); // end click ultrasound
+    }) ; // end ready
+  </script>
+</div>
+
+{% endblock %}
+  
