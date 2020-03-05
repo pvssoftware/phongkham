@@ -3,6 +3,7 @@ import urllib.parse
 from datetime import datetime, date, timedelta
 
 from django.conf import settings
+from django.urls import reverse_lazy, reverse
 from django.core.serializers import json
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
@@ -89,7 +90,7 @@ def payment(request):
         if cart.cart["email"] and cart.cart["license"] and cart.cart["money"]:
             doctor = DoctorProfile.objects.get(user__email=cart.cart["email"])
             return render(request, "user/vnpay/payment.html", {"cart":cart,"doctor":doctor})
-        return redirect("license")
+        return redirect(reverse("license"))
 
 
 def payment_ipn(request):

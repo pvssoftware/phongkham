@@ -63,7 +63,7 @@ def verify_email(request):
                     return render(request,"user/verify_email.html",{"form":form})
 
                 cart.add_email(email)
-                return redirect("payment")
+                return redirect(reverse("payment"))
             except DoctorProfile.DoesNotExist:
                 form.errors["email"] = ["Bạn chưa đăng ký email này"]
                 return render(request,"user/verify_email.html",{"form":form})
