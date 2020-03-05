@@ -54,7 +54,7 @@
                       <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{% url 'settings_openingtime' request.user.pk %}">GIỜ LÀM VIỆC</a>
                         <a class="dropdown-item" href="{% url 'settings_service' request.user.pk %}">DỊCH VỤ KHÁM</a>
-                        <a class="dropdown-item" href="{% url 'license' %}">LICENSE</a>
+                        <a class="dropdown-item" href="{% url 'license' %}">MUA LICENSE</a>
                         <a class="dropdown-item" href="#" id="check-license">Check LICENSE</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="{% url 'logout' %}">THOÁT</a>
@@ -84,16 +84,15 @@
     <div class="modal fade" id="license-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-sm" role="document">
         <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">About License</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
+          
           <div class="modal-body">
-            <p id="premium-license"></p>
+            <p id="premium-license" class="font-weight-bold"></p>
+            <p id="email-license"></p>
             <p id="remain-days"></p>
             <p id="ultrasound-license"></p>
+            <p class="mt-2 mb-0 text-center text-muted font-weight-light">
+              &copy; Software Foundation Company Limitted SFC 2020
+            </p>
           </div>
           
         </div>
@@ -104,6 +103,11 @@
               Helathy Care
               {% endblock %}
     
+    <footer class="pt-5 text-muted text-center text-small">
+      <p class="mt-3 mb-5 text-center">
+          &copy; Software Foundation Company Limitted SFC 2020
+        </p>
+    </footer>
     <script>
       $(document).ready(function(){
         // date picker
@@ -133,6 +137,7 @@
         }); //end click
 
         $("#check-license").click(function(){
+          url_license = "{% url 'license' %}";
           $.ajax({
             type: 'get',
             url: "{% url 'check_license' request.user.pk %}",
@@ -146,15 +151,16 @@
                     
                 } else {
                   $("#license-modal").modal("show");
+                  $("#email-license").text(`Tài khoản: ${data.email}`);
                   if (data.license === "no"){
-                    $("#premium-license").text(`License: không có license`);
-                  } else if(data.license === "premium"){
+                    $("#premium-license").html(`License: không có license. <a href=${url_license} style="text-decoration:underline;color:#007bff;cursor:pointer;">Mua license...</a>`);
+                  } else if(data.license === "premium" || data.license === "trial"){
                     $("#premium-license").text(`License: ${data.license}`);
-                    $("#remain-days").text(`Còn ${data.remain_days} ngày sử dụng`);
+                    $("#remain-days").html(`Còn <span class="font-weight-bold"> ${data.remain_days}</span> ngày sử dụng. <a href=${url_license} style="text-decoration:underline;color:#007bff;cursor:pointer;">Mua thêm...</a>`);
                   }
                   
                   if (data.license_ultrasound){
-                    $("#ultrasound-license").text(`Có bản quyền sử dụng app ultrasound`);
+                    $("#ultrasound-license").html(`Có bản quyền sử dụng app ultrasound.`);
                   }
                 }
             },

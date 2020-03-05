@@ -6,7 +6,7 @@ from user.models import License
 license_dic = {
     "1year_premium":[365,"5000000"],
     "1month_premium":[30,"500000"],
-    "3years_premium":[1095,"1200000"],
+    "3years_premium":[1095,"12000000"],
     "ultrasound_app":[0,"5000000"]
 }
 
@@ -30,7 +30,7 @@ def add_license(payment,doctor,paydate):
 # check all license
 def check_licenses(request):
     try:
-        if not request.user.doctor.has_license() and not request.user.doctor.license_ultrasound and not request.user.doctor.is_trial:
+        if not request.user.doctor.has_license() and not request.user.doctor.license_ultrasound and not request.user.doctor.has_trial():
             return True
         else:
             return False
@@ -39,7 +39,7 @@ def check_licenses(request):
 # check premium license
 def check_premium_licenses(request):
     try:
-        if not request.user.doctor.has_license() and not request.user.doctor.is_trial:
+        if not request.user.doctor.has_license() and not request.user.doctor.has_trial():
             return True
         else:
             return False

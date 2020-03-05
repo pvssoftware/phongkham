@@ -75,6 +75,7 @@ class CustomAuthToken(ObtainAuthToken):
             'token': token.key,
             'maPK': user.pk,
             'dcPK': user.doctor.clinic_address,
+            'tenPK': user.doctor.clinic_name,
             'soDT': user.doctor.phone,
             'tenBS':user.doctor.full_name,
             'loaiBS':user.doctor.get_kind_display()

@@ -24,17 +24,17 @@ def check_license(request,pk_doctor):
     except:
         return JsonResponse({"license":"invalid"})
     
-    if doctor.license and doctor.license.license_end > date.today():
+    if doctor.has_license():
         remain_days = (doctor.license.license_end - date.today()).days
         license = "premium"
-    elif doctor.is_trial and doctor.time_end_trial > date.today():       
+    elif doctor.has_trial():       
         remain_days = (doctor.time_end_trial - date.today()).days
         license = "trial"
     else:
         remain_days = 0
         license = "no"
     
-    return JsonResponse({"license":license,"remain_days":str(remain_days),"license_ultrasound":doctor.license_ultrasound})
+    return JsonResponse({"license":license,"remain_days":str(remain_days),"license_ultrasound":doctor.license_ultrasound,"email":doctor.user.email})
 
     
 # patient logout view

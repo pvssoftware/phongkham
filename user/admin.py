@@ -57,7 +57,7 @@ class PaymentAdmin(admin.ModelAdmin):
 
 class LicenseAdmin(admin.ModelAdmin):
 	model = License
-	list_display = ["doctor","license_end"]
+	list_display = ["doctor","license_end","id"]
 	search_fields = ("doctor",)
 
 admin.site.register(User,CustomUserAdmin)

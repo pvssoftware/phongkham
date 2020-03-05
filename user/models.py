@@ -21,6 +21,7 @@ class DoctorProfile(models.Model):
     phone = models.CharField(max_length=14)
     full_name = models.CharField(max_length=30)
     clinic_address = models.CharField(max_length=70)
+    clinic_name = models.CharField(max_length=100,default="")
     kind = models.CharField(max_length=30, choices=KIND_DOCTOR)
     is_trial = models.BooleanField(default=False)
     time_end_trial = models.DateField(blank=True,null=True)
@@ -31,11 +32,20 @@ class DoctorProfile(models.Model):
 
     def has_license(self):
         try:
-            license = self.license
+            license = self.license            
         except:
             return False
         
         return license.license_end > date.today()
+
+    def has_trial(self):
+        try:
+            if self.is_trial:
+                return self.time_end_trial > date.today()
+            else:
+                return False
+        except:
+            False
 
 class License(models.Model):
     doctor = models.OneToOneField(DoctorProfile,on_delete=models.CASCADE,related_name="license")
