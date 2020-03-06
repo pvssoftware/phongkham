@@ -172,7 +172,7 @@ def payment_return(request):
             except:
                 return HttpResponse("Mã đơn hàng không tồn tại.")
             # Check vnp_Amount
-            if payment.amount != amount:
+            if payment.amount != str(amount):
                 return HttpResponse("Số tiền không hợp lệ.")
 
             vnp_PayDate = datetime.strptime(vnp_PayDate,"%Y%m%d%H%M%S")
