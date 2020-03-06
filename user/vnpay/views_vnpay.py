@@ -115,7 +115,7 @@ def payment_ipn(request):
             except:
                 return JsonResponse({'RspCode': '01', 'Message': 'Order not found'})
             # Check vnp_Amount
-            if payment.amount != amount:
+            if payment.amount != str(amount):
                 return JsonResponse({'RspCode': '04', 'Message': 'Invalid amount'})
 
             # Check status
