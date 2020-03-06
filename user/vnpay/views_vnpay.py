@@ -156,7 +156,7 @@ def payment_return(request):
         vnp = vnpay()
         vnp.responseData = inputData.dict()
         order_id = inputData['vnp_TxnRef']
-        amount = int(inputData['vnp_Amount']) / 100
+        amount = int(int(inputData['vnp_Amount']) / 100)
         order_desc = inputData['vnp_OrderInfo']
         vnp_TransactionNo = inputData['vnp_TransactionNo']
         vnp_ResponseCode = inputData['vnp_ResponseCode']
