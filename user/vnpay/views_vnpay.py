@@ -99,7 +99,7 @@ def payment_ipn(request):
         vnp = vnpay()
         vnp.responseData = inputData.dict()
         order_id = inputData['vnp_TxnRef']
-        amount = str(int(inputData['vnp_Amount']) / 100)
+        amount = int(int(inputData['vnp_Amount']) / 100)
         order_desc = inputData['vnp_OrderInfo']
         vnp_TransactionNo = inputData['vnp_TransactionNo']
         vnp_ResponseCode = inputData['vnp_ResponseCode']
@@ -129,7 +129,7 @@ def payment_ipn(request):
                 # add license to user doctor
                 vnp_PayDate = datetime.strptime(vnp_PayDate,"%Y%m%d%H%M%S")
                 paydate = date(year=vnp_PayDate.year,month=vnp_PayDate.month,day=vnp_PayDate.day)
-                return HttpResponse("This is testing.")
+    
                 doctor = DoctorProfile.objects.get(user__email=payment.email)
                 
                 add_license(payment,doctor,paydate)
