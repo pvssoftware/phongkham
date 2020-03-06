@@ -15,13 +15,13 @@ def add_license(payment,doctor,paydate):
     if payment.license == "ultrasound_app":
         doctor.license_ultrasound = True
     else:
-        if doctor.license:
+        try:
             if doctor.license.license_end > paydate:
                 doctor.license.license_end = doctor.license.license_end + timedelta(days=license_dic[payment.license])
             else:
                 doctor.license.license_end = paydate + timedelta(days=license_dic[payment.license])
             doctor.license.save()
-        else:
+        except:
             License.objects.create(doctor=doctor,license_end=paydate + timedelta(days=license_dic[payment.license]))
     doctor.is_trial = False
     doctor.save()
