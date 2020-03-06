@@ -17,12 +17,12 @@ def add_license(payment,doctor,paydate):
     else:
         try:
             if doctor.license.license_end > paydate:
-                doctor.license.license_end = doctor.license.license_end + timedelta(days=license_dic[payment.license])
+                doctor.license.license_end = doctor.license.license_end + timedelta(days=license_dic[payment.license][0])
             else:
-                doctor.license.license_end = paydate + timedelta(days=license_dic[payment.license])
+                doctor.license.license_end = paydate + timedelta(days=license_dic[payment.license][0])
             doctor.license.save()
         except:
-            License.objects.create(doctor=doctor,license_end=paydate + timedelta(days=license_dic[payment.license]))
+            License.objects.create(doctor=doctor,license_end=paydate + timedelta(days=license_dic[payment.license][0]))
     doctor.is_trial = False
     doctor.save()
     doctor.user.is_active = True
