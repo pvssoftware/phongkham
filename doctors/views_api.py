@@ -18,7 +18,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 
 from user.models import User, DoctorProfile, SettingsTime
 from user.license import check_licenses, check_premium_licenses
-from .utils import get_days_detail, history_serializer_mix, update_examination_patients_list
+from .utils import get_days_detail, history_serializer_mix, update_examination_patients_list, update_examination_patients_finished_list
 from .custom_token import ExpiringTokenAuthentication,is_token_expired
 from .models import BookedDay, MedicalRecord, MedicalHistory, AppWindow
 from .serializers import MedicalRecordSerializer, ExaminationPatientsSerializer, MedicalRecordExaminationSerializer,UploadMedicalUltrasonographySerializer, CreateUploadMedicalUltrasonographySerializer
@@ -154,7 +154,11 @@ def upload_medical_ultrasonography_file(request):
             if history_serializer.is_valid():
                 history_serializer.save()
 
+                # update list examination patients
                 update_examination_patients_list(request.user,date.today(),False)
+
+                # update list examination patients finished
+                update_examination_patients_finished_list(request.user,date.today())
 
                 history = MedicalHistory.objects.get(pk=history_serializer.data["id"])
                 response_data = CreateUploadMedicalUltrasonographySerializer(history,context={"request": request})
@@ -188,11 +192,11 @@ def upload_medical_ultrasonography_file(request):
         except:
             settings_time = SettingsTime.objects.create(examination_period="0",doctor=request.user.doctor)
         
-        if json_file['is_waiting']:
-            today = date.today()
-                        
-            date_book = date(year=today.year,month=today.month,day=today.day)
+        today = date.today()                       
+        date_book = date(year=today.year,month=today.month,day=today.day)
 
+        if json_file['is_waiting']:
+            
             if settings_time.enable_voice:
                 days_detail = get_days_detail(settings_time.weekday_set.all(),date_book,settings_time.examination_period)
                 if not days_detail:
@@ -276,7 +280,10 @@ def upload_medical_ultrasonography_file(request):
             history_serializer.save()
             
             if json_file["is_waiting"]:
+                print(date_book)
                 update_examination_patients_list(request.user,date_book,full_booked)
+            # update list examination patients finished
+            update_examination_patients_finished_list(request.user,date_book)
             # history =MedicalHistory.objects.get(pk=history_serializer.data["id"])
             # response_data = CreateUploadMedicalUltrasonographySerializer(history,context={"request": request})
             # response_data = history_serializer.data

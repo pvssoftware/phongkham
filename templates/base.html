@@ -27,7 +27,7 @@
   </head>
   <body>
         <nav class="navbar navbar-expand-lg navbar-dark navbar-mix-bg">
-                <a class="navbar-brand navbar-mix-color" href="{% url 'doctor_profile' request.user.pk %}" style="font-family:'Yellowtail', cursive; font-size: 30px;">Healthy Care</a>
+                <a class="navbar-brand navbar-mix-color" href="{% url 'list_examination_finished' request.user.pk %}" style="font-family:'Yellowtail', cursive; font-size: 30px;">Healthy Care</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                   <span class="navbar-toggler-icon"></span>
                 </button>
@@ -40,6 +40,7 @@
                     <li class="nav-item">
                       <a class="nav-link navbar-mix-color" href="{% url 'list_examination' request.user.pk %}">DANH SÁCH CHỜ KHÁM</a>
                     </li>
+                
                     <li class="nav-item">
                       <a class="nav-link navbar-mix-color" href="{% url 'medicine_list' request.user.pk %}">QUẢN LÝ THUỐC</a>
                     </li>

@@ -13,7 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
 from user.license import check_licenses, check_premium_licenses
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, PrescriptionDrugOutStock, BookedDay
-from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, count_and_calculate_service
+from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, update_examination_patients_finished_list, count_and_calculate_service
 from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, TakeDrugOutStockForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm, PatientLoginForm
 
 
@@ -360,8 +360,9 @@ def search_navbar(request,pk_doctor):
 
             except ValueError:
                 results = MedicalHistory.objects.filter(Q(medical_record__doctor=user),Q(medical_record__full_name__icontains=form.cleaned_data['search_navbar']) | Q(medical_record__phone__icontains=form.cleaned_data['search_navbar']))
+                date_obj = None
             settings_service = user.doctor.settingsservice
-            return render(request,'doctors/doctor_search_navbar.html',{"results":results,"pk_doctor":pk_doctor,"settings_service":settings_service})
+            return render(request,'doctors/doctor_search_navbar.html',{"results":results,"pk_doctor":pk_doctor,"settings_service":settings_service,"date_obj":date_obj})
 
 
 # medicine list protect
@@ -703,12 +704,13 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
                 form = form.save(commit=False)
                 form.medical_record = mrecord
 
+                today = date.today()
+                        
+                date_book = date(year=today.year,month=today.month,day=today.day)
+
                 if form.is_waiting:
                     # form.is_waiting = True
-                    today = date.today()
-                        
-                    date_book = date(year=today.year,month=today.month,day=today.day)
-                    
+                                        
                     if settings_time.enable_voice:
 
                         days_detail = get_days_detail(settings_time.weekday_set.all(),date_book,settings_time.examination_period)
@@ -824,6 +826,9 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
                     
                     form.date_booked = datetime.now()
                     form.save()
+
+                    # update list examination patients finished
+                    update_examination_patients_finished_list(doctor,date_book)
                 # history = MedicalHistory.objects.create(disease_symptom=disease_symptom,diagnostis=diagnostis,
                 # service=service,service_detail=service_detail,PARA=PARA,contraceptive=contraceptive,last_menstrual_period=last_menstrual_period,note=note,medical_record = mrecord,co_tu_cung_pk=co_tu_cung_pk,am_dao_pk=am_dao_pk,chuan_doan_khac_pk=chuan_doan_khac_pk,co_tu_cung_ps=co_tu_cung_ps,tim_thai_ps=tim_thai_ps,can_go_ps=can_go_ps)
 
@@ -961,6 +966,8 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                 # update list examination patients
                 update_examination_patients_list(doctor,date.today(),False)
 
+                # update list examination patients finished
+                update_examination_patients_finished_list(doctor,date.today())
 
                 return redirect(reverse("prescription_drug", kwargs={"pk_doctor": pk_doctor, "pk_mrecord": pk_mrecord, "pk_history": history_edit.pk}))
             else:
@@ -989,6 +996,21 @@ def list_examination(request,pk_doctor):
     histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date.today()).order_by("date_booked")
 
     return render(request,"doctors/doctor_list_examination.html",{"pk_doctor":pk_doctor,"histories":histories,"full_booked":False})
+
+# List examination finished
+def list_examination_finished(request,pk_doctor):
+    # check  license
+    if check_licenses(request):
+        return render(request,"user/not_license.html",{})
+    doctor = User.objects.get(pk=pk_doctor)
+    if request.user == doctor:
+        try:
+            settings_service = doctor.doctor.settingsservice
+        except DoctorProfile.settingsservice.RelatedObjectDoesNotExist:
+            settings_service = SettingsService.objects.create(doctor=doctor.doctor)
+        
+        histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=False).filter(date_booked__date=date.today()).order_by("date_booked")
+        return render(request,"doctors/doctor_list_examination_finished.html",{"pk_doctor":pk_doctor,"histories":histories,"settings_service":settings_service})
 
 # download medical_ultrasonography file
 def download_medical_ultrasonography(request,pk_doctor,pk_history):
@@ -1046,6 +1068,9 @@ def medical_history_del(request,pk_doctor,pk_mrecord,pk_history):
 
             # update list examination patients
             update_examination_patients_list(doctor,date.today(),False)
+
+            # update list examination patients finished
+            update_examination_patients_finished_list(doctor,date.today())
             
             return redirect(reverse("list_examination",kwargs={"pk_doctor": pk_doctor}))
         else:

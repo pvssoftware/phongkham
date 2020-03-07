@@ -77,7 +77,7 @@ class LoginViewMix(LoginView):
         user = self.request.user
         # return reverse_lazy("doctor_profile",kwargs={"pk_doctor":user.pk})
         if user.doctor.kind == "obstetrician-gynecologist":
-            return reverse_lazy("doctor_profile",kwargs={"pk_doctor":user.pk})
+            return reverse_lazy("list_examination_finished",kwargs={"pk_doctor":user.pk})
     # def get(self,request, *args, **kwargs):
     #     if request.user.is_authenticated:
     #         return redirect("doctor_profile")

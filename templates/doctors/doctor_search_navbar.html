@@ -102,7 +102,13 @@
     {% endfor %}
     </div>
     {% else %}
-    <h4 class="mt-3">Không tìm thấy bệnh nhân</h4>
+    <h4 class="mt-3">Không tìm thấy bệnh nhân
+      
+      {% if date_obj %}
+        nào khám trong ngày {{ date_obj | date:"d-m-Y" }}
+      {% endif %}
+        
+    </h4>
      {% endif %}
        
          

@@ -40,6 +40,25 @@ def update_examination_patients_list(doctor,date_book,full_booked):
             "html_patients":html_patients,
         }
     )
+# update list examination patients finished function
+def update_examination_patients_finished_list(doctor,date_book):
+    try:
+        settings_service = doctor.doctor.settingsservice
+    except DoctorProfile.settingsservice.RelatedObjectDoesNotExist:
+        settings_service = SettingsService.objects.create(doctor=doctor.doctor)
+
+    histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=False).filter(date_booked__date=date_book).order_by("date_booked")
+                    
+    html_patients = render_to_string("doctors/doctor_list_patients_finished.html",{"pk_doctor":doctor.pk,"histories":histories,"settings_service":settings_service})
+
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "patients_finished"+str(doctor.pk),
+        {
+            "type":"patient_update",
+            "html_patients":html_patients,
+        }
+    )
 
 
 

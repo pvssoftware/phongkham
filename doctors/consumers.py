@@ -21,3 +21,16 @@ class ListPatientsConsumer(AsyncJsonWebsocketConsumer):
     async def patient_update(self,event):
         await self.send_json(event)
         print("user updated",event)
+
+class ListPatientsFinishedConsumer(ListPatientsConsumer):
+    async def connect(self):
+        print("connect")
+        await  self.accept()
+        print(self.scope["user"].pk)
+        await self.channel_layer.group_add("patients_finished"+str(self.scope["user"].pk),self.channel_name)
+        print(f"Add {self.channel_name} channel to patients_finished's group")
+
+    async def disconnect(self,close_code):
+        print("disconnect")
+        await self.channel_layer.group_discard("patients_finished"+str(self.scope["user"].pk),self.channel_name)
+        print(f"Remove {self.channel_name} channel to patients_finished's group")
