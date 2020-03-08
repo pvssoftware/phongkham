@@ -263,12 +263,12 @@ def upload_medical_ultrasonography_file(request):
             ordinal_number = "-1"
             
         if not data['medical_ultrasonography_file']:
-            medical_ultrasonography_file = None
+            data['medical_ultrasonography_file'] = None
 
         data_history = {
             # "medical_record":mrecord,
             "date_booked":date_booked,
-            "medical_ultrasonography_file":medical_ultrasonography_file,
+            "medical_ultrasonography_file":data['medical_ultrasonography_file'],
             "medical_ultrasonography":data["medical_ultrasonography"],
             "is_waiting":json_file["is_waiting"],
             "ordinal_number":ordinal_number
