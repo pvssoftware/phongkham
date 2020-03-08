@@ -10,7 +10,7 @@ class AppWindowAdmin(admin.ModelAdmin):
 class MedicalRecordAdmin(admin.ModelAdmin):
     list_display = ["full_name","phone","birth_date","doctor","id"]
     model = MedicalRecord
-    search_fields = ('phone','full_name',"doctor")
+    search_fields = ('phone','full_name')
 
 class MedicalHistoryAdmin(admin.ModelAdmin):
     list_display = ["medical_record","date","id"]
