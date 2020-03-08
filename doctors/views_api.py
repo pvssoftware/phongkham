@@ -21,7 +21,7 @@ from user.license import check_licenses, check_premium_licenses
 from .utils import get_days_detail, history_serializer_mix, update_examination_patients_list, update_examination_patients_finished_list
 from .custom_token import ExpiringTokenAuthentication,is_token_expired
 from .models import BookedDay, MedicalRecord, MedicalHistory, AppWindow
-from .serializers import MedicalRecordSerializer, ExaminationPatientsSerializer, MedicalRecordExaminationSerializer,UploadMedicalUltrasonographySerializer, CreateUploadMedicalUltrasonographySerializer
+from .serializers import MedicalRecordSerializer, ExaminationPatientsSerializer, MedicalRecordExaminationSerializer,UploadMedicalUltrasonographySerializer, CreateUploadMedicalUltrasonographySerializer 
 
 
 # update status merchant
@@ -200,7 +200,8 @@ def upload_medical_ultrasonography_file(request):
             if settings_time.enable_voice:
                 days_detail = get_days_detail(settings_time.weekday_set.all(),date_book,settings_time.examination_period)
                 if not days_detail:
-                    return Response({"alert":"Bác sĩ không mở cửa ngày này!!!"},status=status.HTTP_400_BAD_REQUEST)
+                    response_data = MedicalRecordExaminationSerializer(mrecord,context={"request": request})
+                    return Response(response_data.data,status=status.HTTP_400_BAD_REQUEST)
                 
                 total_patients = 0
                 for day_detail in days_detail:
