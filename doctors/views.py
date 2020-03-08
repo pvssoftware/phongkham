@@ -356,11 +356,15 @@ def search_navbar(request,pk_doctor):
             try:
                 
                 date_obj = datetime.strptime(search_value,'%d/%m/%Y')
-                results = MedicalHistory.objects.filter(medical_record__doctor=user,date_booked__date=date_obj)
+                histories = MedicalHistory.objects.filter(medical_record__doctor=user,date_booked__date=date_obj)
+                mrecords = MedicalRecord.objects.none()
 
             except ValueError:
-                results = MedicalHistory.objects.filter(Q(medical_record__doctor=user),Q(medical_record__full_name__icontains=form.cleaned_data['search_navbar']) | Q(medical_record__phone__icontains=form.cleaned_data['search_navbar']))
+                histories = MedicalHistory.objects.filter(Q(medical_record__doctor=user),Q(medical_record__full_name__icontains=form.cleaned_data['search_navbar']) | Q(medical_record__phone__icontains=form.cleaned_data['search_navbar']))
                 date_obj = None
+                mrecords = MedicalRecord.objects.filter(Q(doctor=user),Q(medicalhistory__isnull=True),Q(full_name__icontains=form.cleaned_data['search_navbar']) | Q(phone__icontains=form.cleaned_data['search_navbar']))
+
+            results = {"histories":histories,"mrecords":mrecords}
             settings_service = user.doctor.settingsservice
             return render(request,'doctors/doctor_search_navbar.html',{"results":results,"pk_doctor":pk_doctor,"settings_service":settings_service,"date_obj":date_obj})
 
