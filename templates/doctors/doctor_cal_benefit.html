@@ -52,7 +52,7 @@
             <tr>
                 <th>Họ và tên</th>
                 <th>Ngày khám</th>
-                <th>Nội dung khám</th>
+                <th>Tiền siêu âm (VNĐ)</th>
                 <th>Tiền bán thuốc (VNĐ)</th>
                 <th>Tiền nhập thuốc (VNĐ)</th>
                 <th>Lợi nhuận (VNĐ)</th>
@@ -63,7 +63,7 @@
             <tr>
                 <td scope="row">{{ history.history.medical_record.full_name }}</td>
                 <td>{{ history.history.date |date:"P  d-m-Y"}}</td>
-                <td>{{ history.history.service }}</td>
+                <td class="convert_number">{{ history.history.medical_ultrasonography_cost }}</td>
                 <td class="convert_number">{{ history.revenue }}</td>
                 <td class="convert_number">{{ history.expense }}</td>
                 <td class="convert_number"> {{ history.benefit }}</td>

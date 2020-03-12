@@ -72,6 +72,7 @@ class MedicalHistory(models.Model):
 
     medical_ultrasonography = models.CharField(max_length=200,blank=True,default="")
     medical_ultrasonography_file = models.FileField(upload_to=locate_medical_ultrasonography_upload,blank=True,null=True)
+    medical_ultrasonography_cost = models.CharField(max_length=200,default="0")
 
     endoscopy = models.CharField(max_length=200,blank=True,default="")
     endoscopy_file = models.FileField(upload_to=locate_endoscopy_upload,blank=True,null=True)

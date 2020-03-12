@@ -27,7 +27,7 @@
   </head>
   <body>
         <nav class="navbar navbar-expand-lg navbar-dark navbar-mix-bg">
-                <a class="navbar-brand navbar-mix-color" href="{% url 'list_examination_finished' request.user.pk %}" style="font-family:'Yellowtail', cursive; font-size: 30px;">Healthy Care</a>
+                <a class="navbar-brand navbar-mix-color" href="{% url 'doctor_profile' request.user.pk %}?service=chua_kham" style="font-family:'Yellowtail', cursive; font-size: 30px;">Healthy Care</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                   <span class="navbar-toggler-icon"></span>
                 </button>
@@ -37,8 +37,15 @@
                     <li class="nav-item">
                       <a class="nav-link navbar-mix-color" href="{% url 'medical_record_create' request.user.pk %}">THÊM BỆNH NHÂN</a>
                     </li>
-                    <li class="nav-item">
-                      <a class="nav-link navbar-mix-color" href="{% url 'list_examination' request.user.pk %}">DANH SÁCH CHỜ KHÁM</a>
+                    <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle navbar-mix-color" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        DANH SÁCH KHÁM
+                      </a>
+                      <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{% url 'list_examination' request.user.pk %}">ĐANG CHỜ KHÁM</a>
+                        <a class="dropdown-item" href="{% url 'list_examination_finished' request.user.pk %}">ĐÃ KHÁM XONG</a>
+                        
+                      </div>
                     </li>
                 
                     <li class="nav-item">

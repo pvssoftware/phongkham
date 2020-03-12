@@ -19,11 +19,18 @@ from .bulk_sms import send_sms
 from user.models import DoctorProfile, SettingsService, User
 from user.license import check_licenses, check_premium_licenses
 
+
 # count and calculate ultrasonography, endoscopy, medical_test
 def count_and_calculate_service(count,settings_service_cost):
     revenue = 0
     if settings_service_cost:
         revenue = count*int(settings_service_cost)
+    return revenue
+# count and calculate ultrasonography
+def sum_cost_service(histories):
+    revenue = 0    
+    for history in histories:
+        revenue += int(history.medical_ultrasonography_cost)
     return revenue
 
 # update list examination patients function

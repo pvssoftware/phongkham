@@ -111,7 +111,7 @@ def get_examination_patients(request):
 def get_info_patient(request):
    if request.method == "GET":
 
-        data = request.data
+        # data = request.data
         phone = request.GET.get('phone')
         try:
            mrecord = MedicalRecord.objects.get(phone=phone,doctor=request.user)
@@ -264,12 +264,20 @@ def upload_medical_ultrasonography_file(request):
             ordinal_number = "-1"
             
         if not data['medical_ultrasonography_file']:
-            data['medical_ultrasonography_file'] = None
+            medical_ultrasonography_file = None
+        else:
+            medical_ultrasonography_file = data['medical_ultrasonography_file']
+        try:
 
+            medical_ultrasonography_cost = data['medical_ultrasonography_cost']
+        except:
+            medical_ultrasonography_cost = "0"
+            
         data_history = {
             # "medical_record":mrecord,
             "date_booked":date_booked,
-            "medical_ultrasonography_file":data['medical_ultrasonography_file'],
+            "medical_ultrasonography_file":medical_ultrasonography_file,
+            "medical_ultrasonography_cost":medical_ultrasonography_cost,
             "medical_ultrasonography":data["medical_ultrasonography"],
             "is_waiting":json_file["is_waiting"],
             "ordinal_number":ordinal_number

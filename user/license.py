@@ -4,10 +4,10 @@ from user.models import License
 
 
 license_dic = {
-    "1year_premium":[365,"5000000"],
-    "1month_premium":[30,"500000"],
-    "3years_premium":[1095,"12000000"],
-    "ultrasound_app":[0,"5000000"]
+    "1year_premium":[365,"4990000"],
+    "1month_premium":[30,"490000"],
+    "3years_premium":[1095,"11990000"],
+    "ultrasound_app":[0,"3990000"]
 }
 
 # add license to account payment successful

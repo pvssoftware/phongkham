@@ -20,6 +20,22 @@ from django.utils.http import urlsafe_base64_encode
 logger = logging.getLogger(__name__)
 
 
+# get price from app or setting
+def get_price_ultrasound_app_or_setting(doctor,app_price):
+    if app_price != "0":
+        price = app_price
+    else:
+        try:
+            print("try")
+            if doctor.doctor.settingsservice.medical_ultrasonography_cost:
+                print("try-if")
+                price = doctor.doctor.settingsservice.medical_ultrasonography_cost
+            else:
+                price = "0"
+        except:
+            print("except")
+            price = "0"
+    return price
 
 
 

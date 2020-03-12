@@ -4,6 +4,7 @@ from rest_framework.exceptions import ValidationError
 from django.conf import settings
 from .models import MedicalRecord, MedicalHistory
 from .custom_serializers import CustomHyperlinkedIdentityField, CustomHyperlinkedRelatedField, RecordSerializerField
+from user.utils import get_price_ultrasound_app_or_setting
 from user.models import User, DoctorProfile
 
 
@@ -45,14 +46,14 @@ class ExaminationPatientsSerializer(serializers.ModelSerializer):
     date_booked = serializers.DateTimeField(format="%d/%m/%Y %H:%M",input_formats=["%d/%m/%Y %H:%M",])
     class Meta:
         model = MedicalHistory
-        fields = ("id","date_booked","ordinal_number","medical_ultrasonography_file","medical_record")
+        fields = ("id","date_booked","ordinal_number","medical_ultrasonography_file","medical_ultrasonography_cost","medical_record")
 
 # upload medical ultrasonography file
 class UploadMedicalUltrasonographySerializer(serializers.ModelSerializer):
     # link = serializers.SerializerMethodField()
     class Meta:
         model = MedicalHistory
-        fields=("id","medical_ultrasonography","medical_ultrasonography_file","is_waiting")
+        fields=("id","medical_ultrasonography","medical_ultrasonography_file","medical_ultrasonography_cost","is_waiting")
         read_only_fields = ("id",)
 
     # def get_link(self, history):
@@ -78,6 +79,8 @@ class UploadMedicalUltrasonographySerializer(serializers.ModelSerializer):
         instance.medical_ultrasonography_file = file_upload
 
         instance.medical_ultrasonography = validated_data.get("medical_ultrasonography",instance.medical_ultrasonography)
+        # get price from app or settings
+        instance.medical_ultrasonography_cost = get_price_ultrasound_app_or_setting(instance.medical_record.doctor,validated_data.get("medical_ultrasonography_cost","0"))
 
         instance.is_waiting = self.context.get("is_waiting")
         instance.save()
@@ -89,7 +92,7 @@ class CreateUploadMedicalUltrasonographySerializer(ExaminationPatientsSerializer
     
     class Meta:
         model = MedicalHistory
-        fields=("id","medical_ultrasonography","medical_ultrasonography_file","is_waiting","date_booked","medical_record","ordinal_number")
+        fields=("id","medical_ultrasonography","medical_ultrasonography_file","medical_ultrasonography_cost","is_waiting","date_booked","medical_record","ordinal_number")
         read_only_fields = ("id",)
 
     def get_fields(self, *args, **kwargs):
@@ -109,7 +112,8 @@ class CreateUploadMedicalUltrasonographySerializer(ExaminationPatientsSerializer
                     raise ValidationError("File upload của bạn trên 5M.")
             else:
                 raise ValidationError("Bạn nên upload định dạng PDF.")
-        instance = MedicalHistory.objects.create(medical_record=self.context.get("medical_record"),date_booked=validated_data.get("date_booked",None),medical_ultrasonography=validated_data.get("medical_ultrasonography",None),is_waiting=validated_data.get("is_waiting"),ordinal_number=validated_data.get("ordinal_number",None))
+        instance = MedicalHistory.objects.create(medical_record=self.context.get("medical_record"),date_booked=validated_data.get("date_booked",None),medical_ultrasonography=validated_data.get("medical_ultrasonography",None),is_waiting=validated_data.get("is_waiting"),ordinal_number=validated_data.get("ordinal_number",None),medical_ultrasonography_cost=get_price_ultrasound_app_or_setting(self.context.get("request").user,validated_data.get("medical_ultrasonography_cost","0")))
+
         instance.medical_ultrasonography_file=file_upload
         instance.save()
 

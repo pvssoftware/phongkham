@@ -5,6 +5,7 @@ from django.conf import settings
 from user.models import SettingsTime, SettingsService, WeekDay
 from .models import MedicalRecord, MedicalHistory, PrescriptionDrug, PrescriptionDrugOutStock, Medicine
 from .utils_forms import clean_upload_file
+from user.utils import get_price_ultrasound_app_or_setting
 
 
 
@@ -61,6 +62,8 @@ class SettingsServiceForm(forms.ModelForm):
     class Meta:
         model = SettingsService
         fields = "__all__"
+        # exclude = ['medical_ultrasonography_cost']
+    
     
 
 class CalculateBenefitForm(forms.Form):
@@ -136,6 +139,10 @@ class MedicalHistoryFormMix(forms.ModelForm):
     class Meta:
         model = MedicalHistory
         fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","last_menstrual_period","co_tu_cung_ps","note_co_tu_cung_ps","tim_thai_ps","note_tim_thai_ps","can_go_ps","note_con_go_ps","co_tu_cung_pk","note_co_tu_cung_pk","am_dao_pk","note_am_dao_pk","is_waiting","medical_ultrasonography","medical_ultrasonography_file","endoscopy","endoscopy_file","blood_pressure","weight","glycemic","ph_meter","medical_test","medical_test_file"]
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user',None)
+        super(MedicalHistoryFormMix, self).__init__(*args, **kwargs)
         
     def clean_medical_ultrasonography_file(self):
         file = self.cleaned_data.get("medical_ultrasonography_file")
@@ -149,6 +156,17 @@ class MedicalHistoryFormMix(forms.ModelForm):
     def clean_medical_test_file(self):
         file = self.cleaned_data.get("medical_test_file")
         return clean_upload_file(file)
+
+    def save(self,commit=True):
+        history = super().save(commit=commit)
+        print("save")
+        print(commit)
+        print(history.medical_ultrasonography_cost)
+    
+        history.medical_ultrasonography_cost = get_price_ultrasound_app_or_setting(self.user,"0")
+        if commit:
+            history.save()
+        return history
 
 
 class MedicineForm(forms.ModelForm):

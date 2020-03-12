@@ -13,7 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
 from user.license import check_licenses, check_premium_licenses
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, PrescriptionDrugOutStock, BookedDay
-from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, update_examination_patients_finished_list, count_and_calculate_service
+from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, update_examination_patients_finished_list, count_and_calculate_service, sum_cost_service
 from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, TakeDrugOutStockForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm, PatientLoginForm
 
 
@@ -282,7 +282,7 @@ def cal_benefit(request,pk_doctor):
             count_histories = histories.count()
 
             count_ultrasonography = histories.filter(medical_ultrasonography_file__regex=r'[^-\s]').count()
-            ultrasonography_revenue = count_and_calculate_service(count_ultrasonography,settings_service.medical_ultrasonography_cost)
+            ultrasonography_revenue = sum_cost_service(histories)
             
             count_endoscopy = histories.filter(endoscopy_file__regex=r'[^-\s]').count()
             endoscopy_revenue = count_and_calculate_service(count_endoscopy ,settings_service.endoscopy_cost)
@@ -581,7 +581,7 @@ def upload_medicine_excel(request,pk_doctor):
 class DoctorProfileView(DoctorProfileMixin,PageLinksMixin):
     model = MedicalRecord
     template_name = 'doctors/doctor_profile.html'
-    paginate_by = 7
+    paginate_by = 9
 
 #  Medical Record create view
 def medical_record_create(request,pk_doctor):
@@ -703,7 +703,7 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
         except:
             settings_time = SettingsTime.objects.create(examination_period="0",doctor=doctor.doctor)
         if request.method == "POST":
-            form = MedicalHistoryFormMix(request.POST,request.FILES)
+            form = MedicalHistoryFormMix(request.POST,request.FILES,user=doctor)
             if form.is_valid():
                 form = form.save(commit=False)
                 form.medical_record = mrecord
@@ -997,9 +997,15 @@ def list_examination(request,pk_doctor):
         return render(request,"user/not_license.html",{})
 
     doctor = User.objects.get(pk=pk_doctor)
-    histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date.today()).order_by("date_booked")
+    if request.user == doctor:
+        try:
+            settings_service = doctor.doctor.settingsservice
+        except DoctorProfile.settingsservice.RelatedObjectDoesNotExist:
+            settings_service = SettingsService.objects.create(doctor=doctor.doctor)
 
-    return render(request,"doctors/doctor_list_examination.html",{"pk_doctor":pk_doctor,"histories":histories,"full_booked":False})
+        histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date.today()).order_by("date_booked")
+
+        return render(request,"doctors/doctor_list_examination.html",{"pk_doctor":pk_doctor,"histories":histories,"full_booked":False,"settings_service":settings_service})
 
 # List examination finished
 def list_examination_finished(request,pk_doctor):

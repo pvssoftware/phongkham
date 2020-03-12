@@ -30,15 +30,54 @@
                    
                 </a>
               </strong>
-              {% if history.service == "khám phụ sản" %}
-            <span class="page-link-mix">Phụ sản</span>
-            {% else %}
-            <span class="page-link-mix">Phụ khoa</span>
-            {% endif %}
+              <a href="{% url 'medical_history_del' pk_doctor history.medical_record.pk history.pk %}" class="page-link-mix" style="color: #d9534f">Xoá</a>
             </div>
             <div class="d-flex justify-content-between align-items-center w-100">
                 <span><i class="fa fa-calendar"></i> {{ history.date_booked|date:"H:i D. d-m-Y" }}</span>
-                <a href="{% url 'medical_history_del' pk_doctor history.medical_record.pk history.pk %}" class="page-link-mix" style="color: #d9534f">Xoá</a>
+                
+                <div>
+                  {% if settings_service.medical_ultrasonography %}
+                  <div>
+                    {% if history.medical_ultrasonography_file %}
+                    <a
+                      class="view-pdf page-link-mix"
+                      href="{{ history.medical_ultrasonography_file.url }}"
+                      >Xem file siêu âm</a
+                    >
+                    {% else %}
+                    Chưa upload file siêu âm
+                    {% endif %}
+                  </div>            
+                  {% endif %}
+            
+                  {% if settings_service.endoscopy %}
+                  <div>
+                    {% if history.endoscopy_file %}
+                    <a
+                      class="view-pdf page-link-mix"
+                      href="{{ history.endoscopy_file.url }}"
+                      >Xem file nội soi</a
+                    >
+                    {% else %}
+                    Chưa upload file nội soi
+                    {% endif %}
+                  </div>
+                  {% endif %}
+            
+                  {% if settings_service.medical_test %}
+                  <div>
+                    {% if history.medical_test_file %}
+                    <a
+                      class="view-pdf page-link-mix"
+                      href="{{ history.medical_test_file.url }}"
+                      >Xem file xét nghiệm</a
+                    >
+                    {% else %}
+                    Chưa upload file xét nghiệm
+                    {% endif %}
+                  </div>           
+                  {% endif %}
+                  </div>
             </div>
           </div>
       </div>
