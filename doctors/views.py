@@ -1247,11 +1247,11 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
         number_style = wb.add_format({"font_name":'Times New Roman','font_size':13,"border":1,'text_wrap':True,"align":"center","valign":"vcenter","num_format":'#,##0 ;[Red]General'})
 
         # information doctor at worksheet patient #
-        ws.merge_range('A2:K2',"Phòng Khám "+(doctor.doctor.get_kind_display()).upper()+" - "+doctor.doctor.full_name.upper(),header_style)
+        ws.merge_range('A2:K2',"Phòng Khám "+doctor.doctor.clinic_name.upper(),header_style)
         ws.merge_range("A3:K3","Địa chỉ: "+doctor.doctor.clinic_address,normal_style)
         ws.merge_range("A4:I4","Điện thoại đăng ký khám bệnh: "+doctor.doctor.phone,normal_style)
         # information doctor at worksheet doctor #
-        ws1.merge_range('A2:I2',"Phòng Khám "+(doctor.doctor.get_kind_display()).upper()+" - "+doctor.doctor.full_name.upper(),header_style)
+        ws1.merge_range('A2:I2',"Phòng Khám "+doctor.doctor.clinic_name.upper(),header_style)
         ws1.merge_range("A3:K3","Địa chỉ: "+doctor.doctor.clinic_address,normal_style)
         ws1.merge_range("A4:I4","Điện thoại đăng ký khám bệnh: "+doctor.doctor.phone,normal_style)
 
@@ -1411,7 +1411,7 @@ def export_final_info_excel_patient(request,pk_mrecord, pk_doctor, pk_history):
         number_style = wb.add_format({"font_name":'Times New Roman','font_size':13,"border":1,'text_wrap':True,"align":"center","valign":"vcenter","num_format":'#,##0 ;[Red]General'})
 
         # information doctor at worksheet patient #
-        ws.merge_range('A2:K2',"Phòng Khám "+(doctor.doctor.get_kind_display()).upper()+" - "+doctor.doctor.full_name.upper(),header_style)
+        ws.merge_range('A2:K2',"Phòng Khám "+doctor.doctor.clinic_name.upper(),header_style)
         ws.merge_range("A3:K3","Địa chỉ: "+doctor.doctor.clinic_address,normal_style)
         ws.merge_range("A4:I4","Điện thoại đăng ký khám bệnh: "+doctor.doctor.phone,normal_style)
 

@@ -28,7 +28,7 @@
       <h5 class="my-0 mr-md-auto font-weight-normal" style="font-family:'Yellowtail', cursive; font-size: 30px;">Healthy Care</h5>
       <nav class="my-2 my-md-0 mr-md-3">
         
-        <a class="p-2 text-dark" href="{% url 'license' %}">License</a>
+        <a class="p-2 text-dark" href="{% url 'license' %}">Bản quyền</a>
         
         {% if request.user.is_authenticated %}
         <a class="p-2 text-dark" href="{% url 'list_examination_finished' request.user.pk %}">Trang chủ</a> 
