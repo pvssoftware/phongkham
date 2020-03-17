@@ -73,6 +73,9 @@ def payment(request):
             vnpay_payment_url = vnp.get_payment_url(settings.VNPAY_PAYMENT_URL, settings.VNPAY_HASH_SECRET_KEY)
             print(vnpay_payment_url)
 
+            form.vnpay_payment_url = vnpay_payment_url
+            form.save()
+
             # if request.is_ajax():
                 # Show VNPAY Popup
             #     result = JsonResponse({'code': '00', 'Message': 'Init Success', 'data': vnpay_payment_url})
@@ -175,6 +178,7 @@ def payment_return(request):
             # Check vnp_Amount
             if payment.amount != str(amount):
                 return HttpResponse("Số tiền không hợp lệ.")
+            
 
             vnp_PayDate = datetime.strptime(vnp_PayDate,"%Y%m%d%H%M%S")
             if vnp_ResponseCode == "00":

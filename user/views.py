@@ -48,7 +48,7 @@ def license_page(request):
     return render(request,"user/license_product.html",{})
 
 def verify_email(request):
-    form = VerifyEmailForm()
+    
     if request.method == "POST":
         form = VerifyEmailForm(request.POST)
         if form.is_valid():
@@ -67,6 +67,10 @@ def verify_email(request):
             except DoctorProfile.DoesNotExist:
                 form.errors["email"] = ["Bạn chưa đăng ký email này"]
                 return render(request,"user/verify_email.html",{"form":form})
+    if request.user.is_authenticated:
+        form = VerifyEmailForm(initial={"email":request.user.email})
+    else:
+        form = VerifyEmailForm()
     return render(request,"user/verify_email.html",{"form":form})
 
 

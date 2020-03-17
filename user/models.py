@@ -61,6 +61,7 @@ class Payment(models.Model):
     status = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     license = models.CharField(max_length=50)
+    vnpay_payment_url = models.TextField(default="")
 
     def save(self, *args, **kwargs):
         # check whether this payment is created or update

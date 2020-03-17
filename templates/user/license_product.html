@@ -13,7 +13,7 @@
       
   <div class="row mb-3 text-center">
     <div class="col-xl-3 col-sm-6 py-2">
-    <div class="card mb-4 box-shadow">
+    <div class="card mb-4 box-shadow card-license">
       <div class="card-header">
         <h4 class="my-0 font-weight-normal">1month_premium</h4>
       </div>
@@ -25,12 +25,12 @@
           <li></li>
           <li class="mt-2">-Hỗ trợ sự cố 24/7/30.</li>
         </ul>
-        <button id="one_month" type="button" class="btn btn-lg btn-block btn-outline-primary mt-4">Đặt Mua Ngay</button>
+        <button id="one_month" type="button" class="btn btn-lg btn-block btn-outline-primary">Đặt Mua Ngay</button>
       </div>
     </div>
   </div>
     <div class="col-xl-3 col-sm-6 py-2">
-    <div class="card mb-4 box-shadow">
+    <div class="card mb-4 box-shadow card-license">
       <div class="card-header">
         <h4 class="my-0 font-weight-normal">1year_premium</h4>
       </div>
@@ -47,7 +47,7 @@
     </div>
   </div>
     <div class="col-xl-3 col-sm-6 py-2">
-    <div class="card mb-4 box-shadow">
+    <div class="card mb-4 box-shadow card-license">
       <div class="card-header">
         <h4 class="my-0 font-weight-normal">3years_premium</h4>
       </div>
@@ -64,7 +64,7 @@
     </div>
   </div>
     <div class="col-xl-3 col-sm-6 py-2">
-    <div class="card mb-4 box-shadow">
+    <div class="card mb-4 box-shadow card-license">
       <div class="card-header">
         <h4 class="my-0 font-weight-normal">ultrasound_app</h4>
       </div>
@@ -79,7 +79,8 @@
       </div>
     </div>
   </div>
-    
+  <!-- refresh page -->
+  <!-- <input type="hidden" id="refresh" value="no"> -->
   <form action="{% url 'license' %}" class="hidden-part" method="post">
     {% csrf_token %}
     <input type="text" id="license" name="license" >
@@ -141,6 +142,17 @@
         $("#one_month").prop("disabled",true);
         $(".hidden-part").submit();
       }); // end click ultrasound
+
+      // refresh page when return page by click back
+      // var $refresh = $("#refresh");
+      // if ($refresh.val()=="yes"){
+      //   location.reload(true);
+      //   console.log("1")
+      // } else{
+      //   $refresh.val("yes");
+      //   console.log("2")
+      // }
+
     }) ; // end ready
   </script>
 </div>

@@ -146,6 +146,7 @@ class AppWindow(models.Model):
     installer = models.FileField(upload_to="installer_win/")
     version = models.CharField(max_length=20)
     release_date = models.DateField(auto_now=True)
+    app_ultrasound = models.FileField(blank=True,null=True,upload_to="app_ultrasound/")
 
     def __str__(self):
         return self.version

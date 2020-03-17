@@ -1,4 +1,4 @@
-import xlsxwriter, xlrd, io, os
+import xlsxwriter, xlrd, io, os, re
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from datetime import datetime, timedelta, date
@@ -12,7 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
 from user.license import check_licenses, check_premium_licenses
-from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, PrescriptionDrugOutStock, BookedDay
+from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, PrescriptionDrugOutStock, BookedDay, AppWindow
 from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, update_examination_patients_finished_list, count_and_calculate_service, sum_cost_service
 from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, TakeDrugOutStockForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm, PatientLoginForm
 
@@ -1036,7 +1036,14 @@ def download_endoscopy(request,pk_doctor,pk_history):
         history = MedicalHistory.objects.get(pk=pk_history)
         return download_endoscopy_file(history)
 
-
+def download_app_ultrasound(request):
+    installer = AppWindow.objects.get(pk=1)
+    file_path = installer.app_ultrasound.path
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as app:
+            response = HttpResponse(app.read(),content_type="application/x-zip-compressed")
+            response['Content-Disposition'] = 'attachment;filename='+ re.sub(r".*\/","",installer.app_ultrasound.name)
+            return response
 # Delete history medical 
 
 def medical_history_del(request,pk_doctor,pk_mrecord,pk_history):
