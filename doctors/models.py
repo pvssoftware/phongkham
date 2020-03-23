@@ -121,7 +121,7 @@ class Medicine(models.Model):
 
 class PrescriptionDrug(models.Model):
     dose = models.CharField(max_length=10,blank=True)
-    time_take_medicine = models.CharField(max_length=30)
+    time_take_medicine = models.CharField(max_length=50)
     quantity = models.CharField(max_length=10)
     cost = models.CharField(max_length=50)
     medicine = models.ForeignKey(Medicine,on_delete=models.CASCADE)
@@ -134,7 +134,7 @@ class PrescriptionDrug(models.Model):
 class PrescriptionDrugOutStock(models.Model):
     name = models.CharField(max_length=50)
     dose = models.CharField(max_length=10,blank=True)
-    time_take_medicine = models.CharField(max_length=30)
+    time_take_medicine = models.CharField(max_length=50)
     quantity = models.CharField(max_length=10)
     cost = models.CharField(max_length=50,default="0")
     medical_history = models.ForeignKey(MedicalHistory,on_delete=models.CASCADE)

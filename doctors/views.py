@@ -1286,7 +1286,7 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
         ws1.merge_range("A12:H12","Chẩn đoán: "+history.diagnostis,normal_style)
 
         # dose format
-        dose_format = lambda x: "Mỗi lần "+x.dose+" "+x.medicine.unit+", " if (x.dose) else ""
+        dose_format = lambda x,y: "Mỗi lần "+x+" "+y+", " if (x) else ""
         # information prescription drug worksheet patient #
         ws.merge_range("A13:G13","Chỉ định dùng thuốc:",normal_style)
 
@@ -1299,7 +1299,7 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
             ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" "+drug.medicine.unit,normal_style)
             index += 1
 
-            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),dose_format(drug) + drug.time_take_medicine,normal_style)
+            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),dose_format(drug.dose,drug.medicine.unit) + drug.time_take_medicine,normal_style)
             row_drug += 2
             total_cost += int(drug.cost)
 
@@ -1308,7 +1308,7 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
             ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" "+drug.unit,normal_style)
             index += 1
 
-            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),dose_format(drug) + drug.time_take_medicine,normal_style)
+            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),dose_format(drug.dose,drug.unit) + drug.time_take_medicine,normal_style)
             row_drug += 2
             total_cost += int(drug.cost)
         # information prescription drug worksheet doctor #
@@ -1323,7 +1323,7 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
             ws1.merge_range("J{}:K{}".format(str(row_drug1),str(row_drug1)),drug.quantity+" "+drug.medicine.unit,normal_style)
             index += 1
 
-            ws1.merge_range("B{}:K{}".format(str(row_drug1+1),str(row_drug1+1)),dose_format(drug) + drug.time_take_medicine,normal_style)
+            ws1.merge_range("B{}:K{}".format(str(row_drug1+1),str(row_drug1+1)),dose_format(drug.dose,drug.medicine.unit) + drug.time_take_medicine,normal_style)
 
             ws1.merge_range("B{}:C{}".format(str(row_drug1+2),str(row_drug1+2)),"Giá bán (VNĐ)",normal_style)
             ws1.merge_range("D{}:F{}".format(str(row_drug1+2),str(row_drug1+2)),int(drug.cost),number_style)
@@ -1339,7 +1339,7 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
             ws1.merge_range("J{}:K{}".format(str(row_drug1),str(row_drug1)),drug.quantity+" "+drug.unit,normal_style)
             index += 1
 
-            ws1.merge_range("B{}:K{}".format(str(row_drug1+1),str(row_drug1+1)),dose_format(drug) + drug.time_take_medicine,normal_style)
+            ws1.merge_range("B{}:K{}".format(str(row_drug1+1),str(row_drug1+1)),dose_format(drug.dose,drug.unit) + drug.time_take_medicine,normal_style)
 
             ws1.merge_range("B{}:C{}".format(str(row_drug1+2),str(row_drug1+2)),"Giá bán (VNĐ)",normal_style)
             ws1.merge_range("D{}:F{}".format(str(row_drug1+2),str(row_drug1+2)),int(drug.cost),number_style)
@@ -1440,7 +1440,7 @@ def export_final_info_excel_patient(request,pk_mrecord, pk_doctor, pk_history):
         ws.merge_range("A12:H12","Chẩn đoán: "+history.diagnostis,normal_style)
 
         # dose format
-        dose_format = lambda x: "Mỗi lần "+x.dose+" "+x.medicine.unit+", " if (x.dose) else ""
+        dose_format = lambda x,y: "Mỗi lần "+x+" "+y+", " if (x) else ""
 
         # information prescription drug worksheet patient #
         ws.merge_range("A13:G13","Chỉ định dùng thuốc:",normal_style)
@@ -1454,7 +1454,7 @@ def export_final_info_excel_patient(request,pk_mrecord, pk_doctor, pk_history):
             ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" "+drug.medicine.unit,normal_style)
             index += 1
 
-            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),dose_format(drug) + drug.time_take_medicine,normal_style)
+            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),dose_format(drug.dose,drug.medicine.unit) + drug.time_take_medicine,normal_style)
             row_drug += 2
             total_cost += int(drug.cost)
 
@@ -1463,7 +1463,7 @@ def export_final_info_excel_patient(request,pk_mrecord, pk_doctor, pk_history):
             ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" "+drug.unit,normal_style)
             index += 1
 
-            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),dose_format(drug) + drug.time_take_medicine,normal_style)
+            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),dose_format(drug.dose,drug.unit) + drug.time_take_medicine,normal_style)
             row_drug += 2
             total_cost += int(drug.cost)
         
