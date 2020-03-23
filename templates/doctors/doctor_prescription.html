@@ -163,12 +163,13 @@
             <span id="alert_name" style="color: red;font-size:15px"></span>
           </div>
           <div class="form-group">
-            <label for="dose">Liều lượng<span class="required-input">*</span></label>
+            <label for="dose">Liều lượng</label>
             <input
               type="text"
               class="form-control"
               id="dose"
               name="dose"
+              placeholder="Nhập liều lượng hoặc để trống"
             />
             <span id="alert_dose" style="color: red;font-size:15px"></span>
           </div>
@@ -181,6 +182,16 @@
               name="quantity"
             />
             <span id="alert_quantity" style="color: red;font-size:15px"></span>
+          </div>
+          <div class="form-group">
+            <label for="unit">Đơn vị<span class="required-input">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              id="unit"
+              name="unit"
+            />
+            <span id="alert_unit" style="color: red;font-size:15px"></span>
           </div>
           <div class="form-group">
             <label for="time_take_medicine">Cách dùng<span class="required-input">*</span></label>
@@ -239,11 +250,13 @@
       } else {
         $("#alert_name").text("");
       }
-      if (dose === "") {
-        $("#alert_dose").text("Bạn nên nhập liều lượng thuốc");
-        valid &= false;
+      if (dose === ""){
+          $("#alert_dose").text("");
+      } else if (!ValidateDigit(dose)) {
+          $("#alert_dose").text("Giá trị nhập không hợp lệ");
+          valid &= false;
       } else {
-        $("#alert_dose").text("");
+          $("#alert_dose").text("");
       }
       if (time_take_medicine === "") {
         $("#alert_time_take_medicine").text("Bạn nên nhập cách dùng thuốc");
@@ -256,6 +269,12 @@
         valid &= false;
       } else {
         $("#alert_quantity").text("");
+      }
+      if (unit === "") {
+        $("#alert_unit").text("Bạn nên nhập đơn vị thuốc");
+        valid &= false;
+      } else {
+        $("#alert_unit").text("");
       }
       if (cost !== "") {
         if(!ValidateDigit(cost)){

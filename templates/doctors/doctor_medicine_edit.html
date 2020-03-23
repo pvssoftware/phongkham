@@ -23,12 +23,12 @@
             <span id="alert_full_name" style="color: #d9534f;font-size:15px"></span>
         </div>
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="sale_price">Giá bán<span class="required-input">*</span></label>
                 <input class="form-control" value="{{ form.sale_price.value }}" type="text" name="sale_price" id="sale_price" placeholder="Sửa giá bán">
                 <span id="alert_sale_price" style="color: #d9534f;font-size:15px"></span>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="import_price">Giá mua<span class="required-input">*</span></label>
                 <input class="form-control" value="{{ form.import_price.value }}" type="text" name="import_price" id="import_price" placeholder="Sửa giá mua">
                 <span id="alert_import_price" style="color: #d9534f;font-size:15px"></span>
@@ -52,6 +52,11 @@
                 value="{{ form.add_quantity.value }}"
                 {% endif %} >
                 <span id="alert_add_quantity" style="color: #d9534f;font-size:15px"></span>
+            </div>
+            <div class="col-md-2">
+                <label for="unit">Đơn vị<span class="required-input">*</span></label>
+                <input class="form-control" type="text" name="unit" value="{{ form.unit.value }}" id="unit" placeholder="Nhập viên, chai..." />
+                <span id="alert_unit" style="color: #d9534f;font-size:15px"></span>
             </div>
         </div>
         <button class="btn btn-submit mt-3" type="button">Cập nhật</button>
@@ -89,6 +94,7 @@ $(document).ready(function(){
         var import_price = $("#import_price").val();
         var add_quantity = $("#add_quantity").val();
         var date_expired = $("#date_expired").val();
+        var unit = $("#unit").val();
         var valid = true;
 
         if(name ===""){
@@ -120,6 +126,12 @@ $(document).ready(function(){
             valid &= false;
         } else{
             $("#alert_add_quantity").text("");
+        }
+        if (unit === "") {
+            $("#alert_unit").text("Bạn nên nhập đơn vị thuốc");
+        valid &= false;
+        } else {
+            $("#alert_unit").text("");
         }
         if (date_expired==""){
             $("#alert_date_expired").text("");

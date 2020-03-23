@@ -18,13 +18,14 @@
                 <td class="drug_quantity">{{ drug.quantity }}</td>
             </tr>
             <tr>
+                <th>Đơn vị</th>
+                <td>{{ drug.unit }}</td>
+            </tr>
+            <tr>
                 <th>Giá bán</th>
                 <td class="sale_price">{{ drug.sale_price }}</td>
             </tr>
-            <!-- <tr>
-                <th>Giá mua vào</th>
-                <td class="import_price">{{ drug.import_price }}</td>
-            </tr> -->
+            
         </tbody>
     </table>
 
@@ -32,9 +33,9 @@
         {% csrf_token %}
         <div class="form-row align-items-center">
             <div class="col-md-4 form-group">
-                <label for="dose">Liều lượng<span class="required-input">*</span></label>
+                <label for="dose">Liều lượng</label>
                 <input type="text" name="dose" class="form-control" id="dose"
-                    placeholder="Mỗi lần dùng bao nhiêu viên?" 
+                    placeholder="Mỗi lần dùng bao nhiêu?" 
                     {% if form.dose.value %} 
                     value="{{ form.dose.value }}" 
                     {% endif %}/>
@@ -80,13 +81,16 @@
             var isValid = regex.test(value);
             return isValid;
         }
+        
         $("#bt_take_drug").click(function () {
             var dose = $("#dose").val();
             var quantity = $("#quantity").val();
             var time_take_medicine = $("#time_take_medicine").val();
             var valid = true;
 
-            if (!ValidateDigit(dose)) {
+            if (dose === ""){
+                $("#alert_dose").text("");
+            } else if (!ValidateDigit(dose)) {
                 $("#alert_dose").text("Giá trị nhập không hợp lệ");
                 valid &= false;
             } else {

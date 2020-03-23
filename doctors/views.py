@@ -454,7 +454,7 @@ def medicine_edit_protect(request,pk_doctor,pk_medicine):
     if doctor == request.user:
         medicine = Medicine.objects.get(pk=pk_medicine)
         date_expired = lambda x: x.strftime("%d/%m/%Y") if (x) else ""
-        form = MedicineEditForm(initial={"name":medicine.name,'full_name':medicine.full_name,'sale_price':medicine.sale_price,'import_price':medicine.import_price,'date_expired':date_expired(medicine.date_expired)})
+        form = MedicineEditForm(initial={"name":medicine.name,'full_name':medicine.full_name,'sale_price':medicine.sale_price,'import_price':medicine.import_price,'date_expired':date_expired(medicine.date_expired),"unit":medicine.unit})
         
         return password_protect(request,pk_doctor,'doctors/doctor_medicine_edit.html','doctors/doctor_medicine_edit_protect.html',{'form':form,'pk_doctor':pk_doctor,'pk_medicine':pk_medicine,"medicine":medicine})
 
@@ -486,6 +486,7 @@ def medicine_edit(request,pk_doctor,pk_medicine):
                     medicine.sale_price = form.cleaned_data['sale_price']
                     medicine.import_price = form.cleaned_data['import_price']
                     medicine.date_expired = form.cleaned_data['date_expired']
+                    medicine.unit = form.cleaned_data['unit']
                     if form.cleaned_data['add_quantity']:
                         medicine.quantity = str(int(form.cleaned_data['add_quantity'])+int(medicine.quantity))
                     medicine.save()
@@ -497,7 +498,8 @@ def medicine_edit(request,pk_doctor,pk_medicine):
                 return redirect(reverse("medicine_edit_protect",kwargs={"pk_doctor":pk_doctor,'pk_medicine':pk_medicine}))
 
             date_expired = lambda x: x.strftime("%d/%m/%Y") if (x) else ""
-            form = MedicineEditForm(initial={"name":medicine.name,'full_name':medicine.full_name,'sale_price':medicine.sale_price,'import_price':medicine.import_price,'date_expired':date_expired(medicine.date_expired)})
+            form = MedicineEditForm(initial={"name":medicine.name,'full_name':medicine.full_name,'sale_price':medicine.sale_price,'import_price':medicine.import_price,'date_expired':date_expired(medicine.date_expired),"unit":medicine.unit})
+        
             return render(request,'doctors/doctor_medicine_edit.html',{'form':form,'pk_doctor':pk_doctor,'pk_medicine':pk_medicine,"medicine":medicine})
 
 # Medicine del view
@@ -544,10 +546,10 @@ def upload_medicine_excel(request,pk_doctor):
                         for c in range(num_columns):
                             row.append(sheet.cell(r,c).value)
                         try:
-                            row[5] = datetime(*xlrd.xldate_as_tuple(row[5],wb.datemode)).strftime('%d/%m/%Y')
+                            row[6] = datetime(*xlrd.xldate_as_tuple(row[6],wb.datemode)).strftime('%d/%m/%Y')
                         except:
                             pass
-                        if (type(row[2])==str or row[2]=="") or (type(row[3])==str or row[3]=="") or (type(row[4])==str or row[4]==0 or row[4]=="") or not check_date_format(row[5]):
+                        if (type(row[2])==str or row[2]=="") or (type(row[3])==str or row[3]=="") or (type(row[4])==str or row[4]==0 or row[4]=="") or not check_date_format(row[6]):
                             data_error.append(row)
                             continue
                         
@@ -555,16 +557,20 @@ def upload_medicine_excel(request,pk_doctor):
                         row[3] = int(row[3]) 
                         row[4] = int(row[4]) 
 
+                        unit= lambda x: x if (x) else "viên"
                         try:
                             medicine = Medicine.objects.get(full_name__iexact=str(row[1]),doctor=doctor)
                             medicine.name = str(row[0])
                             medicine.sale_price = str(row[2])
                             medicine.import_price = str(row[3])
                             medicine.quantity = str(row[4])
-                            medicine.date_expired = datetime.strptime(row[5],"%d/%m/%Y").strftime("%Y-%m-%d")
+                            
+                            medicine.unit = str(unit(row[5]))
+                            medicine.date_expired = datetime.strptime(row[6],"%d/%m/%Y").strftime("%Y-%m-%d")
                             medicine.save()
                         except:
-                            Medicine.objects.create(name=str(row[0]),full_name=str(row[1]),sale_price=str(row[2]),import_price=str(row[3]),quantity=str(row[4]),date_expired = datetime.strptime(row[5],"%d/%m/%Y").strftime("%Y-%m-%d") ,doctor=doctor)
+                            
+                            Medicine.objects.create(name=str(row[0]),full_name=str(row[1]),sale_price=str(row[2]),import_price=str(row[3]),quantity=str(row[4]),unit=unit(row[5]),date_expired = datetime.strptime(row[6],"%d/%m/%Y").strftime("%Y-%m-%d") ,doctor=doctor)
 
                 if data_error:
                     return render(request,'doctors/doctor_alert_upload.html',{"pk_doctor":pk_doctor,"data_error":data_error})
@@ -1279,6 +1285,8 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
         ws1.merge_range("A11:H11","Địa chỉ: "+mrecord.address,normal_style)
         ws1.merge_range("A12:H12","Chẩn đoán: "+history.diagnostis,normal_style)
 
+        # dose format
+        dose_format = lambda x: "Mỗi lần "+x.dose+" "+x.medicine.unit+", " if (x.dose) else ""
         # information prescription drug worksheet patient #
         ws.merge_range("A13:G13","Chỉ định dùng thuốc:",normal_style)
 
@@ -1288,19 +1296,19 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
 
         for drug in history.prescriptiondrug_set.all():
             ws.merge_range("B{}:F{}".format(str(row_drug),str(row_drug)),str(index)+". "+drug.medicine.full_name,header_style)
-            ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" viên",normal_style)
+            ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" "+drug.medicine.unit,normal_style)
             index += 1
 
-            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),"Mỗi lần "+drug.dose+" viên"+", "+drug.time_take_medicine,normal_style)
+            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),dose_format(drug) + drug.time_take_medicine,normal_style)
             row_drug += 2
             total_cost += int(drug.cost)
 
         for drug in history.prescriptiondrugoutstock_set.all():
             ws.merge_range("B{}:F{}".format(str(row_drug),str(row_drug)),str(index)+". "+drug.name,header_style)
-            ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" viên",normal_style)
+            ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" "+drug.unit,normal_style)
             index += 1
 
-            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),"Mỗi lần "+drug.dose+" viên"+", "+drug.time_take_medicine,normal_style)
+            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),dose_format(drug) + drug.time_take_medicine,normal_style)
             row_drug += 2
             total_cost += int(drug.cost)
         # information prescription drug worksheet doctor #
@@ -1312,10 +1320,10 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
 
         for drug in history.prescriptiondrug_set.all():
             ws1.merge_range("B{}:F{}".format(str(row_drug1),str(row_drug1)),str(index)+". "+drug.medicine.full_name,header_style)
-            ws1.merge_range("J{}:K{}".format(str(row_drug1),str(row_drug1)),drug.quantity+" viên",normal_style)
+            ws1.merge_range("J{}:K{}".format(str(row_drug1),str(row_drug1)),drug.quantity+" "+drug.medicine.unit,normal_style)
             index += 1
 
-            ws1.merge_range("B{}:K{}".format(str(row_drug1+1),str(row_drug1+1)),"Mỗi lần "+drug.dose+" viên"+", "+drug.time_take_medicine,normal_style)
+            ws1.merge_range("B{}:K{}".format(str(row_drug1+1),str(row_drug1+1)),dose_format(drug) + drug.time_take_medicine,normal_style)
 
             ws1.merge_range("B{}:C{}".format(str(row_drug1+2),str(row_drug1+2)),"Giá bán (VNĐ)",normal_style)
             ws1.merge_range("D{}:F{}".format(str(row_drug1+2),str(row_drug1+2)),int(drug.cost),number_style)
@@ -1328,10 +1336,10 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
 
         for drug in history.prescriptiondrugoutstock_set.all():
             ws1.merge_range("B{}:F{}".format(str(row_drug1),str(row_drug1)),str(index)+". "+drug.name,header_style)
-            ws1.merge_range("J{}:K{}".format(str(row_drug1),str(row_drug1)),drug.quantity+" viên",normal_style)
+            ws1.merge_range("J{}:K{}".format(str(row_drug1),str(row_drug1)),drug.quantity+" "+drug.unit,normal_style)
             index += 1
 
-            ws1.merge_range("B{}:K{}".format(str(row_drug1+1),str(row_drug1+1)),"Mỗi lần "+drug.dose+" viên"+", "+drug.time_take_medicine,normal_style)
+            ws1.merge_range("B{}:K{}".format(str(row_drug1+1),str(row_drug1+1)),dose_format(drug) + drug.time_take_medicine,normal_style)
 
             ws1.merge_range("B{}:C{}".format(str(row_drug1+2),str(row_drug1+2)),"Giá bán (VNĐ)",normal_style)
             ws1.merge_range("D{}:F{}".format(str(row_drug1+2),str(row_drug1+2)),int(drug.cost),number_style)
@@ -1431,6 +1439,9 @@ def export_final_info_excel_patient(request,pk_mrecord, pk_doctor, pk_history):
         ws.merge_range("A11:H11","Địa chỉ: "+mrecord.address,normal_style)
         ws.merge_range("A12:H12","Chẩn đoán: "+history.diagnostis,normal_style)
 
+        # dose format
+        dose_format = lambda x: "Mỗi lần "+x.dose+" "+x.medicine.unit+", " if (x.dose) else ""
+
         # information prescription drug worksheet patient #
         ws.merge_range("A13:G13","Chỉ định dùng thuốc:",normal_style)
 
@@ -1440,19 +1451,19 @@ def export_final_info_excel_patient(request,pk_mrecord, pk_doctor, pk_history):
 
         for drug in history.prescriptiondrug_set.all():
             ws.merge_range("B{}:F{}".format(str(row_drug),str(row_drug)),str(index)+". "+drug.medicine.full_name,header_style)
-            ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" viên",normal_style)
+            ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" "+drug.medicine.unit,normal_style)
             index += 1
 
-            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),"Mỗi lần "+drug.dose+" viên"+", "+drug.time_take_medicine,normal_style)
+            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),dose_format(drug) + drug.time_take_medicine,normal_style)
             row_drug += 2
             total_cost += int(drug.cost)
 
         for drug in history.prescriptiondrugoutstock_set.all():
             ws.merge_range("B{}:F{}".format(str(row_drug),str(row_drug)),str(index)+". "+drug.name,header_style)
-            ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" viên",normal_style)
+            ws.merge_range("J{}:K{}".format(str(row_drug),str(row_drug)),drug.quantity+" "+drug.unit,normal_style)
             index += 1
 
-            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),"Mỗi lần "+drug.dose+" viên"+", "+drug.time_take_medicine,normal_style)
+            ws.merge_range("C{}:K{}".format(str(row_drug+1),str(row_drug+1)),dose_format(drug) + drug.time_take_medicine,normal_style)
             row_drug += 2
             total_cost += int(drug.cost)
         

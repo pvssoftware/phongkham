@@ -171,10 +171,11 @@ class MedicalHistoryFormMix(forms.ModelForm):
 
 class MedicineForm(forms.ModelForm):
     date_expired = forms.DateField(input_formats=["%d/%m/%Y", ],required = False)
+    unit = forms.CharField()
     class Meta:
         model = Medicine
         fields = ["name", 'full_name', 'quantity',
-                  'sale_price', 'import_price',"date_expired"]
+                  'sale_price', 'import_price',"date_expired","unit"]
     def clean_date_expired(self):
         date_expired = self.cleaned_data['date_expired']
         if date_expired:
@@ -188,10 +189,12 @@ class MedicineEditForm(forms.Form):
     sale_price = forms.CharField()
     import_price = forms.CharField()
     date_expired = forms.DateField(input_formats=["%d/%m/%Y", ],required = False)
+    unit = forms.CharField()
 
     class Meta:
         fields = ["name", 'full_name', 'add_quantity',
-                  'sale_price', 'import_price','date_expired']
+                  'sale_price', 'import_price','date_expired',"unit"]
+                  
     def clean_date_expired(self):
         date_expired = self.cleaned_data['date_expired']
         if date_expired:
@@ -241,7 +244,7 @@ class TakeDrugOutStockForm(forms.ModelForm):
     cost = forms.CharField(required=False)
     class Meta:
         model = PrescriptionDrugOutStock
-        fields = ["dose", "time_take_medicine", "quantity","cost","name"]
+        fields = ["dose", "time_take_medicine", "quantity","cost","name","unit"]
 
     def clean_cost(self):
         cost = self.cleaned_data["cost"]

@@ -111,6 +111,7 @@ class Medicine(models.Model):
     import_price = models.CharField(max_length=50)
     doctor = models.ForeignKey(User,on_delete=models.CASCADE)
     date_expired = models.DateField(blank=True,null=True)
+    unit = models.CharField(max_length=100, default="viên")
 
     def __str__(self):
         return self.name
@@ -119,7 +120,7 @@ class Medicine(models.Model):
 
 
 class PrescriptionDrug(models.Model):
-    dose = models.CharField(max_length=10)
+    dose = models.CharField(max_length=10,blank=True)
     time_take_medicine = models.CharField(max_length=30)
     quantity = models.CharField(max_length=10)
     cost = models.CharField(max_length=50)
@@ -132,11 +133,12 @@ class PrescriptionDrug(models.Model):
 
 class PrescriptionDrugOutStock(models.Model):
     name = models.CharField(max_length=50)
-    dose = models.CharField(max_length=10)
+    dose = models.CharField(max_length=10,blank=True)
     time_take_medicine = models.CharField(max_length=30)
     quantity = models.CharField(max_length=10)
     cost = models.CharField(max_length=50,default="0")
     medical_history = models.ForeignKey(MedicalHistory,on_delete=models.CASCADE)
+    unit = models.CharField(max_length=100, default="viên")
 
     def __str__(self):
         return self.name
