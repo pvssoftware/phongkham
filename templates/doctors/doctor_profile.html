@@ -17,7 +17,7 @@
   </div>
   
 </div>
-{% if object_list %}
+
 <div class="my-3 p-3 bg-light rounded box-shadow">
   <div class="d-flex justify-content-between align-items-center border-bottom border-gray">
     <h4 class="pb-2 mb-0">Danh sách bệnh nhân</h4>
@@ -27,7 +27,7 @@
     </div>
     
   </div>
-  
+{% if object_list %}  
   {% for ob in object_list %}
 <div class="media text-muted pt-3">
     <i class="fa fa-square mr-2"
