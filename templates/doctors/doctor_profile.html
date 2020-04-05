@@ -21,7 +21,11 @@
 <div class="my-3 p-3 bg-light rounded box-shadow">
   <div class="d-flex justify-content-between align-items-center border-bottom border-gray">
     <h4 class="pb-2 mb-0">Danh sách bệnh nhân</h4>
-    <span style="font-weight: bold"><a href="?service=none" class="page-link-mix">Dịch vụ khám</a></span>
+    <div>
+      <span style="font-weight: bold"><a href="?service=none" class="page-link-mix">Tất cả</a></span> / 
+      <span style="font-weight: bold"><a href="?service=chua_kham" class="page-link-mix">Chưa khám</a></span> 
+    </div>
+    
   </div>
   
   {% for ob in object_list %}
@@ -54,7 +58,12 @@
       {% elif ob.pk %}
       <a href="?service=phu_khoa" class="page-link-mix">Phụ khoa</a>
       {% else %}
-      <a href="?service=chua_kham" class="page-link-mix">Chưa khám</a>
+      <div>
+        <a href="?service=chua_kham" class="page-link-mix">Chưa khám</a> - 
+        <a href="{% url 'medical_record_del' doctor.pk ob.ob.pk %}?path_list={{request.path}}&page={{page_number}}" class="page-link-mix" style="color: #d9534f">Xóa</a>
+        
+      </div>
+      
       {% endif %}
       </div>
       <div>
@@ -128,6 +137,7 @@
     //   alert(value);
     //   console.log(value);
     // }); // end click
+    
   });
 </script>
 {% endblock %}

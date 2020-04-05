@@ -1,9 +1,10 @@
 import os
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+# from rest_framework.utils import model_meta
 from django.conf import settings
 from .models import MedicalRecord, MedicalHistory
-from .custom_serializers import CustomHyperlinkedIdentityField, CustomHyperlinkedRelatedField, RecordSerializerField
+from .custom_serializers import CustomHyperlinkedIdentityField, CustomHyperlinkedRelatedField, RecordSerializerField, validated_file, remove_file, update_ultrasound_serializer
 from user.utils import get_price_ultrasound_app_or_setting
 from user.models import User, DoctorProfile
 
@@ -62,30 +63,92 @@ class UploadMedicalUltrasonographySerializer(serializers.ModelSerializer):
     #     return request.build_absolute_uri(link)
 
     def update(self, instance, validated_data):
+        # name the file upload
         file_upload = validated_data.get("medical_ultrasonography_file",None)
-        if file_upload:
-            content_type = file_upload.content_type.split("/")[1]
-            if content_type in settings.CONTENT_TYPES:                
-                if file_upload.size > settings.MAX_UPLOAD_SIZE:
-                    raise ValidationError("File upload của bạn trên 5M.")
-            else:
-                raise ValidationError("Bạn nên upload định dạng PDF.")
 
-        if instance.medical_ultrasonography_file:
-            try:
-                os.remove(instance.medical_ultrasonography_file.path)
-            except FileNotFoundError:
-                pass 
-        instance.medical_ultrasonography_file = file_upload
+        # validate file
+        validated_file(file_upload,instance)
+        # remove old file
+        remove_file(instance.medical_ultrasonography_file)
 
-        instance.medical_ultrasonography = validated_data.get("medical_ultrasonography",instance.medical_ultrasonography)
-        # get price from app or settings
-        instance.medical_ultrasonography_cost = get_price_ultrasound_app_or_setting(instance.medical_record.doctor,validated_data.get("medical_ultrasonography_cost","0"))
+        
+        # instance.medical_ultrasonography_file = file_upload
+        # print(list(self.fields.keys())[3])
+        # print(validated_data.items())
 
-        instance.is_waiting = self.context.get("is_waiting")
-        instance.save()
+        # instance.medical_ultrasonography = validated_data.get("medical_ultrasonography",instance.medical_ultrasonography)
+        # # get price from app or settings
+        # instance.medical_ultrasonography_cost = get_price_ultrasound_app_or_setting(instance.medical_record.doctor,validated_data.get("medical_ultrasonography_cost","0"))
 
-        return instance
+        # instance.is_waiting = self.context.get("is_waiting")
+        # instance.save()
+
+        return update_ultrasound_serializer(
+            instance,
+            validated_data.get("medical_ultrasonography",instance.medical_ultrasonography),
+            file_upload,
+            get_price_ultrasound_app_or_setting(instance.medical_record.doctor,validated_data.get("medical_ultrasonography_cost","0")),
+            self.context.get("is_waiting"),
+            list(self.fields.keys())
+        )
+
+# upload medical ultrasonography file 2
+class UploadMedicalUltrasonographySerializer2(serializers.ModelSerializer):
+    
+    class Meta:
+        model = MedicalHistory
+        fields=("id","medical_ultrasonography_2","medical_ultrasonography_file_2","medical_ultrasonography_cost_2","is_waiting")
+        read_only_fields = ("id",)
+
+    def update(self, instance, validated_data):
+        # name the file upload
+        file_upload = validated_data.get("medical_ultrasonography_file_2",None)
+
+        # validate file
+        validated_file(file_upload,instance)
+        # remove old file
+        remove_file(instance.medical_ultrasonography_file_2)
+
+        return update_ultrasound_serializer(
+            instance,
+            validated_data.get("medical_ultrasonography_2",instance.medical_ultrasonography_2),
+            file_upload,
+            get_price_ultrasound_app_or_setting(instance.medical_record.doctor,validated_data.get("medical_ultrasonography_cost_2","0")),
+            self.context.get("is_waiting"),
+            list(self.fields.keys())
+        )
+
+# upload medical ultrasonography file 3
+class UploadMedicalUltrasonographySerializer3(serializers.ModelSerializer):
+    
+    class Meta:
+        model = MedicalHistory
+        fields=("id","medical_ultrasonography_3","medical_ultrasonography_file_3","medical_ultrasonography_cost_3","is_waiting")
+        read_only_fields = ("id",)
+
+    def update(self, instance, validated_data):
+        # name the file upload
+        file_upload = validated_data.get("medical_ultrasonography_file_3",None)
+
+        # validate file
+        validated_file(file_upload,instance)
+        # remove old file
+        remove_file(instance.medical_ultrasonography_file_3)
+
+        return update_ultrasound_serializer(
+            instance,
+            validated_data.get("medical_ultrasonography_3",instance.medical_ultrasonography_3),
+            file_upload,
+            get_price_ultrasound_app_or_setting(instance.medical_record.doctor,validated_data.get("medical_ultrasonography_cost_3","0")),
+            self.context.get("is_waiting"),
+            list(self.fields.keys())
+        )
+
+class ResponseUploadMedicalUltrasonographySerializer(ExaminationPatientsSerializer):
+    class Meta:
+        model = MedicalHistory
+        fields=("id","medical_ultrasonography","medical_ultrasonography_file","medical_ultrasonography_cost","medical_ultrasonography_2","medical_ultrasonography_file_2","medical_ultrasonography_cost_2","medical_ultrasonography_3","medical_ultrasonography_file_3","medical_ultrasonography_cost_3","is_waiting","date_booked","medical_record","ordinal_number")
+        read_only_fields = ("id",)
 
 class CreateUploadMedicalUltrasonographySerializer(ExaminationPatientsSerializer):
     # birth_date = serializers.DateField(format="%Y")

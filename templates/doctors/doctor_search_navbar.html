@@ -28,14 +28,14 @@
                 - ĐT: {{ mrecord.phone }}
               {% endif %}
             </a></strong>
-            <span class="page-link-mix">Chưa khám</span>
+            <span class="page-link-mix">Chưa khám - <a href="{% url 'medical_record_del' pk_doctor mrecord.pk %}?path_search={{request.get_full_path |urlencode}}" class="page-link-mix" style="color: #d9534f">Xóa</a></span>
                         
           </div>
-          <div class="d-flex justify-content-between align-items-center">
-              
+          <div >
+            <span>Thơi gian tạo hồ sơ -- <i class="fa fa-calendar"></i> {{ mrecord.created_at | date:" D. d-m-Y" }}</span>
           </div>
           
-          </div>
+        </div>
         
       </div>
       {% endfor %}

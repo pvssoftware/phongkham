@@ -333,11 +333,11 @@
       </div>
     </div>
     <div
-      class="mb-3"
+      class="mb-5"
       id="medical_ultrasonography_field"
       {% if not settings_service.medical_ultrasonography %}
         style="display: none;"
-        {% endif %}
+      {% endif %}
     >
       <div class="form-group mb-0">
         <label for="medical_ultrasonography"
@@ -368,9 +368,75 @@
           style="color: red;font-size:15px"
         ></span>
       </div>
+
+      <div class="mb-3"
+      {% if not settings_service.medical_ultrasonography_multi %}
+        style="display: none;"
+      {% endif %}>
+      <div class="form-group mb-0">
+        <label for="medical_ultrasonography_2"
+          >Ghi chú kết quả siêu âm lần 2</label
+        >
+        <input
+          type="text"
+          class="form-control"
+          id="medical_ultrasonography_2"
+          name="medical_ultrasonography_2"
+          placeholder=""
+        />
+        <span
+          id="alert_medical_ultrasonography_2"
+          style="color: #d9534f;font-size:15px"
+        ></span>
+      </div>
+      <div class="form-group">
+        <label for="medical_ultrasonography_file_2">Upload kết quả siêu âm lần 2</label>
+        <input
+          type="file"
+          class="form-control-file"
+          id="medical_ultrasonography_file_2"
+          name="medical_ultrasonography_file_2"
+        />
+        <span
+          id="alert_medical_ultrasonography_file_2"
+          style="color: red;font-size:15px"
+        ></span>
+      </div>
+
+      <div class="form-group mb-0">
+        <label for="medical_ultrasonography_3"
+          >Ghi chú kết quả siêu âm lần 3</label
+        >
+        <input
+          type="text"
+          class="form-control"
+          id="medical_ultrasonography_3"
+          name="medical_ultrasonography_3"
+          placeholder=""
+        />
+        <span
+          id="alert_medical_ultrasonography_3"
+          style="color: #d9534f;font-size:15px"
+        ></span>
+      </div>
+      <div class="form-group">
+        <label for="medical_ultrasonography_file_3">Upload kết quả siêu âm lần 3</label>
+        <input
+          type="file"
+          class="form-control-file"
+          id="medical_ultrasonography_file_3"
+          name="medical_ultrasonography_file_3"
+        />
+        <span
+          id="alert_medical_ultrasonography_file_3"
+          style="color: red;font-size:15px"
+        ></span>
+      </div>
+
+      </div>
     </div>
     <div
-      class="mb-3"
+      class="mb-5"
       id="endoscopy_field"
       {% if not settings_service.endoscopy %}
         style="display: none;"
@@ -404,7 +470,7 @@
       </div>
     </div>
     <div
-      class="mb-3"
+      class="mb-5"
       id="medical_test_field"
       {% if not settings_service.medical_test %}
         style="display: none;"
@@ -576,6 +642,46 @@
           {% endif %}
         </p>
       </div>
+
+      {% if settings_service.medical_ultrasonography_multi %}
+        <div class="media pt-3 d-flex justify-content-between">
+        <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+        <strong class="d-block text-gray-dark">Siêu âm lần 2</strong>
+        {% if history.medical_ultrasonography_2 %}
+        {{ history.medical_ultrasonography_2 }}
+        {% else %}
+        Bỏ trống
+        {% endif %}
+        </p>
+        <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right">
+        <strong class="d-block text-gray-dark">File siêu âm lần 2</strong>
+        {% if history.medical_ultrasonography_file_2 %}
+        <a class="view-pdf page-link-mix" href="{{ history.medical_ultrasonography_file_2.url }}">Xem file</a>
+        {% else %}
+        Không có file
+        {% endif %}
+        </p>
+        </div>
+
+        <div class="media pt-3 d-flex justify-content-between">
+        <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+        <strong class="d-block text-gray-dark">Siêu âm lần 3</strong>
+        {% if history.medical_ultrasonography_3 %}
+        {{ history.medical_ultrasonography_3 }}
+        {% else %}
+        Bỏ trống
+        {% endif %}
+        </p>
+        <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right">
+        <strong class="d-block text-gray-dark">File siêu âm lần 3</strong>
+        {% if history.medical_ultrasonography_file_3 %}
+        <a class="view-pdf page-link-mix" href="{{ history.medical_ultrasonography_file_3.url }}">Xem file</a>
+        {% else %}
+        Không có file
+        {% endif %}
+        </p>
+        </div>
+      {% endif %}
     </div>
     {% endif %} 
     {% if settings_service.endoscopy %}

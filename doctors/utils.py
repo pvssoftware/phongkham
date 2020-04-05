@@ -236,7 +236,7 @@ class PageLinksMixin(ListView):
         # print(page.paginator.page_range)
         if page is not None:
             context.update({"first_page_url": self.first_page(page), "previous_page_url": self.previous_page(
-                page), "next_page_url": self.next_page(page), "last_page_url": self.last_page(page)})
+                page), "next_page_url": self.next_page(page), "last_page_url": self.last_page(page),"page_number":page.number})
         return context
 
 class DoctorProfileMixin:
@@ -257,7 +257,7 @@ class DoctorProfileMixin:
         # elif self.request.user.email in list_email_manage:
         #     self.object_list = self.get_queryset().filter(doctor=doctor)
         #     doctor = doctor
-
+            
             page = request.GET.get('page')
             service = request.GET.get('service')
             # if sex=="male":

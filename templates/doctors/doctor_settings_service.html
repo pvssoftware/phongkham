@@ -61,6 +61,15 @@
             </div>
             
         </div>
+        <div class="form-check my-3">
+          <input class="form-check-input" type="checkbox" id="medical_ultrasonography_multi" name="medical_ultrasonography_multi" 
+          {% if doctor.settingsservice.medical_ultrasonography_multi %}
+              checked
+          {% endif %}>
+          <label class="form-check-label" for="medical_ultrasonography_multi">
+            Kích hoạt lưu trữ nhiều kết quả siêu âm trong 1 lần khám
+          </label>
+        </div>
         <div class="form-inline">
             <div class="form-check my-3">
                 <input class="form-check-input" type="checkbox" id="endoscopy" name="endoscopy" 

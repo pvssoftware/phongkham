@@ -41,7 +41,7 @@ class UserCreationFormMix(
         UserCreationForm):
     KIND_DOCTOR = [
         ("obstetrician-gynecologist","bác sĩ sản phụ khoa"),
-        ("Oral maxillofacial surgeon","bác sĩ ngoại răng hàm mặt"),
+        # ("Oral maxillofacial surgeon","bác sĩ ngoại răng hàm mặt"),
     ]
 
     full_name = forms.CharField(label="Họ và tên",

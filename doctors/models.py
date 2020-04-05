@@ -2,6 +2,7 @@ import re, os
 import pytz
 from django.db import models
 from user.models import User, DoctorProfile
+from .utils_models import locate_medical_ultrasonography_upload, locate_medical_ultrasonography_upload_2, locate_medical_ultrasonography_upload_3,locate_endoscopy_upload, locate_medical_test_upload
 
 # Create your models here.
 
@@ -24,26 +25,11 @@ class MedicalRecord(models.Model):
     phone = models.CharField(max_length = 20,blank=True,null=True)
     password = models.CharField(max_length=10,default="")
     doctor = models.ForeignKey(User,on_delete=models.CASCADE)
+    created_at = models.DateField(auto_now_add=True,blank=True,null=True)
 
     def __str__(self):
         return "{}-{}".format(self.full_name, self.phone)
 
-
-def locate_medical_ultrasonography_upload(instance,filename):
-    # extension = re.sub(r".*\/","",instance.type_file_medical_ultrasonography)
-    filename = ("%s_%s_%s.pdf")% ((instance.medical_record.full_name).replace(" ","_"),instance.medical_record.phone, instance.date_booked.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Asia/Ho_Chi_Minh")).strftime("%d-%m-%y--%H-%M"))
-    print(instance)
-    return os.path.join("{}/{}/medical_ultrasonography/".format(instance.medical_record.pk,instance.pk),filename)
-
-def locate_endoscopy_upload(instance,filename):
-    # extension = re.sub(r".*\/","",instance.type_file_endoscopy)
-    filename = ("%s_%s_%s.pdf")% ((instance.medical_record.full_name).replace(" ","_"),instance.medical_record.phone,instance.date_booked.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Asia/Ho_Chi_Minh")).strftime("%d-%m-%y--%H-%M"))
-    return os.path.join("{}/{}/endoscopy/".format(instance.medical_record.pk,instance.pk),filename)
-
-def locate_medical_test_upload(instance,filename):
-    # extension = re.sub(r".*\/","",instance.type_file_endoscopy)
-    filename = ("%s_%s_%s.pdf")% ((instance.medical_record.full_name).replace(" ","_"),instance.medical_record.phone,instance.date_booked.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Asia/Ho_Chi_Minh")).strftime("%d-%m-%y--%H-%M"))
-    return os.path.join("{}/{}/medical_test/".format(instance.medical_record.pk,instance.pk),filename)
 
 
 class MedicalHistory(models.Model):
@@ -73,6 +59,14 @@ class MedicalHistory(models.Model):
     medical_ultrasonography = models.CharField(max_length=200,blank=True,default="")
     medical_ultrasonography_file = models.FileField(upload_to=locate_medical_ultrasonography_upload,blank=True,null=True)
     medical_ultrasonography_cost = models.CharField(max_length=200,default="0")
+
+    medical_ultrasonography_2 = models.CharField(max_length=200,blank=True,default="")
+    medical_ultrasonography_file_2 = models.FileField(upload_to=locate_medical_ultrasonography_upload_2,blank=True,null=True)
+    medical_ultrasonography_cost_2 = models.CharField(max_length=200,default="0")
+
+    medical_ultrasonography_3 = models.CharField(max_length=200,blank=True,default="")
+    medical_ultrasonography_file_3 = models.FileField(upload_to=locate_medical_ultrasonography_upload_3,blank=True,null=True)
+    medical_ultrasonography_cost_3 = models.CharField(max_length=200,default="0")
 
     endoscopy = models.CharField(max_length=200,blank=True,default="")
     endoscopy_file = models.FileField(upload_to=locate_endoscopy_upload,blank=True,null=True)
@@ -120,7 +114,7 @@ class Medicine(models.Model):
 
 
 class PrescriptionDrug(models.Model):
-    dose = models.CharField(max_length=10,blank=True)
+    dose = models.CharField(max_length=50,blank=True)
     time_take_medicine = models.CharField(max_length=50)
     quantity = models.CharField(max_length=10)
     cost = models.CharField(max_length=50)
@@ -133,7 +127,7 @@ class PrescriptionDrug(models.Model):
 
 class PrescriptionDrugOutStock(models.Model):
     name = models.CharField(max_length=50)
-    dose = models.CharField(max_length=10,blank=True)
+    dose = models.CharField(max_length=50,blank=True)
     time_take_medicine = models.CharField(max_length=50)
     quantity = models.CharField(max_length=10)
     cost = models.CharField(max_length=50,default="0")

@@ -21,7 +21,7 @@ from user.license import check_licenses, check_premium_licenses
 from .utils import get_days_detail, history_serializer_mix, update_examination_patients_list, update_examination_patients_finished_list
 from .custom_token import ExpiringTokenAuthentication,is_token_expired
 from .models import BookedDay, MedicalRecord, MedicalHistory, AppWindow
-from .serializers import MedicalRecordSerializer, ExaminationPatientsSerializer, MedicalRecordExaminationSerializer,UploadMedicalUltrasonographySerializer, CreateUploadMedicalUltrasonographySerializer 
+from .serializers import MedicalRecordSerializer, ExaminationPatientsSerializer, MedicalRecordExaminationSerializer,UploadMedicalUltrasonographySerializer, UploadMedicalUltrasonographySerializer2, UploadMedicalUltrasonographySerializer3, ResponseUploadMedicalUltrasonographySerializer, CreateUploadMedicalUltrasonographySerializer 
 
 
 # update status merchant
@@ -146,10 +146,14 @@ def upload_medical_ultrasonography_file(request):
             history = MedicalHistory.objects.get(pk=int(data["id"]))
         except MedicalHistory.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        print(data)
+        
         if request.user.pk == history.medical_record.doctor.pk:
-
-            history_serializer = UploadMedicalUltrasonographySerializer(history,data=data,context={"request": request,"is_waiting":json_file["is_waiting"]})
+            if data["seq"] == "1":
+                history_serializer = UploadMedicalUltrasonographySerializer(history,data=data,context={"request": request,"is_waiting":json_file["is_waiting"]})
+            elif data["seq"] == "2":
+                history_serializer = UploadMedicalUltrasonographySerializer2(history,data=data,context={"request": request,"is_waiting":json_file["is_waiting"]})
+            elif data["seq"] == "3":
+                history_serializer = UploadMedicalUltrasonographySerializer3(history,data=data,context={"request": request,"is_waiting":json_file["is_waiting"]})
             
             if history_serializer.is_valid():
                 history_serializer.save()
@@ -161,7 +165,8 @@ def upload_medical_ultrasonography_file(request):
                 update_examination_patients_finished_list(request.user,date.today())
 
                 history = MedicalHistory.objects.get(pk=history_serializer.data["id"])
-                response_data = CreateUploadMedicalUltrasonographySerializer(history,context={"request": request})
+                # response_data = CreateUploadMedicalUltrasonographySerializer(history,context={"request": request})
+                response_data = ResponseUploadMedicalUltrasonographySerializer(history,context={"request": request})
                 
                 return Response(response_data.data)
 

@@ -4,8 +4,9 @@ from asgiref.sync import async_to_sync
 from datetime import datetime, timedelta, date
 from django.template.loader import render_to_string
 from django.shortcuts import render, redirect
+from django.conf import settings
 from django.urls import reverse_lazy, reverse
-from django.http import HttpResponse, Http404, JsonResponse
+from django.http import HttpResponse, Http404, JsonResponse, HttpResponseRedirect
 from django.views.generic import DetailView, ListView
 from django.db.models import Q, Count
 from django.core.exceptions import ObjectDoesNotExist
@@ -15,6 +16,7 @@ from user.license import check_licenses, check_premium_licenses
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, PrescriptionDrugOutStock, BookedDay, AppWindow
 from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, update_examination_patients_finished_list, count_and_calculate_service, sum_cost_service
 from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, TakeDrugOutStockForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm, PatientLoginForm
+from .custom_serializers import remove_file
 
 
 # check license popup
@@ -156,6 +158,7 @@ def settings_service(request,pk_doctor):
                     settings_service.ph_meter = form.cleaned_data["ph_meter"]
                     settings_service.medical_ultrasonography = form.cleaned_data["medical_ultrasonography"]
                     settings_service.medical_ultrasonography_cost = form.cleaned_data["medical_ultrasonography_cost"]
+                    settings_service.medical_ultrasonography_multi = form.cleaned_data["medical_ultrasonography_multi"]
                     settings_service.endoscopy = form.cleaned_data["endoscopy"]
                     settings_service.endoscopy_cost = form.cleaned_data["endoscopy_cost"]
                     settings_service.medical_test = form.cleaned_data["medical_test"]
@@ -357,7 +360,8 @@ def search_navbar(request,pk_doctor):
                 
                 date_obj = datetime.strptime(search_value,'%d/%m/%Y')
                 histories = MedicalHistory.objects.filter(medical_record__doctor=user,date_booked__date=date_obj)
-                mrecords = MedicalRecord.objects.none()
+                mrecords = MedicalRecord.objects.filter(doctor=user,medicalhistory__isnull=True,created_at=date_obj)
+                
 
             except ValueError:
                 histories = MedicalHistory.objects.filter(Q(medical_record__doctor=user),Q(medical_record__full_name__icontains=form.cleaned_data['search_navbar']) | Q(medical_record__phone__icontains=form.cleaned_data['search_navbar']))
@@ -587,7 +591,7 @@ def upload_medicine_excel(request,pk_doctor):
 class DoctorProfileView(DoctorProfileMixin,PageLinksMixin):
     model = MedicalRecord
     template_name = 'doctors/doctor_profile.html'
-    paginate_by = 9
+    paginate_by = settings.NUMBER_PATIENTS
 
 #  Medical Record create view
 def medical_record_create(request,pk_doctor):
@@ -682,16 +686,45 @@ def medical_record_edit_back_history(request,pk_doctor,pk_mrecord,pk_history):
 
 
 # Medical record delete view
+# def medical_record_del(request,pk_doctor,pk_mrecord):
+#     doctor = User.objects.get(pk=pk_doctor)
+#     if doctor == request.user:
+#         # check premium license
+#         if check_premium_licenses(request):
+#             return render(request,"user/not_license.html",{})
+
+#         mrecord_del = MedicalRecord.objects.get(pk=pk_mrecord)
+#         mrecord_del.delete()
+#         return redirect(reverse("doctor_profile",kwargs={"pk_doctor":pk_doctor}))
+# Medical record delete fast view
 def medical_record_del(request,pk_doctor,pk_mrecord):
     doctor = User.objects.get(pk=pk_doctor)
     if doctor == request.user:
         # check premium license
         if check_premium_licenses(request):
             return render(request,"user/not_license.html",{})
-
+        
         mrecord_del = MedicalRecord.objects.get(pk=pk_mrecord)
         mrecord_del.delete()
-        return redirect(reverse("doctor_profile",kwargs={"pk_doctor":pk_doctor}))
+
+        path_list = request.GET.get('path_list','')
+        page = request.GET.get('page','1')
+
+        path_search= request.GET.get('path_search','')
+        
+        if path_list:
+            mrecord_count = MedicalRecord.objects.filter(doctor=doctor,medicalhistory__isnull=True).count()
+
+            if int(page)>1 and mrecord_count % 9 == 0:
+                page = mrecord_count // settings.NUMBER_PATIENTS
+            redirect_page = path_list + "?page=" + str(page) + "&service=chua_kham"
+            
+            return HttpResponseRedirect(redirect_page)
+        elif path_search:
+            return HttpResponseRedirect(path_search)
+        else:
+            return redirect(reverse("doctor_profile",kwargs={"pk_doctor":pk_doctor}))
+
 
 
 # Medical record view
@@ -931,29 +964,27 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
 
                 history_edit.medical_ultrasonography = form.cleaned_data['medical_ultrasonography']
                 if "medical_ultrasonography_file" in request.FILES:
-                    if history_edit.medical_ultrasonography_file:
-                        try:
-                            os.remove(history_edit.medical_ultrasonography_file.path)
-                        except FileNotFoundError:
-                            pass 
+                    remove_file(history_edit.medical_ultrasonography_file)
                     history_edit.medical_ultrasonography_file = request.FILES["medical_ultrasonography_file"]
+
+                history_edit.medical_ultrasonography_2 = form.cleaned_data['medical_ultrasonography_2']
+                if "medical_ultrasonography_file_2" in request.FILES:
+                    remove_file(history_edit.medical_ultrasonography_file_2)
+                    history_edit.medical_ultrasonography_file_2 = request.FILES["medical_ultrasonography_file_2"]
+
+                history_edit.medical_ultrasonography_3 = form.cleaned_data['medical_ultrasonography_3']
+                if "medical_ultrasonography_file_3" in request.FILES:
+                    remove_file(history_edit.medical_ultrasonography_file_3)
+                    history_edit.medical_ultrasonography_file_3 = request.FILES["medical_ultrasonography_file_3"]
 
                 history_edit.endoscopy = form.cleaned_data['endoscopy']
                 if "endoscopy_file" in request.FILES:
-                    if history_edit.endoscopy_file:
-                        try:
-                            os.remove(history_edit.endoscopy_file.path)
-                        except FileNotFoundError:
-                            pass
+                    remove_file(history_edit.endoscopy_file)
                     history_edit.endoscopy_file = request.FILES["endoscopy_file"]
 
                 history_edit.medical_test = form.cleaned_data['medical_test']
                 if "medical_test_file" in request.FILES:
-                    if history_edit.medical_test_file:
-                        try:
-                            os.remove(history_edit.medical_test_file.path)
-                        except FileNotFoundError:
-                            pass
+                    remove_file(history_edit.medical_test_file)
                     history_edit.medical_test_file = request.FILES["medical_test_file"]
                 
                 history_edit.save()

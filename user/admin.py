@@ -3,15 +3,19 @@ from django.contrib.auth.admin import UserAdmin
 from .models import User, DoctorProfile, SettingsTime, SettingsService, Payment, License
 from .forms import CustomUserChangeForm, CustomUserCreationForm
 
-# Register your models here.
 
-# class CustomUserAdmin(admin.ModelAdmin):
+# Mixin class
 
-# 	# add_form = UserCreationForm
-# 	#form = UserChangeForm
-# 	list_display = ["email","is_staff","is_active","doctor"]
-# 	model = User
-# 	ordering = ["email",]
+class DoctorMixin:
+	search_fields = ("doctor__full_name","doctor__user__email","doctor__user__pk")
+
+	def get_email(self, obj):
+		return obj.doctor.user.email
+	get_email.short_description = 'email'
+
+	def get_id(self, obj):
+		return obj.doctor.user.id
+	get_id.short_description = 'id_doctor'
 
 class CustomUserAdmin(UserAdmin):
 
@@ -38,27 +42,39 @@ class CustomUserAdmin(UserAdmin):
 
 class DoctorProfileAdmin(admin.ModelAdmin):
 	model = DoctorProfile
-	list_display = ["full_name","phone","kind"]
+	list_display = ["full_name","phone","get_email","get_id"]
 	ordering = ["full_name","kind",]
-	search_fields = ('full_name','phone')
+	search_fields = ('full_name','user__email','user__pk')
 
-class SettingsTimeAdmin(admin.ModelAdmin):
+	def get_email(self, obj):
+		return obj.user.email
+	get_email.short_description = 'email'
+
+	def get_id(self, obj):
+		return obj.user.id
+	get_id.short_description = 'id_doctor'
+
+class SettingsTimeAdmin(DoctorMixin,admin.ModelAdmin):
 	model = SettingsTime
-	list_display = ["doctor","examination_period"]
+	list_display = ["doctor","examination_period","get_email","get_id"]
 
-class SettingsServiceAdmin(admin.ModelAdmin):
+class SettingsServiceAdmin(DoctorMixin,admin.ModelAdmin):
 	model = SettingsService
-	list_display = ["doctor",]
+	list_display = ["doctor","get_email","get_id"]
+
+	
 
 class PaymentAdmin(admin.ModelAdmin):
 	model = Payment
 	list_display = ["email","license","order_id"]
 	search_fields = ('email',"order_id")
 
-class LicenseAdmin(admin.ModelAdmin):
+class LicenseAdmin(DoctorMixin,admin.ModelAdmin):
 	model = License
-	list_display = ["doctor","license_end","id"]
-	search_fields = ("doctor",)
+	list_display = ["doctor","license_end","get_email","get_id"]
+	
+	
+	
 
 admin.site.register(User,CustomUserAdmin)
 admin.site.register(DoctorProfile,DoctorProfileAdmin)

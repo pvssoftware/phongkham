@@ -88,14 +88,14 @@
             var time_take_medicine = $("#time_take_medicine").val();
             var valid = true;
 
-            if (dose === ""){
-                $("#alert_dose").text("");
-            } else if (!ValidateDigit(dose)) {
-                $("#alert_dose").text("Giá trị nhập không hợp lệ");
-                valid &= false;
-            } else {
-                $("#alert_dose").text("");
-            }
+            // if (dose === ""){
+            //     $("#alert_dose").text("");
+            // } else if (!ValidateDigit(dose)) {
+            //     $("#alert_dose").text("Giá trị nhập không hợp lệ");
+            //     valid &= false;
+            // } else {
+            //     $("#alert_dose").text("");
+            // }
 
             if (!ValidateDigit(quantity)) {
                 $("#alert_quantity").text("Giá trị nhập không hợp lệ");

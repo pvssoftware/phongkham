@@ -47,7 +47,34 @@
                     {% else %}
                     Chưa upload file siêu âm
                     {% endif %}
-                  </div>            
+                  </div>   
+                  
+                    
+                    {% if settings_service.medical_ultrasonography_multi %}
+                    <div>
+                      {% if history.medical_ultrasonography_file_2 %}
+                      <a
+                        class="view-pdf page-link-mix"
+                        href="{{ history.medical_ultrasonography_file_2.url }}"
+                        >Xem file siêu âm lần 2</a
+                      >
+                      {% else %}
+                      Chưa upload file siêu âm lần 2
+                      {% endif %}
+                    </div>
+                    <div>
+                      {% if history.medical_ultrasonography_file_3 %}
+                      <a
+                        class="view-pdf page-link-mix"
+                        href="{{ history.medical_ultrasonography_file_3.url }}"
+                        >Xem file siêu âm lần 3</a
+                      >
+                      {% else %}
+                      Chưa upload file siêu âm lần 3
+                      {% endif %}
+                    </div>
+                    {% endif %}
+                      
                   {% endif %}
             
                   {% if settings_service.endoscopy %}
@@ -77,7 +104,7 @@
                     {% endif %}
                   </div>           
                   {% endif %}
-                  </div>
+                </div>
             </div>
           </div>
       </div>
