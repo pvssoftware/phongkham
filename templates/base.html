@@ -166,6 +166,7 @@
                   } else if(data.license === "premium" || data.license === "trial"){
                     $("#premium-license").text(`License: ${data.license}`);
                     $("#remain-days").html(`Còn <span class="font-weight-bold"> ${data.remain_days}</span> ngày sử dụng. <a href=${url_license} style="text-decoration:underline;color:#007bff;cursor:pointer;">Mua thêm...</a>`);
+                    $("#ultrasound-license").html(`Có bản quyền sử dụng app ultrasound.<a href=${url_ultrasound} style="text-decoration:underline;color:#007bff;cursor:pointer;"> Download...</a>`);
                   }
                   
                   if (data.license_ultrasound){
