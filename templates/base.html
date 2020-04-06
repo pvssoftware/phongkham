@@ -146,6 +146,7 @@
 
         $("#check-license").click(function(){
           url_license = "{% url 'license' %}";
+          url_ultrasound = "{% url 'download_app_ultrasound' %}"
           $.ajax({
             type: 'get',
             url: "{% url 'check_license' request.user.pk %}",
@@ -168,7 +169,7 @@
                   }
                   
                   if (data.license_ultrasound){
-                    $("#ultrasound-license").html(`Có bản quyền sử dụng app ultrasound.`);
+                    $("#ultrasound-license").html(`Có bản quyền sử dụng app ultrasound.<a href=${url_ultrasound} style="text-decoration:underline;color:#007bff;cursor:pointer;"> Download...</a>`);
                   }
                 }
             },

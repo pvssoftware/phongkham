@@ -42,6 +42,8 @@
                         href="?order=quantity_desc"
                         {% endif %}>Số lượng</a></th>
                     <th><a class="page-link-mix"
+                        href="#">Đơn vị</a></th>
+                    <th><a class="page-link-mix"
                         {% if order == 'sale_price_desc' %} 
                         href="?order=sale_price_asc"
                         {% else %}
@@ -66,6 +68,7 @@
                 <tr>
                     <td scope="row"><a class="page-link-mix" href="{% url 'medicine_edit' doctor.pk ob.pk %}">{{ ob.full_name }}</a></td>
                     <td class="number medicine_quantity">{{ ob.quantity }}</td>
+                    <td>{{ ob.unit }}</td>
                     <td class="number">{{ ob.sale_price }}</td>
                     <td class="number">{{ ob.import_price }}</td>
                     <td class="date_format">{{ ob.date_expired|date:"d/m/Y" }}</td>

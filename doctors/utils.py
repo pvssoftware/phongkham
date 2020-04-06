@@ -35,9 +35,14 @@ def sum_cost_service(histories):
 
 # update list examination patients function
 def update_examination_patients_list(doctor,date_book,full_booked):
+    try:
+        settings_service = doctor.doctor.settingsservice
+    except DoctorProfile.settingsservice.RelatedObjectDoesNotExist:
+        settings_service = SettingsService.objects.create(doctor=doctor.doctor)
+    
     histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
                     
-    html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":doctor.pk,"histories":histories,"full_booked":full_booked})
+    html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":doctor.pk,"histories":histories,"full_booked":full_booked,"settings_service":settings_service})
 
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
