@@ -137,6 +137,8 @@ def patient_book_examination(request):
 
             MedicalHistory.objects.create(medical_record=mrecord,date_booked=datetime_book,ordinal_number=ordinal_number,is_waiting=True)
 
+            update_examination_patients_list(doctor,date_book,False)
+
             return JsonResponse({'code': '200', 'Message': "Đã đặt lịch thành công!"})
     else:
         return JsonResponse({'code': 'invalid', 'Message': "Thông tin không hợp lệ!"})     
