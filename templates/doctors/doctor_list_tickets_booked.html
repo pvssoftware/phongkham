@@ -25,7 +25,7 @@
           {% endif %}>{{ ticket.ordinal_number }}</i>
         <div class="media-body pb-3 mb-0 lh-125 border-bottom border-gray">
           <div class="d-flex justify-content-between align-items-center w-100">
-            <strong class="text-gray-dark" id="{{ ticket.pk }}"><a class="page-link-mix mr-3" href="{% url 'medical_record_back_view' pk_doctor ticket.medical_record.pk ticket.pk %}">
+            <strong class="text-gray-dark"><a class="page-link-mix mr-3" href="{% url 'medical_record_back_view' pk_doctor ticket.medical_record.pk ticket.pk %}">
               
               {% if ticket.medical_record.full_name == "" %}
                 Bệnh nhân mới 
@@ -39,12 +39,7 @@
                {% endif %}
                  
               </a>
-              
-              {% if ticket.link_meeting %}
-                <a href="{{ ticket.link_meeting }}" class="page-link-mix" id="link-{{ ticket.pk }}"> ==> Chọn vào đây để bắt đầu khám trưc tuyến</a>
-              {% endif %}
-                
-              
+                             
             </strong>
             <a href="{% url 'medical_history_del' pk_doctor ticket.medical_record.pk ticket.pk %}" class="page-link-mix" style="color: #d9534f">Xoá</a>
           </div>
@@ -61,6 +56,11 @@
                       href="https://zalo.me/{{ ticket.medical_record.phone }}"
                     {% endif %}                      
                     class="page-link-mix zalo">Zalo</a>
+                </div>
+                <div id="{{ ticket.pk }}">
+                  {% if ticket.link_meeting %}
+                    <a href="{{ ticket.link_meeting }}" class="page-link-mix" id="link-{{ ticket.pk }}">Gọi video</a>
+                  {% endif %}
                 </div>
                   
               </div>
@@ -141,15 +141,22 @@
 
                 } else{
                   console.log(2);
-                  $("#"+resp.id).append(`
-                  <a href=${resp.link_meeting} class="page-link-mix" id="link-"${resp.id}> ==> Chọn vào đây để bắt đầu khám trưc tuyến</a>`);
+                  $("#"+resp.id).html(`
+                  <a href=${resp.link_meeting} class="page-link-mix" id="link-"${resp.id}> ==> Gọi video</a>`);
                 }
                 $("#alert_link_meeting").css("color","#009688").text(resp.Message);
+                $("#modal-body-content").html(`
+                <i class="fa fa-check-circle"></i><span> Đã thêm thành công</span>`).css({
+                  "font-size":"300%",
+                  "text-align":"center",
+                  "color":"#009688"
+                });
               } else{
                 console.log(3)
                 $("#alert_link_meeting").text(resp.Message);
               }
-
+              console.log(this);
+            $("#submit_bt_modal").prop("disabled",true);
           }
         }); // end ajax
     }); // end on

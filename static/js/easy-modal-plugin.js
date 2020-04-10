@@ -23,17 +23,17 @@
     html +=
       '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>';
     html += "</div>";
-    html += '<div class="modal-body" ' + c + ">";
+    html += '<div class="modal-body" id="modal-body-content"' + c + ">";
     html += b.message;
     html += "</div>";
     html += '<div class="modal-footer">';
     if (b.closeButton === true) {
       html +=
-        '<button type="button" class="btn btn-secondary" data-dismiss="modal">Huỷ</button>';
+        '<button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>';
     }
     if (b.submitButton === true) {
       html +=
-        '<button type="button" class="btn btn-primary" id="submit_bt_modal">Xác nhận</button>';
+        '<button type="button" class="btn btn-finished" id="submit_bt_modal">Xác nhận</button>';
     }
     html += "</div>";
     html += "</div>";

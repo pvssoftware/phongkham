@@ -19,10 +19,14 @@
   </head>
 
   <body>
+    
     <form class="form-signin" action="{% url 'login' %}" method="POST">
+      <div style="text-align: center;">
+      <img src="{% static 'img/Logo-White.png' %}" alt="Healthy-Care" width="350" height="300">
+      </div>
       {% csrf_token %}
       <div class="text-center mb-4">
-        <h1 class="mb-3 font-weight-normal">Healthy Care</h1>
+        <!-- <h1 class="mb-3 font-weight-normal">Healthy Care</h1> -->
         <h6 class="alert-email" style="color: #d9534f;font-size:17px">
 
           {% if form.errors.as_data %}
