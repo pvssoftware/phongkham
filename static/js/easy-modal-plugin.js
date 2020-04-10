@@ -4,6 +4,7 @@
       title: "",
       message: "Your Message Goes Here!",
       closeButton: true,
+      submitButton: false,
       scrollable: false,
       modalSize:"modal-lg",
     };
@@ -28,7 +29,11 @@
     html += '<div class="modal-footer">';
     if (b.closeButton === true) {
       html +=
-        '<button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>';
+        '<button type="button" class="btn btn-secondary" data-dismiss="modal">Huỷ</button>';
+    }
+    if (b.submitButton === true) {
+      html +=
+        '<button type="button" class="btn btn-primary" id="submit_bt_modal">Xác nhận</button>';
     }
     html += "</div>";
     html += "</div>";

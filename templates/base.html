@@ -44,6 +44,7 @@
                       <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{% url 'list_examination' request.user.pk %}">ĐANG CHỜ KHÁM</a>
                         <a class="dropdown-item" href="{% url 'list_examination_finished' request.user.pk %}">ĐÃ KHÁM XONG</a>
+                        <a class="dropdown-item" href="{% url 'list_tickets_booked' request.user.pk %}">ĐẶT LỊCH KHÁM</a>
                         
                       </div>
                     </li>

@@ -10,13 +10,22 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <a class="navbar-text btn btn-link  my-2 my-sm-0 ml-md-auto" type="button" id="bt_logout_navbar" href="{% url 'patient_logout' %}">Đăng xuất</a>
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a href="#" class="navbar-text btn btn-link" data-toggle="modal" data-target="#exampleModalCenter">Đặt lịch khám</a>
+          </li>
+          <li class="nav-item">
+            <a class="navbar-text btn btn-link  my-2 my-sm-0" type="button" id="bt_logout_navbar" href="{% url 'patient_logout' %}">Đăng xuất</a>
+          </li>
+
+        </ul>
+        
       </div>
     
       
     </nav>
   <div class="patient-profile">
-        <h2 class="mb-4 text-center">Xem thông tin bệnh nhân</h2>
+        <h3 class="mb-4 text-center">Hồ sơ, lịch sử khám chữa bệnh cá nhân</h3>
         
         <table class="table box-shadow rounded">
           <tbody>
@@ -47,11 +56,60 @@
             
           </tbody>
         </table>
+    <table class="table box-shodow rounded">
+      <tbody>
+        <tr class="table-active">
+          <th>Phòng khám</th>
+        <td>{{ mrecord.doctor.doctor.clinic_name }}</td>
+        </tr>
+        <tr class="table-active">
+          <th>Mã phòng khám</th>
+        <td>{{ mrecord.doctor.doctor.pk }}</td>
+        </tr>
+        <tr class="table-active">
+          <th>Địa chỉ phòng khám</th>
+        <td>{{ mrecord.doctor.doctor.clinic_address }}</td>
+        </tr>
+        <tr class="table-active">
+          <th>Điện thoại</th>
+        <td>{{ mrecord.doctor.doctor.phone }}</td>
+        </tr>        
+        
+      </tbody>
+    </table>
+
+  
+  {% if tickets %}
+    
+    {% for ticket in tickets %}
+      <table class="table box-shadow rounded">
+        <tbody>
+          <tr class="table-active">
+            <th>Thời gian hẹn khám</th>
+            <td>{{ ticket.date_booked| date:"H:i D. d-m-Y" }}</td>
+          </tr>
+          <tr class="table-active">
+            <th>Liên kết trực tuyến</th>
+            <td>
+              {% if ticket.link_meeting %}
+              <a href="{{ ticket.link_meeting }}" class="link_meeting">Liên kết khám trực tuyến</a>
+              {% endif %}
+            </td>
+            
+              
+            
+          </tr>
+        </tbody>
+      </table>
+    {% endfor %}
+      
+  {% endif %}
+    
       
 
-  {% if mrecord.medicalhistory_set.all %}
+  {% if histories %}
     <h4>Các lần đi khám bệnh</h4>
-  {% for history in mrecord.medicalhistory_set.all %}
+  {% for history in histories %}
   <div class="box-shadow rounded bg-light p-3 my-3">
     <h6 style="cursor: pointer" class=" pb-2 mb-0">
       <i class="fa fa-plus"></i><i class="fa fa-minus"></i> Lần khám vào thời
@@ -147,6 +205,43 @@
           Không có file
 
           {% endif %}
+        </p>
+      </div>
+
+      <div class="media pt-3 d-flex justify-content-between">
+        <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+        <strong class="d-block text-gray-dark">Siêu âm lần 2</strong>
+        {% if history.medical_ultrasonography_2 %}
+        {{ history.medical_ultrasonography_2 }}
+        {% else %}
+        Bỏ trống
+        {% endif %}
+        </p>
+        <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right">
+        <strong class="d-block text-gray-dark">File siêu âm lần 2</strong>
+        {% if history.medical_ultrasonography_file_2 %}
+        <a class="view-pdf page-link-mix" href="{{ history.medical_ultrasonography_file_2.url }}">Xem file</a>
+        {% else %}
+        Không có file
+        {% endif %}
+        </p>
+      </div>
+      <div class="media pt-3 d-flex justify-content-between">
+        <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+        <strong class="d-block text-gray-dark">Siêu âm lần 3</strong>
+        {% if history.medical_ultrasonography_3 %}
+        {{ history.medical_ultrasonography_3 }}
+        {% else %}
+        Bỏ trống
+        {% endif %}
+        </p>
+        <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray text-right">
+        <strong class="d-block text-gray-dark">File siêu âm lần 3</strong>
+        {% if history.medical_ultrasonography_file_3 %}
+        <a class="view-pdf page-link-mix" href="{{ history.medical_ultrasonography_file_3.url }}">Xem file</a>
+        {% else %}
+        Không có file
+        {% endif %}
         </p>
       </div>
     </div>
@@ -247,6 +342,40 @@
         </p>
       
   </div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Đặt lịch khám bệnh</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Chọn ngày khám bệnh, hệ thống sẽ tự động chọn giờ khám theo cài đặt của bác sĩ. Lưu ý nên chọn ngày khám mà bác sĩ chắc chắn làm việc.</p>
+        <form id="book_form" action="{% url 'patient_book_examination' %}" method="post">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="date">Ngày khám</label>
+            <input
+              type="text"
+              class="form-control"
+              id="date"
+              name="date"
+            />
+            <span id="alert_date" style="color: red;font-size:15px"></span>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Huỷ</button>
+        <button type="button" class="btn btn-primary" id="book_bt">Đặt lịch</button>
+      </div>
+    </div>
+  </div>
+</div>
   <script src="{% static 'js/easy-modal-plugin.js' %}"></script>
 <script>
   $(document).ready(function(){
@@ -349,8 +478,50 @@
       });
     }); //end modal
 
-  }); // end ready
+    // pick date on popup datepicker
+    today = new Date();
+    $("#date").datepicker({
+      dateFormat: "dd/mm/yy",
+      changeMonth: true,
+      changeYear: true,
+      monthNames: ["1","2","3","4","5","6","7","8","9","10","11","12"],
+      monthNamesShort: ["1","2","3","4","5","6","7","8","9","10","11","12"],
+      minDate: new Date(today.getFullYear(),today.getMonth(),today.getDate()),
+    }); // end datepicker  
 
+    $("#book_bt").click(function(){
+        var postData = $("#book_form").serialize();
+        var submitUrl = $("#book_form").attr("action");
+        
+        $.ajax({
+          type: "POST",
+          url:submitUrl,
+          data:postData,
+          dataType: "JSON",
+          success: function(resp){
+            console.log(resp);
+            if (resp.code==="200"){
+              location.reload(true);
+            } else{
+              $("#alert_date").text(resp.Message);
+            } 
+          }
+        }); // end ajax
+        return false;
+
+        
+      }) ; // end ajax
+
+      
+      $(".link_meeting").click(function () {
+        console.log(this);
+          window.open(this.href);
+          // $(this).attr({"target" : "_blank"});
+          return false;
+      }); //end click  
+
+  }); // end ready
+  
     
 </script>
 

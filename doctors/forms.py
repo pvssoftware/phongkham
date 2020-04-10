@@ -29,6 +29,15 @@ class PatientLoginForm(forms.Form):
                 code='invalid_phone',)
         return phone
 
+class PatientBookForm(forms.Form):
+    date = forms.DateField(input_formats=["%d/%m/%Y", ])
+    class Meta:
+        fields = ["date",]
+class AddLinkMeetingForm(forms.Form):
+    link_meeting = forms.CharField()
+    class Meta:
+        fields = ["link_meeting",]
+
 class PasswordProtectForm(forms.Form):
     password = forms.CharField()
     class Meta:

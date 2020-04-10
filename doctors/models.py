@@ -92,6 +92,8 @@ class MedicalHistory(models.Model):
     is_waiting = models.BooleanField(default=False)
     medical_record = models.ForeignKey(MedicalRecord, on_delete=models.CASCADE)
 
+    link_meeting = models.TextField(blank=True, default="")
+
     def __str__(self):
         return self.medical_record.full_name
     class Meta:

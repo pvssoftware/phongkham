@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+ {% block content %}
+
+
+<div class="container" id="list_patients">
+    
+
+{% if tickets %}
+<div class="my-3 p-3 bg-light rounded box-shadow">
+    <div class="d-flex justify-content-between align-items-center border-bottom border-gray">
+    <h4 class="pb-2 mb-0">Danh sách bệnh nhân đặt lịch khám</h4>
+    <span style="font-weight: bold"><a class="page-link-mix">Thao tác</a></span>
+    </div>
+
+    
+    {% for ticket in tickets %}
+    <div class="media text-muted pt-3">
+        <i class="fa fa-square mr-2"
+         {% if ticket.medical_record.sex %}
+          style="font-size: 47px;color: #ff4081 "
+          {% else %}
+          style="font-size: 47px;color: #304ffe"
+          {% endif %}>{{ ticket.ordinal_number }}</i>
+        <div class="media-body pb-3 mb-0 lh-125 border-bottom border-gray">
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <strong class="text-gray-dark" id="{{ ticket.pk }}"><a class="page-link-mix mr-3" href="{% url 'medical_record_back_view' pk_doctor ticket.medical_record.pk ticket.pk %}">
+              
+              {% if ticket.medical_record.full_name == "" %}
+                Bệnh nhân mới 
+              {% else %}
+                {{ ticket.medical_record.full_name }} 
+              {% endif %}
+               
+               
+               {% if ticket.medical_record.phone %}
+                 - ĐT: {{ ticket.medical_record.phone }}
+               {% endif %}
+                 
+              </a>
+              
+              {% if ticket.link_meeting %}
+                <a href="{{ ticket.link_meeting }}" class="page-link-mix" id="link-{{ ticket.pk }}"> ==> Chọn vào đây để bắt đầu khám trưc tuyến</a>
+              {% endif %}
+                
+              
+            </strong>
+            <a href="{% url 'medical_history_del' pk_doctor ticket.medical_record.pk ticket.pk %}" class="page-link-mix" style="color: #d9534f">Xoá</a>
+          </div>
+          <div class="d-flex justify-content-between align-items-center w-100">
+              <span><i class="fa fa-calendar"></i> {{ ticket.date_booked|date:"H:i D. d-m-Y" }}</span>
+              
+              <div>
+                <div>
+                    <a href="{% url 'add_link_meeting' pk_doctor ticket.pk %}" class="page-link-mix add-link" >Thêm link</a>   
+                </div>
+                <div>
+                    <a                    
+                    {% if ticket.medical_record.phone %}
+                      href="https://zalo.me/{{ ticket.medical_record.phone }}"
+                    {% endif %}                      
+                    class="page-link-mix zalo">Zalo</a>
+                </div>
+                  
+              </div>
+          </div>
+        </div>
+
+    </div> 
+    {% endfor %}
+        
+</div>
+{% else %}
+<h4 class="mt-4">Không có bệnh nhân </h4>
+{% endif %}
+    
+        
+</div>
+
+<script src="{% static 'js/easy-modal-plugin.js' %}"></script>
+<script>
+  $(document).ready(function(){
+   // modal plugin
+   $(function() {
+     $(".add-link").on("click", function() {
+       var add_link = $(this).attr("href");
+       console.log(add_link);
+       var iframe = `
+       <form id="add_link_form" method="post" action=${add_link}>
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="link_meeting">Ngày khám</label>
+            <input
+              type="text"
+              class="form-control"
+              id="link_meeting"
+              name="link_meeting"
+            />
+            <span id="alert_link_meeting" style="color: red;font-size:15px"></span>
+          </div>
+        </form>`;
+       $.createModal({
+         title: "Thêm link",
+         message: iframe,
+         closeButton: true,
+         submitButton: true,
+         scrollable: false,
+         modalSize:"modal-lg",
+       });
+       return false;
+     });
+   }); //end modal
+
+    // on function
+    $("body").on("click","#submit_bt_modal",function(){
+        // var postData = $("#add_link_form").serialize();
+        var postData = {
+          "link_meeting":$("#link_meeting").val()
+        }
+        var submitUrl = $("#add_link_form").attr("action")+"/";
+        var csrftoken = $("[name=csrfmiddlewaretoken]").val();
+        console.log(submitUrl);
+        console.log(postData);
+        console.log(csrftoken);
+        // ajax
+        $.ajax({
+          type: "POST",
+          url:submitUrl,
+          headers:{
+            "X-CSRFToken": csrftoken
+          },
+          data:postData,
+          dataType: "JSON",
+          success: function(resp){
+              console.log(resp);
+              if (resp.code==="200"){
+                if ($("#link-"+resp.id).length){
+                  console.log(1);
+                  $("#link-"+resp.id).attr("href",resp.link_meeting);
+
+                } else{
+                  console.log(2);
+                  $("#"+resp.id).append(`
+                  <a href=${resp.link_meeting} class="page-link-mix" id="link-"${resp.id}> ==> Chọn vào đây để bắt đầu khám trưc tuyến</a>`);
+                }
+                $("#alert_link_meeting").css("color","#009688").text(resp.Message);
+              } else{
+                console.log(3)
+                $("#alert_link_meeting").text(resp.Message);
+              }
+
+          }
+        }); // end ajax
+    }); // end on
+
+    $(".zalo").click(function () {
+        console.log(this);
+          window.open(this.href);
+          // $(this).attr({"target" : "_blank"});
+          return false;
+      }); //end click
+
+ });// 
+ </script>
+ {% endblock %}

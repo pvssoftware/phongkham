@@ -15,7 +15,7 @@ from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsServ
 from user.license import check_licenses, check_premium_licenses
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, PrescriptionDrugOutStock, BookedDay, AppWindow
 from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, update_examination_patients_finished_list, count_and_calculate_service, sum_cost_service
-from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, TakeDrugOutStockForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm, PatientLoginForm
+from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, TakeDrugOutStockForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm, PatientLoginForm, PatientBookForm, AddLinkMeetingForm
 from .custom_serializers import remove_file
 
 
@@ -53,7 +53,9 @@ def patient_profile(request,pk_mrecord):
     
     if "patient_id" in request.session and request.session["patient_id"] == int(pk_mrecord):
         mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
-        return render(request,"doctors/patient_profile.html",{"mrecord":mrecord})
+        histories = mrecord.medicalhistory_set.filter(is_waiting=False)
+        tickets = mrecord.medicalhistory_set.filter(is_waiting=True,date_booked__gte=datetime.now()).order_by("date_booked")
+        return render(request,"doctors/patient_profile.html",{"mrecord":mrecord,"histories":histories,"tickets":tickets})
     raise Http404("Page not found")
 
 # patient login page
@@ -81,6 +83,63 @@ def patient_login(request):
             return redirect(reverse("patient_profile",kwargs={"pk_mrecord":request.session["patient_id"]}))
         form = PatientLoginForm()
         return render(request,"doctors/patient_login.html",{"form":form,"error":False})
+
+def patient_book_examination(request):
+    try:
+        mrecord = MedicalRecord.objects.get(pk=request.session["patient_id"])
+        doctor = mrecord.doctor
+    except:
+        return JsonResponse({'code': 'invalid', 'Message': "Thông tin không hợp lệ!"})
+    if request.method == "POST":
+        form = PatientBookForm(request.POST)
+        if form.is_valid():
+            date_book = form.cleaned_data["date"]
+
+            try:
+                settings_time = doctor.doctor.settings_time
+            except:
+                settings_time = SettingsTime.objects.create(examination_period="0",doctor=doctor.doctor)        
+
+            days_detail = get_days_detail(settings_time.weekday_set.all(),date_book,settings_time.examination_period)
+
+            if not days_detail:
+                return JsonResponse({'code': '412', 'Message': "Bác sĩ không làm việc ngày này!"})
+
+            total_patients = 0
+            for day_detail in days_detail:
+                total_patients += day_detail["total_patients"]
+
+            try:
+                info_bookedday = BookedDay.objects.get(doctor=doctor.doctor,date=date_book)
+                info_bookedday.max_patients = total_patients
+                info_bookedday.save()
+
+                if int(info_bookedday.current_patients) < int(info_bookedday.max_patients):
+                    total_patients_prevday = 0
+                    for day_detail in days_detail:
+                        if int(info_bookedday.current_patients) < (day_detail["total_patients"]+total_patients_prevday):
+                            info_bookedday.current_patients = str(int(info_bookedday.current_patients) + 1)
+                            info_bookedday.save()
+
+                            datetime_book = datetime.combine(date_book,day_detail["opening_time"]) + timedelta(minutes=(int(info_bookedday.current_patients)-total_patients_prevday-1)*int(doctor.doctor.settings_time.examination_period))
+                            break
+                        else:
+                            total_patients_prevday += day_detail["total_patients"]
+                    ordinal_number = info_bookedday.current_patients
+                else:
+                    return JsonResponse({'code': '417', 'Message': "Ngày này đã đầy lịch khám!"})
+
+            except ObjectDoesNotExist:
+                info_bookedday = BookedDay.objects.create(doctor=doctor.doctor,date=date_book,max_patients=str(total_patients),current_patients="1")
+                datetime_book = datetime.combine(date_book,days_detail[0]["opening_time"])
+
+                ordinal_number = '1'
+
+            MedicalHistory.objects.create(medical_record=mrecord,date_booked=datetime_book,ordinal_number=ordinal_number,is_waiting=True)
+
+            return JsonResponse({'code': '200', 'Message': "Đã đặt lịch thành công!"})
+    else:
+        return JsonResponse({'code': 'invalid', 'Message': "Thông tin không hợp lệ!"})     
 
 # changelog update app
 def changelog_update_app(request):
@@ -1058,6 +1117,29 @@ def list_examination_finished(request,pk_doctor):
         
         histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=False).filter(date_booked__date=date.today()).order_by("date_booked")
         return render(request,"doctors/doctor_list_examination_finished.html",{"pk_doctor":pk_doctor,"histories":histories,"settings_service":settings_service})
+
+def list_tickets_booked(request,pk_doctor):
+    # check  license
+    if check_licenses(request):
+        return render(request,"user/not_license.html",{})
+    doctor = User.objects.get(pk=pk_doctor)
+    if request.user == doctor:
+        tickets = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__gt=date.today()).order_by("date_booked")
+
+        return render(request,"doctors/doctor_list_tickets_booked.html",{"tickets":tickets,"pk_doctor":pk_doctor})
+
+def add_link_meeting(request,pk_doctor,pk_history):
+    doctor = User.objects.get(pk=pk_doctor)
+    if request.user == doctor:
+        if request.method == "POST":
+            form = AddLinkMeetingForm(request.POST)
+            if form.is_valid():
+
+                ticket = MedicalHistory.objects.get(pk=pk_history)
+                ticket.link_meeting = form.cleaned_data["link_meeting"]
+                ticket.save()
+                return JsonResponse({'code': '200', 'Message': "Thêm liên kết họp trực tuyến thành công!",'id':str(ticket.id),"link_meeting":ticket.link_meeting})
+    return JsonResponse({'code': 'invalid', 'Message': "Không thể thêm liên kết này!"})
 
 # download medical_ultrasonography file
 def download_medical_ultrasonography(request,pk_doctor,pk_history):
