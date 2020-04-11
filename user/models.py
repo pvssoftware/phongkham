@@ -200,6 +200,8 @@ class SettingsService(models.Model):
     password = models.BooleanField(default=False)
     password_field = models.CharField(max_length=20,blank=True,null=True)
 
+    examination_online_cost = models.CharField(max_length=200,blank=True,default="")
+
     doctor = models.OneToOneField(
         DoctorProfile, on_delete=models.CASCADE, blank=True, null=True)
 

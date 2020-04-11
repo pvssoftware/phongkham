@@ -1,4 +1,4 @@
-import xlsxwriter, xlrd, io, os, re
+import xlsxwriter, xlrd, io, os, re, pytz
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from datetime import datetime, timedelta, date
@@ -54,7 +54,7 @@ def patient_profile(request,pk_mrecord):
     if "patient_id" in request.session and request.session["patient_id"] == int(pk_mrecord):
         mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
         histories = mrecord.medicalhistory_set.filter(is_waiting=False)
-        tickets = mrecord.medicalhistory_set.filter(is_waiting=True,date_booked__gte=datetime.now()).order_by("date_booked")
+        tickets = mrecord.medicalhistory_set.filter(is_waiting=True,date_booked__gte=datetime.now().replace(tzinfo=pytz.timezone("Asia/Ho_Chi_Minh"))).order_by("date_booked")
         return render(request,"doctors/patient_profile.html",{"mrecord":mrecord,"histories":histories,"tickets":tickets})
     raise Http404("Page not found")
 
@@ -224,6 +224,7 @@ def settings_service(request,pk_doctor):
                     settings_service.endoscopy_cost = form.cleaned_data["endoscopy_cost"]
                     settings_service.medical_test = form.cleaned_data["medical_test"]
                     settings_service.medical_test_cost = form.cleaned_data["medical_test_cost"]
+                    settings_service.examination_online_cost = form.cleaned_data["examination_online_cost"]
                     settings_service.password = form.cleaned_data["password"]
                     settings_service.password_field = form.cleaned_data["password_field"]
 
@@ -1126,7 +1127,7 @@ def list_tickets_booked(request,pk_doctor):
         return render(request,"user/not_license.html",{})
     doctor = User.objects.get(pk=pk_doctor)
     if request.user == doctor:
-        tickets = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__gt=date.today()).order_by("date_booked")
+        tickets = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__gt=datetime.now().replace(tzinfo=pytz.timezone("Asia/Ho_Chi_Minh"))).order_by("date_booked")
 
         return render(request,"doctors/doctor_list_tickets_booked.html",{"tickets":tickets,"pk_doctor":pk_doctor})
 

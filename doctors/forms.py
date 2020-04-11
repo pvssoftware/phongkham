@@ -59,6 +59,7 @@ class SettingsTimeForm(forms.ModelForm):
 
 
 class SettingsServiceForm(forms.ModelForm):
+
     blood_pressure = forms.BooleanField(required=False)
     weight = forms.BooleanField(required=False)
     glycemic = forms.BooleanField(required=False)
@@ -68,6 +69,7 @@ class SettingsServiceForm(forms.ModelForm):
     endoscopy = forms.BooleanField(required=False)
     medical_test = forms.BooleanField(required=False)
     password = forms.BooleanField(required=False)
+    examination_online_cost = forms.CharField(required=False)
     
     class Meta:
         model = SettingsService

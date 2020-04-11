@@ -71,30 +71,7 @@
     <div id="booked_ticket">
    {% if tickets %}    
       <h4>Lịch khám bệnh</h4>
-      <!-- {% for ticket in tickets %}      
-      <table class="table box-shadow rounded">
-        <tbody>
-          <tr class="table-active">
-            <th>Thời gian hẹn khám</th>
-            <td>{{ ticket.date_booked| date:"H:i d-m-Y" }}</td>
-          </tr>
-          <tr class="table-active">
-            <th>Số thứ tự</th>
-            <td>{{ ticket.ordinal_number }}</td>
-          </tr>
-          <tr class="table-active">
-            <th>Liên kết trực tuyến</th>
-            <td>
-              {% if ticket.link_meeting %}
-              <a href="{{ ticket.link_meeting }}" class="link_meeting">Liên kết khám trực tuyến</a>
-              {% else %}
-              <span>Đợi bác sĩ kích hoạt</span>
-              {% endif %}
-            </td>                         
-          </tr>
-        </tbody>
-      </table>
-      {% endfor %} -->
+      
       <table class="table">
         <thead class="thead-light"> 
           <tr>
@@ -389,6 +366,13 @@
               name="date"
             />
             <span id="alert_date" style="color: red;font-size:15px"></span>
+            
+            {% if mrecord.doctor.doctor.settingsservice.examination_online_cost %}
+              <small class="form-text text-muted">* Giá cho mỗi lần khám trực tuyến tại {{ mrecord.doctor.doctor.clinic_name }} sẽ là <span class="number">{{ mrecord.doctor.doctor.settingsservice.examination_online_cost }}</span> VNĐ.</small>
+            {% endif %}
+              
+            
+            <small class="form-text text-muted">* Bệnh nhân sẽ được hướng dẫn thanh toán sau khi kết thúc thăm khám từ bác sỹ.</small>
           </div>
         </form>
       </div>
@@ -547,6 +531,11 @@
       location.reload(true);
     }); // end on
 
+    $(".number").each(function() {
+      
+      let cost = parseInt($(this).text());
+      $(this).text(cost.toLocaleString());
+    }); // end each
       
     $(".link_meeting").click(function () {
       console.log(this);
