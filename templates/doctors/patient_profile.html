@@ -24,7 +24,16 @@
     
       
     </nav>
-  <div class="patient-profile">
+    <div class="container">
+      <div class="my3">
+        <div class="basic_info_doctor">
+          <p>Phòng khám: <span>{{ mrecord.doctor.doctor.clinic_name }}</span></p>
+          <p>ĐC phòng khám: <span>{{ mrecord.doctor.doctor.clinic_address }}</span></p>
+          <p>Điện thoại: <span>{{ mrecord.doctor.doctor.phone }}</span></p>
+          <p>Mã phòng khám: {{ mrecord.doctor.pk }}</p>
+        </div>
+      </div>
+      <div class="patient-profile">
         <h3 class="mb-4 text-center">Hồ sơ, lịch sử khám chữa bệnh cá nhân</h3>
         
         <table class="table box-shadow rounded">
@@ -56,54 +65,66 @@
             
           </tbody>
         </table>
-    <table class="table box-shodow rounded">
-      <tbody>
-        <tr class="table-active">
-          <th>Phòng khám</th>
-        <td>{{ mrecord.doctor.doctor.clinic_name }}</td>
-        </tr>
-        <tr class="table-active">
-          <th>Mã phòng khám</th>
-        <td>{{ mrecord.doctor.doctor.pk }}</td>
-        </tr>
-        <tr class="table-active">
-          <th>Địa chỉ phòng khám</th>
-        <td>{{ mrecord.doctor.doctor.clinic_address }}</td>
-        </tr>
-        <tr class="table-active">
-          <th>Điện thoại</th>
-        <td>{{ mrecord.doctor.doctor.phone }}</td>
-        </tr>        
-        
-      </tbody>
-    </table>
 
   
-  {% if tickets %}
     
-    {% for ticket in tickets %}
+    <div id="booked_ticket">
+   {% if tickets %}    
+      <h4>Lịch khám bệnh</h4>
+      <!-- {% for ticket in tickets %}      
       <table class="table box-shadow rounded">
         <tbody>
           <tr class="table-active">
             <th>Thời gian hẹn khám</th>
-            <td>{{ ticket.date_booked| date:"H:i D. d-m-Y" }}</td>
+            <td>{{ ticket.date_booked| date:"H:i d-m-Y" }}</td>
+          </tr>
+          <tr class="table-active">
+            <th>Số thứ tự</th>
+            <td>{{ ticket.ordinal_number }}</td>
           </tr>
           <tr class="table-active">
             <th>Liên kết trực tuyến</th>
             <td>
               {% if ticket.link_meeting %}
               <a href="{{ ticket.link_meeting }}" class="link_meeting">Liên kết khám trực tuyến</a>
+              {% else %}
+              <span>Đợi bác sĩ kích hoạt</span>
               {% endif %}
-            </td>
-            
-              
-            
+            </td>                         
           </tr>
         </tbody>
       </table>
-    {% endfor %}
-      
-  {% endif %}
+      {% endfor %} -->
+      <table class="table">
+        <thead class="thead-light"> 
+          <tr>
+            <th scope="col">Số thứ tự khám</th>
+            <th scope="col">Thời gian hẹn khám</th>
+            <th scope="col">Liên kết khám trực tuyến</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          {% for ticket in tickets %}
+            <tr class="table-light"> 
+            <th scope="row">{{ ticket.ordinal_number }}</th>
+            <td>{{ ticket.date_booked| date:"H:i d-m-Y" }}</td>
+            <td>
+              {% if ticket.link_meeting %}
+              <a href="{{ ticket.link_meeting }}" class="link_meeting">Liên kết khám trực tuyến</a>
+              {% else %}
+              <span>Đợi bác sĩ kích hoạt </span>
+            </td>
+              {% endif %}
+          </tr>
+          {% endfor %}
+            
+          
+        </tbody>
+      </table>
+   {% endif %} 
+    </div>     
+  
     
       
 
@@ -341,7 +362,9 @@
           &copy; Software Foundation Company Limitted SFC 2020
         </p>
       
-  </div>
+      </div>
+    </div>
+  
 
 <!-- Modal -->
 <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -353,7 +376,7 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" id="modal-body-content">
         <p>Chọn ngày khám bệnh, hệ thống sẽ tự động chọn giờ khám theo cài đặt của bác sĩ. Lưu ý nên chọn ngày khám mà bác sĩ chắc chắn làm việc.</p>
         <form id="book_form" action="{% url 'patient_book_examination' %}" method="post">
           {% csrf_token %}
@@ -501,7 +524,14 @@
           success: function(resp){
             console.log(resp);
             if (resp.code==="200"){
-              location.reload(true);
+              $("#modal-body-content").html(`
+                <i class="fa fa-check-circle"></i><span> Đã thêm thành công</span>`).css({
+                  "font-size":"300%",
+                  "text-align":"center",
+                  "color":"#009688"
+                });
+              // location.reload(true);
+              $(this).prop("disabled",true);
             } else{
               $("#alert_date").text(resp.Message);
             } 
@@ -510,15 +540,20 @@
         return false;
 
         
-      }) ; // end ajax
+    }) ; // end ajax
+
+    // Refresh page after close modal
+    $('#exampleModalCenter').on('hidden.bs.modal', function() {
+      location.reload(true);
+    }); // end on
 
       
-      $(".link_meeting").click(function () {
-        console.log(this);
-          window.open(this.href);
-          // $(this).attr({"target" : "_blank"});
-          return false;
-      }); //end click  
+    $(".link_meeting").click(function () {
+      console.log(this);
+        window.open(this.href);
+        // $(this).attr({"target" : "_blank"});
+        return false;
+    }); //end click  
 
   }); // end ready
   

@@ -139,7 +139,7 @@ def patient_book_examination(request):
 
             update_examination_patients_list(doctor,date_book,False)
 
-            return JsonResponse({'code': '200', 'Message': "Đã đặt lịch thành công!"})
+            return JsonResponse({'code': '200', 'Message': "Đã đặt lịch thành công!",})
     else:
         return JsonResponse({'code': 'invalid', 'Message': "Thông tin không hợp lệ!"})     
 
