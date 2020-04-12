@@ -224,15 +224,35 @@ class PageLinksMixin(ListView):
         return None
 
     def previous_page(self, page):
-        if page.has_previous() and page.number > 2:
+        if page.has_previous() and page.number >= 2:
             return self._page_urls(page.previous_page_number())
         return None
 
+    def has_many_previous_pages(self,page,number):
+        if page.has_previous() and page.number > number:
+            return True
+        return False
+    def has_number_previous_pages(self,page,number):
+        if page.has_previous() and page.number >= number:
+            return True
+        return False
+
     def next_page(self, page):
         last_page = page.paginator.num_pages
-        if page.has_next() and page.number < (last_page-1):
+        if page.has_next() and page.number <= (last_page-1):
             return self._page_urls(page.next_page_number())
         return None
+
+    def has_many_next_pages(self,page,number):
+        last_page = page.paginator.num_pages
+        if page.has_next() and page.number < (last_page-(number-1)):
+            return True
+        return False
+    def has_number_next_pages(self,page,number):
+        last_page = page.paginator.num_pages
+        if page.has_next() and page.number <= (last_page-(number-1)):
+            return True
+        return False
 
     def get_context_data(self, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -241,7 +261,7 @@ class PageLinksMixin(ListView):
         # print(page.paginator.page_range)
         if page is not None:
             context.update({"first_page_url": self.first_page(page), "previous_page_url": self.previous_page(
-                page), "next_page_url": self.next_page(page), "last_page_url": self.last_page(page),"page_number":page.number})
+                page), "next_page_url": self.next_page(page), "last_page_url": self.last_page(page),"page_number":page.number,"has_many_next_pages":self.has_many_next_pages(page,3),"has_many_previous_pages":self.has_many_previous_pages(page,3),"has_number_next_pages":self.has_number_next_pages(page,3),"has_number_previous_pages":self.has_number_previous_pages(page,3)})
         return context
 
 class DoctorProfileMixin:

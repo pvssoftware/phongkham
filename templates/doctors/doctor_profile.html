@@ -98,18 +98,50 @@
         <span class="sr-only">Previous</span>
       </a>
     </li>
+    
+    {% if has_many_previous_pages %}
+    <li><a class="page-link page-link-mix" style="color: #009688;">. . .</a></li>
+    {% endif %}
+    
+    {% if has_number_previous_pages %}
+    <li class="page-item">
+        <a href="?page={{ page_obj.number|add:-2 }}&service={{ service }}" class="page-link page-link-mix">{{ page_obj.number|add:-2 }}</a>
+    </li>
+    {% endif %}
 
+    {% if previous_page_url %}
+    <li class="page-item">
+        <a href="?page={{ page_obj.number|add:-1 }}&service={{ service }}" class="page-link page-link-mix">{{ page_obj.number|add:-1 }}</a>
+    </li>
+    {% endif %}
         
-    {% for i in page_obj.paginator.page_range %}
+    <!-- {% for i in page_obj.paginator.page_range %}
     <li class="page-item
     {% if page_obj.number == i %}
       active
     {% endif %}">
         <a href="?page={{ i }}&service={{ service }}" class="page-link page-link-mix">{{ i }}</a>
     </li>
-    {% endfor %}
-
+    {% endfor %} -->
+    <li class="page-item active">
+        <a href="?page={{ page_obj.number }}&service={{ service }}" class="page-link page-link-mix">{{ page_obj.number }}</a>
+    </li>
     
+    {% if next_page_url %}
+    <li class="page-item">
+        <a href="?page={{ page_obj.number|add:1 }}&service={{ service }}" class="page-link page-link-mix">{{ page_obj.number|add:1 }}</a>
+    </li>
+    {% endif %}
+
+    {% if has_number_next_pages %}
+    <li class="page-item">
+        <a href="?page={{ page_obj.number|add:2 }}&service={{ service }}" class="page-link page-link-mix">{{ page_obj.number|add:2 }}</a>
+    </li>
+    {% endif %}
+    
+    {% if has_many_next_pages %}
+    <li><a class="page-link page-link-mix" style="color: #009688;">. . .</a></li>
+    {% endif %}
     
     <li class="page-item 
     {% if not next_page_url %}
