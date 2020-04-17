@@ -349,7 +349,7 @@ class DoctorProfileMixin:
 
             elif service == "da_kham":
                 self.object_list = self.object_list.exclude(medicalhistory__isnull=True)
-                print(self.object_list)
+                
             
             context = self.get_context_data()
             context.update({"doctor":doctor,"page":page,"service":service})

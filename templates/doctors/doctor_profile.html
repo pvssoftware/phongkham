@@ -63,14 +63,18 @@
         
         {% endif %}
       </div>
-      <div>
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
           {% if ob.sex %}
           <i class="fa fa-female"></i>
           {% else %}
           <i class="fa fa-male"></i>
           {% endif %}
-      <span >{{ ob.birth_date |date:"Y"}}</span>
+        <span >{{ ob.birth_date |date:"Y"}}</span>
+        </div>
+        <span class="font-italic font-weight-light">Lần gần nhất {{ ob.medicalhistory_set.first.date_booked | date:"H:i  d-m-Y" }}</span>
       </div>
+      
     </div>
 </div>
 {% endfor %}
