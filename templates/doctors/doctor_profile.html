@@ -23,6 +23,7 @@
     <h4 class="pb-2 mb-0">Danh sách bệnh nhân</h4>
     <div>
       <span style="font-weight: bold"><a href="?service=none" class="page-link-mix">Tất cả</a></span> / 
+      <span style="font-weight: bold"><a href="?service=da_kham" class="page-link-mix">Đã khám</a></span> /
       <span style="font-weight: bold"><a href="?service=chua_kham" class="page-link-mix">Chưa khám</a></span> 
     </div>
     
@@ -31,48 +32,44 @@
   {% for ob in object_list %}
 <div class="media text-muted pt-3">
     <i class="fa fa-square mr-2"
-     {% if ob.ob.sex %}
+     {% if ob.sex %}
       style="font-size: 47px;color: #ff4081 "
       {% else %}
       style="font-size: 47px;color: #304ffe"
       {% endif %}></i>
     <div class="media-body pb-3 mb-0 lh-125 border-bottom border-gray">
       <div class="d-flex justify-content-between align-items-center w-100">
-        <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_view' doctor.pk ob.ob.pk %}">
-          {% if ob.ob.full_name == "" %}
+        <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_view' doctor.pk ob.pk %}">
+          {% if ob.full_name == "" %}
                   Bệnh nhân mới 
           {% else %}
-            {{ ob.ob.full_name }} 
+            {{ ob.full_name }} 
           {% endif %}
           
-          {% if ob.ob.phone %}
-            - ĐT: {{ ob.ob.phone }}
+          {% if ob.phone %}
+            - ĐT: {{ ob.phone }}
           {% endif %}
             
         </a>
         </strong>
-        {% if ob.ps and ob.pk %}
-      <a href="?service=san_khoa" class="page-link-mix">Phụ sản / Phụ khoa</a>
-      {% elif ob.ps %}
-      <a href="?service=phu_san" class="page-link-mix">Phụ sản</a>
-      {% elif ob.pk %}
-      <a href="?service=phu_khoa" class="page-link-mix">Phụ khoa</a>
-      {% else %}
-      <div>
-        <a href="?service=chua_kham" class="page-link-mix">Chưa khám</a> - 
-        <a href="{% url 'medical_record_del' doctor.pk ob.ob.pk %}?path_list={{request.path}}&page={{page_number}}" class="page-link-mix" style="color: #d9534f">Xóa</a>
+        {% if ob.medicalhistory_set.all %}
+        <a href="?service=da_kham" class="page-link-mix">Đã khám {{ ob.medicalhistory_set.all.count }} lần</a>
+        {% else %}
+        <div>
+          <a href="?service=chua_kham" class="page-link-mix">Chưa khám</a> - 
+          <a href="{% url 'medical_record_del' doctor.pk ob.pk %}?path_list={{request.path}}&page={{page_number}}" class="page-link-mix" style="color: #d9534f">Xóa</a>
+          
+        </div>
         
-      </div>
-      
-      {% endif %}
+        {% endif %}
       </div>
       <div>
-          {% if ob.ob.sex %}
+          {% if ob.sex %}
           <i class="fa fa-female"></i>
           {% else %}
           <i class="fa fa-male"></i>
           {% endif %}
-      <span >{{ ob.ob.birth_date |date:"Y"}}</span>
+      <span >{{ ob.birth_date |date:"Y"}}</span>
       </div>
     </div>
 </div>
