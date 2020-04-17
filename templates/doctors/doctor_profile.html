@@ -72,7 +72,9 @@
           {% endif %}
         <span >{{ ob.birth_date |date:"Y"}}</span>
         </div>
+        {% if ob.medicalhistory_set.all %}
         <span class="font-italic font-weight-light">Lần gần nhất {{ ob.medicalhistory_set.first.date_booked | date:"H:i  d-m-Y" }}</span>
+        {% endif %}
       </div>
       
     </div>
