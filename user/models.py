@@ -196,6 +196,7 @@ class SettingsService(models.Model):
 
     medical_test = models.BooleanField(default=False)
     medical_test_cost = models.CharField(max_length=50,blank=True,null=True)
+    medical_test_multi = models.BooleanField(default=False)
 
     password = models.BooleanField(default=False)
     password_field = models.CharField(max_length=20,blank=True,null=True)

@@ -21,15 +21,15 @@ logger = logging.getLogger(__name__)
 
 
 # get price from app or setting
-def get_price_ultrasound_app_or_setting(doctor,app_price):
+def get_price_app_or_setting(settings_price,app_price):
     if app_price != "0":
         price = app_price
     else:
         try:
             print("try")
-            if doctor.doctor.settingsservice.medical_ultrasonography_cost:
+            if settings_price:
                 print("try-if")
-                price = doctor.doctor.settingsservice.medical_ultrasonography_cost
+                price = settings_price
             else:
                 price = "0"
         except:

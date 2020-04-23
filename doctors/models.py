@@ -2,7 +2,7 @@ import re, os
 import pytz
 from django.db import models
 from user.models import User, DoctorProfile
-from .utils_models import locate_medical_ultrasonography_upload, locate_medical_ultrasonography_upload_2, locate_medical_ultrasonography_upload_3,locate_endoscopy_upload, locate_medical_test_upload
+from .utils_models import locate_medical_ultrasonography_upload, locate_medical_ultrasonography_upload_2, locate_medical_ultrasonography_upload_3,locate_endoscopy_upload, locate_medical_test_upload, locate_medical_test_upload_2, locate_medical_test_upload_3
 
 # Create your models here.
 
@@ -73,6 +73,15 @@ class MedicalHistory(models.Model):
 
     medical_test = models.CharField(max_length=200,blank=True,default="")
     medical_test_file = models.FileField(upload_to=locate_medical_test_upload,blank=True,null=True)
+    medical_test_cost = models.CharField(max_length=200,default="0")
+
+    medical_test_2 = models.CharField(max_length=200,blank=True,default="")
+    medical_test_file_2 = models.FileField(upload_to=locate_medical_test_upload_2,blank=True,null=True)
+    medical_test_cost_2 = models.CharField(max_length=200,default="0")
+
+    medical_test_3 = models.CharField(max_length=200,blank=True,default="")
+    medical_test_file_3 = models.FileField(upload_to=locate_medical_test_upload_3,blank=True,null=True)
+    medical_test_cost_3 = models.CharField(max_length=200,default="0")
     
     co_tu_cung_ps = models.BooleanField(default=False,help_text='chỉ check khi khám phụ sản')
     note_co_tu_cung_ps = models.CharField(max_length=100,blank=True,default="",help_text='chỉ check khi khám cổ tử cung phụ sản')

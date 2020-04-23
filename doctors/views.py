@@ -224,6 +224,7 @@ def settings_service(request,pk_doctor):
                     settings_service.endoscopy_cost = form.cleaned_data["endoscopy_cost"]
                     settings_service.medical_test = form.cleaned_data["medical_test"]
                     settings_service.medical_test_cost = form.cleaned_data["medical_test_cost"]
+                    settings_service.medical_test_multi = form.cleaned_data["medical_test_multi"]
                     settings_service.examination_online_cost = form.cleaned_data["examination_online_cost"]
                     settings_service.password = form.cleaned_data["password"]
                     settings_service.password_field = form.cleaned_data["password_field"]
@@ -1048,6 +1049,16 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                 if "medical_test_file" in request.FILES:
                     remove_file(history_edit.medical_test_file)
                     history_edit.medical_test_file = request.FILES["medical_test_file"]
+
+                history_edit.medical_test_2 = form.cleaned_data['medical_test_2']
+                if "medical_test_file_2" in request.FILES:
+                    remove_file(history_edit.medical_test_file_2)
+                    history_edit.medical_test_file_2 = request.FILES["medical_test_file_2"]
+
+                history_edit.medical_test_3 = form.cleaned_data['medical_test_3']
+                if "medical_test_file_3" in request.FILES:
+                    remove_file(history_edit.medical_test_file_3)
+                    history_edit.medical_test_file_3 = request.FILES["medical_test_file_3"]
                 
                 history_edit.save()
 

@@ -21,7 +21,7 @@ from user.license import check_licenses, check_premium_licenses
 from .utils import get_days_detail, history_serializer_mix, update_examination_patients_list, update_examination_patients_finished_list
 from .custom_token import ExpiringTokenAuthentication,is_token_expired
 from .models import BookedDay, MedicalRecord, MedicalHistory, AppWindow
-from .serializers import MedicalRecordSerializer, ExaminationPatientsSerializer, MedicalRecordExaminationSerializer,UploadMedicalUltrasonographySerializer, UploadMedicalUltrasonographySerializer2, UploadMedicalUltrasonographySerializer3, ResponseUploadMedicalUltrasonographySerializer, CreateUploadMedicalUltrasonographySerializer 
+from .serializers import MedicalRecordSerializer, ExaminationPatientsUltrasoundSerializer, MedicalRecordExaminationSerializer,UploadMedicalUltrasonographySerializer, UploadMedicalUltrasonographySerializer2, UploadMedicalUltrasonographySerializer3, ResponseUploadMedicalUltrasonographySerializer, CreateUploadMedicalUltrasonographySerializer, UploadMedicalTestSerializer, UploadMedicalTestSerializer2, UploadMedicalTestSerializer3, ResponseUploadMedicalTestSerializer, CreateUploadMedicalTestSerializer
 
 
 # update status merchant
@@ -101,7 +101,7 @@ def get_examination_patients(request):
         date_book = date(year=today.year,month=today.month,day=today.day)
         
         examination_list = MedicalHistory.objects.filter(medical_record__doctor__pk=request.user.pk,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
-        examination_serializer = ExaminationPatientsSerializer(examination_list, many=True,context={"request": request})
+        examination_serializer = ExaminationPatientsUltrasoundSerializer(examination_list, many=True,context={"request": request})
         
         return Response(examination_serializer.data)
 
@@ -297,16 +297,193 @@ def upload_medical_ultrasonography_file(request):
                 print(date_book)
                 update_examination_patients_list(request.user,date_book,full_booked)
             # update list examination patients finished
-            update_examination_patients_finished_list(request.user,date_book)
-            # history =MedicalHistory.objects.get(pk=history_serializer.data["id"])
-            # response_data = CreateUploadMedicalUltrasonographySerializer(history,context={"request": request})
-            # response_data = history_serializer.data
-            # response_data["medical_record"]["birth_date"] = response_data["medical_record"]["birth_date"].split("-")[0]
+            update_examination_patients_finished_list(request.user,date_book)           
              
             return Response(history_serializer.data)
         return Response(history_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+# upload medical test file
+@api_view(["PATCH","POST"])
+@authentication_classes([ExpiringTokenAuthentication])       
+def upload_medical_test_file(request):
+    if request.method == "PATCH":
+        data = request.data
+        json_file = json.loads(data['json_file'])
+        # update info patient
+        if data['id_patient']:
+            try:
+                mrecord = MedicalRecord.objects.get(pk=int(data["id_patient"]),doctor=request.user)
+                mrecord.full_name = data['full_name']
+                mrecord.birth_date = date(year=int(data["birth_date"]),month=1,day=1)
+                mrecord.address = data['address']
+                mrecord.sex = json_file['sex']
+                mrecord.save()
+            except MedicalRecord.DoesNotExist:
+                return Response({"alert":"Mã bệnh nhân không hợp lệ!!!"},status=status.HTTP_404_NOT_FOUND)
+
+        # upload file
+        try:
+            history = MedicalHistory.objects.get(pk=int(data["id"]))
+        except MedicalHistory.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         
+        if request.user.pk == history.medical_record.doctor.pk:
+            if data["seq"] == "1":
+                history_serializer = UploadMedicalTestSerializer(history,data=data,context={"request": request,"is_waiting":json_file["is_waiting"]})
+            elif data["seq"] == "2":
+                history_serializer = UploadMedicalTestSerializer2(history,data=data,context={"request": request,"is_waiting":json_file["is_waiting"]})
+            elif data["seq"] == "3":
+                history_serializer = UploadMedicalTestSerializer3(history,data=data,context={"request": request,"is_waiting":json_file["is_waiting"]})
+            
+            if history_serializer.is_valid():
+                history_serializer.save()
+
+                # update list examination patients
+                update_examination_patients_list(request.user,date.today(),False)
+
+                # update list examination patients finished
+                update_examination_patients_finished_list(request.user,date.today())
+
+                history = MedicalHistory.objects.get(pk=history_serializer.data["id"])
+                
+                response_data = ResponseUploadMedicalTestSerializer(history,context={"request": request})
+                
+                return Response(response_data.data)
+
+            return Response(history_serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    elif request.method == 'POST':
+        data = request.data
+        json_file = json.loads(data['json_file'])
+        # update info patient
+        if data['id_patient']:
+            try:
+                mrecord = MedicalRecord.objects.get(pk=int(data["id_patient"]),doctor=request.user)
+                mrecord.full_name = data['full_name']
+                mrecord.birth_date = date(year=int(data["birth_date"]),month=1,day=1)
+                mrecord.address = data['address']
+                mrecord.sex = json_file['sex']
+                mrecord.save()
+            except MedicalRecord.DoesNotExist:
+                return Response({"alert":"Mã bệnh nhân không hợp lệ!!!"},status=status.HTTP_404_NOT_FOUND)
+
+        else:
+            mrecord = MedicalRecord.objects.create(doctor=request.user,full_name=data['full_name'],birth_date=date(year=int(data["birth_date"]),month=1,day=1),sex=json_file['sex'],phone=data['phone'],address=data['address'])
+        
+        try:
+            settings_time = request.user.doctor.settings_time
+        except:
+            settings_time = SettingsTime.objects.create(examination_period="0",doctor=request.user.doctor)
+        
+        today = date.today()                       
+        date_book = date(year=today.year,month=today.month,day=today.day)
+
+        if json_file['is_waiting']:
+            
+            if settings_time.enable_voice:
+                days_detail = get_days_detail(settings_time.weekday_set.all(),date_book,settings_time.examination_period)
+                if not days_detail:
+                    response_data = MedicalRecordExaminationSerializer(mrecord,context={"request": request})
+                    return Response(response_data.data,status=status.HTTP_400_BAD_REQUEST)
+                
+                total_patients = 0
+                for day_detail in days_detail:
+                    total_patients += day_detail["total_patients"]
+                    closing_time = day_detail["closing_time"]
+
+                try:
+                    info_bookedday = BookedDay.objects.get(doctor=request.user.doctor,date=date_book)
+                    info_bookedday.max_patients = total_patients
+                    info_bookedday.save()
+                    if int(info_bookedday.current_patients) < int(info_bookedday.max_patients):
+                        full_booked = False
+                        total_patients_prevday = 0
+                        for day_detail in days_detail:
+                            if int(info_bookedday.current_patients) < (day_detail["total_patients"]+total_patients_prevday):
+                                info_bookedday.current_patients = str(int(info_bookedday.current_patients) + 1)
+                                info_bookedday.save()
+
+                                datetime_book = datetime.combine(date_book,day_detail["opening_time"]) + timedelta(minutes=(int(info_bookedday.current_patients)-total_patients_prevday-1)*int(request.user.doctor.settings_time.examination_period))
+                                break
+                            else:
+                                total_patients_prevday += day_detail["total_patients"]
+                            
+                    else:
+                        full_booked = True
+
+                        info_bookedday.current_patients = str(int(info_bookedday.current_patients) + 1)
+                        info_bookedday.save()
+
+                        datetime_book = datetime.combine(date_book,closing_time) + timedelta(minutes=(int(info_bookedday.current_patients)- int(info_bookedday.max_patients))*int(request.user.doctor.settings_time.examination_period))
+                        print("max")
+                    
+                    ordinal_number = info_bookedday.current_patients
+                    date_booked = datetime_book
+
+                except ObjectDoesNotExist:
+                    full_booked = False
+
+                    BookedDay.objects.create(doctor=request.user.doctor,date=date_book,max_patients=str(total_patients),current_patients="1")
+                    datetime_book = datetime.combine(date_book,days_detail[0]["opening_time"])
+
+                    ordinal_number = '1'
+                    date_booked = datetime_book
+            else:
+                full_booked = False
+                try:
+                    info_bookedday = BookedDay.objects.get(doctor=request.user.doctor,date=date_book)
+                    info_bookedday.current_patients = str(int(info_bookedday.current_patients) + 1)
+                    info_bookedday.save()
+                    
+                except ObjectDoesNotExist:
+                    info_bookedday = BookedDay.objects.create(doctor=request.user.doctor,date=date_book,max_patients="limitless",current_patients="1")
+
+                date_booked = datetime.now()
+                ordinal_number = info_bookedday.current_patients
+                
+
+        else:
+            date_booked = datetime.now()
+            ordinal_number = "-1"
+            
+        if not data['medical_test_file']:
+            medical_test_file = None
+        else:
+            medical_test_file = data['medical_test_file']
+        try:
+
+            medical_test_cost = data['medical_test_cost']
+        except:
+            medical_test_cost = "0"
+            
+        data_history = {
+            # "medical_record":mrecord,
+            "date_booked":date_booked,
+            "medical_test_file":medical_test_file,
+            "medical_test_cost":medical_test_cost,
+            "medical_test":data["medical_test"],
+            "is_waiting":json_file["is_waiting"],
+            "ordinal_number":ordinal_number
+
+        }
+        print(data_history)
+        history_serializer = CreateUploadMedicalTestSerializer(data=data_history,context={"request": request,"medical_record":mrecord})
+        if history_serializer.is_valid():
+            history_serializer.save()
+            
+            if json_file["is_waiting"]:
+                print(date_book)
+                update_examination_patients_list(request.user,date_book,full_booked)
+            # update list examination patients finished
+            update_examination_patients_finished_list(request.user,date_book)           
+             
+            return Response(history_serializer.data)
+        return Response(history_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # check doctor
 @api_view(["POST"])

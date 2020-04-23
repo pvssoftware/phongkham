@@ -5,7 +5,7 @@ from django.conf import settings
 from user.models import SettingsTime, SettingsService, WeekDay
 from .models import MedicalRecord, MedicalHistory, PrescriptionDrug, PrescriptionDrugOutStock, Medicine
 from .utils_forms import clean_upload_file
-from user.utils import get_price_ultrasound_app_or_setting
+from user.utils import get_price_app_or_setting
 
 
 
@@ -68,6 +68,7 @@ class SettingsServiceForm(forms.ModelForm):
     medical_ultrasonography_multi = forms.BooleanField(required=False)
     endoscopy = forms.BooleanField(required=False)
     medical_test = forms.BooleanField(required=False)
+    medical_test_multi = forms.BooleanField(required=False)
     password = forms.BooleanField(required=False)
     examination_online_cost = forms.CharField(required=False)
     
@@ -150,7 +151,7 @@ class MedicalHistoryFormMix(forms.ModelForm):
 
     class Meta:
         model = MedicalHistory
-        fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","last_menstrual_period","co_tu_cung_ps","note_co_tu_cung_ps","tim_thai_ps","note_tim_thai_ps","can_go_ps","note_con_go_ps","co_tu_cung_pk","note_co_tu_cung_pk","am_dao_pk","note_am_dao_pk","is_waiting","medical_ultrasonography","medical_ultrasonography_file","medical_ultrasonography_2","medical_ultrasonography_file_2","medical_ultrasonography_3","medical_ultrasonography_file_3","endoscopy","endoscopy_file","blood_pressure","weight","glycemic","ph_meter","medical_test","medical_test_file"]
+        fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","last_menstrual_period","co_tu_cung_ps","note_co_tu_cung_ps","tim_thai_ps","note_tim_thai_ps","can_go_ps","note_con_go_ps","co_tu_cung_pk","note_co_tu_cung_pk","am_dao_pk","note_am_dao_pk","is_waiting","medical_ultrasonography","medical_ultrasonography_file","medical_ultrasonography_2","medical_ultrasonography_file_2","medical_ultrasonography_3","medical_ultrasonography_file_3","endoscopy","endoscopy_file","blood_pressure","weight","glycemic","ph_meter","medical_test","medical_test_file","medical_test_2","medical_test_file_2","medical_test_3","medical_test_file_3",]
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user',None)
@@ -179,13 +180,23 @@ class MedicalHistoryFormMix(forms.ModelForm):
         file = self.cleaned_data.get("medical_test_file")
         return clean_upload_file(file)
 
+    def clean_medical_test_file_2(self):
+        file = self.cleaned_data.get("medical_test_file_2")
+        return clean_upload_file(file)
+        
+    def clean_medical_test_file_3(self):
+        file = self.cleaned_data.get("medical_test_file_3")
+        return clean_upload_file(file)
+
     def save(self,commit=True):
         history = super().save(commit=commit)
         print("save")
         print(commit)
         print(history.medical_ultrasonography_cost)
     
-        history.medical_ultrasonography_cost = history.medical_ultrasonography_cost_2 = history.medical_ultrasonography_cost_3 = get_price_ultrasound_app_or_setting(self.user,"0")
+        history.medical_ultrasonography_cost = history.medical_ultrasonography_cost_2 = history.medical_ultrasonography_cost_3 = get_price_app_or_setting(self.user.doctor.settingsservice.medical_ultrasonography_cost,"0")
+
+        history.medical_test_cost = history.medical_test_cost_2 = history.medical_test_cost_3 = get_price_app_or_setting(self.user.doctor.settingsservice.medical_test_cost,"0")
         
         if commit:
             history.save()

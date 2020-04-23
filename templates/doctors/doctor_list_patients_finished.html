@@ -120,7 +120,32 @@
         {% else %}
         Không có file xét nghiệm
         {% endif %}
-      </div>           
+      </div>
+      
+      {% if settings_service.medical_test_multi %}
+        <div>
+          {% if history.medical_test_file_2 %}
+          <a
+            class="view-pdf page-link-mix"
+            href="{{ history.medical_test_file_2.url }}"
+            >Xem file xét nghiệm lần 2</a
+          >
+          {% else %}
+          Chưa upload file xét nghiệm lần 2
+          {% endif %}
+        </div>
+        <div>
+          {% if history.medical_test_file_3 %}
+          <a
+            class="view-pdf page-link-mix"
+            href="{{ history.medical_test_file_3.url }}"
+            >Xem file xét nghiệm lần 3</a
+          >
+          {% else %}
+          Chưa upload file xét nghiệm lần 3
+          {% endif %}
+        </div>
+        {% endif %}
       {% endif %}
       </div>
       
