@@ -21,7 +21,7 @@ from user.license import check_licenses, check_premium_licenses
 from .utils import get_days_detail, history_serializer_mix, update_examination_patients_list, update_examination_patients_finished_list
 from .custom_token import ExpiringTokenAuthentication,is_token_expired
 from .models import BookedDay, MedicalRecord, MedicalHistory, AppWindow
-from .serializers import MedicalRecordSerializer, ExaminationPatientsUltrasoundSerializer, MedicalRecordExaminationSerializer,UploadMedicalUltrasonographySerializer, UploadMedicalUltrasonographySerializer2, UploadMedicalUltrasonographySerializer3, ResponseUploadMedicalUltrasonographySerializer, CreateUploadMedicalUltrasonographySerializer, UploadMedicalTestSerializer, UploadMedicalTestSerializer2, UploadMedicalTestSerializer3, ResponseUploadMedicalTestSerializer, CreateUploadMedicalTestSerializer
+from .serializers import MedicalRecordSerializer, ExaminationPatientsUltrasoundSerializer, MedicalRecordExaminationSerializer,UploadMedicalUltrasonographySerializer, UploadMedicalUltrasonographySerializer2, UploadMedicalUltrasonographySerializer3, ResponseUploadMedicalUltrasonographySerializer, CreateUploadMedicalUltrasonographySerializer, UploadMedicalTestSerializer, UploadMedicalTestSerializer2, UploadMedicalTestSerializer3, ResponseUploadMedicalTestSerializer, CreateUploadMedicalTestSerializer, ExaminationPatientsMedicalTestSerializer
 
 
 # update status merchant
@@ -101,7 +101,13 @@ def get_examination_patients(request):
         date_book = date(year=today.year,month=today.month,day=today.day)
         
         examination_list = MedicalHistory.objects.filter(medical_record__doctor__pk=request.user.pk,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
-        examination_serializer = ExaminationPatientsUltrasoundSerializer(examination_list, many=True,context={"request": request})
+        service = request.GET.get("service")
+        if service == "ultrasound":
+            examination_serializer = ExaminationPatientsUltrasoundSerializer(examination_list, many=True,context={"request": request})
+        elif service == "medicaltest":
+            examination_serializer = ExaminationPatientsMedicalTestSerializer(examination_list, many=True,context={"request": request})
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         
         return Response(examination_serializer.data)
 
