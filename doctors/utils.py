@@ -24,13 +24,19 @@ from user.license import check_licenses, check_premium_licenses
 def count_and_calculate_service(count,settings_service_cost):
     revenue = 0
     if settings_service_cost:
-        revenue = count*int(settings_service_cost)
+        revenue = count * int(settings_service_cost)
     return revenue
 # count and calculate ultrasonography
-def sum_cost_service(histories):
+def sum_cost_ultra_service(histories):
     revenue = 0    
     for history in histories:
-        revenue += int(history.medical_ultrasonography_cost)
+        revenue += int(history.medical_ultrasonography_cost) + int(history.medical_ultrasonography_cost_2) + int(history.medical_ultrasonography_cost_3)
+    return revenue
+# count and calculate medical test
+def sum_cost_medical_test_service(histories):
+    revenue = 0    
+    for history in histories:
+        revenue += int(history.medical_test_cost) + int(history.medical_test_cost_2) + int(history.medical_test_cost_3)
     return revenue
 
 # update list examination patients function

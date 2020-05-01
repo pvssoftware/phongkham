@@ -12,9 +12,10 @@ from django.db.models import Q, Count
 from django.core.exceptions import ObjectDoesNotExist
 
 from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
+from user.utils import get_price_app_or_setting
 from user.license import check_licenses, check_premium_licenses
 from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, PrescriptionDrugOutStock, BookedDay, AppWindow
-from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, update_examination_patients_finished_list, count_and_calculate_service, sum_cost_service
+from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, update_examination_patients_finished_list, count_and_calculate_service, sum_cost_ultra_service, sum_cost_medical_test_service
 from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, TakeDrugOutStockForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm, PatientLoginForm, PatientBookForm, AddLinkMeetingForm
 from .custom_serializers import remove_file
 
@@ -347,28 +348,36 @@ def cal_benefit(request,pk_doctor):
 
             count_histories = histories.count()
 
-            count_ultrasonography = histories.filter(medical_ultrasonography_file__regex=r'[^-\s]').count()
-            ultrasonography_revenue = sum_cost_service(histories)
+            count_ultrasonography = histories.filter(Q(medical_ultrasonography_file__regex=r'[^-\s]')|Q(medical_ultrasonography_file_2__regex=r'[^-\s]')|Q(medical_ultrasonography_file_3__regex=r'[^-\s]')).count()
+            ultrasonography_revenue = sum_cost_ultra_service(histories)
             
             count_endoscopy = histories.filter(endoscopy_file__regex=r'[^-\s]').count()
             endoscopy_revenue = count_and_calculate_service(count_endoscopy ,settings_service.endoscopy_cost)
             
-            count_medical_test = histories.filter(medical_test_file__regex=r'[^-\s]').count()
-            medical_test_revenue = count_and_calculate_service(count_medical_test,settings_service.medical_test_cost)
+            count_medical_test = histories.filter(Q(medical_test_file__regex=r'[^-\s]')|Q(medical_test_file_2__regex=r'[^-\s]')|Q(medical_test_file_3__regex=r'[^-\s]')).count()
+            medical_test_revenue = sum_cost_medical_test_service(histories)
 
             histories_object = []
             gross_revenue = ultrasonography_revenue + endoscopy_revenue + medical_test_revenue
             accrued_expenses = 0
             for history in histories:
-                his = {"history":history,"revenue":0,"expense":0,"benefit":0}
+                his = {"history":history,"revenue_drug":0,"expense_drug":0,"benefit_drug":0,"ultra_cost":0,"test_cost":0,"total_revenue":0,"benefit_drug":0}
                 
                 if history.prescriptiondrug_set.all():
                     for pres_drug in history.prescriptiondrug_set.all():
                         gross_revenue += int(pres_drug.cost)
                         accrued_expenses += int(pres_drug.quantity)*int(pres_drug.medicine.import_price)
-                        his['revenue'] += int(pres_drug.cost)
-                        his['expense'] += int(pres_drug.quantity)*int(pres_drug.medicine.import_price)
-                    his['benefit'] = his['revenue'] - his['expense']
+                        his['revenue_drug'] += int(pres_drug.cost)
+                        his['expense_drug'] += int(pres_drug.quantity)*int(pres_drug.medicine.import_price)
+                    his['benefit_drug'] = his['revenue_drug'] - his['expense_drug']
+
+                his["ultra_cost"] = int(history.medical_ultrasonography_cost) + int(history.medical_ultrasonography_cost_2) + int(history.medical_ultrasonography_cost_3)
+
+                his["test_cost"] = int(history.medical_test_cost) + int(history.medical_test_cost_2) + int(history.medical_test_cost_3)
+
+                his["total_revenue"] = his["revenue_drug"] + his["ultra_cost"] + his["test_cost"]
+
+                his["total_benefit"] = his["benefit_drug"] + his["ultra_cost"] + his["test_cost"]
 
                 histories_object.append(his)
             gross_profit = gross_revenue - accrued_expenses
@@ -1029,16 +1038,22 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                 if "medical_ultrasonography_file" in request.FILES:
                     remove_file(history_edit.medical_ultrasonography_file)
                     history_edit.medical_ultrasonography_file = request.FILES["medical_ultrasonography_file"]
+                    if history_edit.medical_ultrasonography_cost == "0":
+                       history_edit.medical_ultrasonography_cost = get_price_app_or_setting(doctor.doctor.settingsservice.medical_ultrasonography_cost,"0") 
 
                 history_edit.medical_ultrasonography_2 = form.cleaned_data['medical_ultrasonography_2']
                 if "medical_ultrasonography_file_2" in request.FILES:
                     remove_file(history_edit.medical_ultrasonography_file_2)
                     history_edit.medical_ultrasonography_file_2 = request.FILES["medical_ultrasonography_file_2"]
+                    if history_edit.medical_ultrasonography_cost_2 == "0":
+                       history_edit.medical_ultrasonography_cost_2 = get_price_app_or_setting(doctor.doctor.settingsservice.medical_ultrasonography_cost,"0")
 
                 history_edit.medical_ultrasonography_3 = form.cleaned_data['medical_ultrasonography_3']
                 if "medical_ultrasonography_file_3" in request.FILES:
                     remove_file(history_edit.medical_ultrasonography_file_3)
                     history_edit.medical_ultrasonography_file_3 = request.FILES["medical_ultrasonography_file_3"]
+                    if history_edit.medical_ultrasonography_cost_3 == "0":
+                       history_edit.medical_ultrasonography_cost_3 = get_price_app_or_setting(doctor.doctor.settingsservice.medical_ultrasonography_cost,"0")
 
                 history_edit.endoscopy = form.cleaned_data['endoscopy']
                 if "endoscopy_file" in request.FILES:
@@ -1049,16 +1064,22 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                 if "medical_test_file" in request.FILES:
                     remove_file(history_edit.medical_test_file)
                     history_edit.medical_test_file = request.FILES["medical_test_file"]
+                    if history_edit.medical_test_cost == "0":
+                       history_edit.medical_test_cost = get_price_app_or_setting(doctor.doctor.settingsservice.medical_test_cost,"0")
 
                 history_edit.medical_test_2 = form.cleaned_data['medical_test_2']
                 if "medical_test_file_2" in request.FILES:
                     remove_file(history_edit.medical_test_file_2)
                     history_edit.medical_test_file_2 = request.FILES["medical_test_file_2"]
+                    if history_edit.medical_test_cost_2 == "0":
+                       history_edit.medical_test_cost_2 = get_price_app_or_setting(doctor.doctor.settingsservice.medical_test_cost,"0")
 
                 history_edit.medical_test_3 = form.cleaned_data['medical_test_3']
                 if "medical_test_file_3" in request.FILES:
                     remove_file(history_edit.medical_test_file_3)
                     history_edit.medical_test_file_3 = request.FILES["medical_test_file_3"]
+                    if history_edit.medical_test_cost_3 == "0":
+                       history_edit.medical_test_cost_3 = get_price_app_or_setting(doctor.doctor.settingsservice.medical_test_cost,"0")
                 
                 history_edit.save()
 
@@ -1483,15 +1504,23 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
             ws.merge_range("A{}:C{}".format(str(row_drug+1),str(row_drug+1)),"Tổng tiền thuốc (VNĐ)",normal_style)
             ws.merge_range("D{}:G{}".format(str(row_drug+1),str(row_drug+1)),total_cost,number_style)
 
-        if settings_service.medical_ultrasonography_cost:
+        total_ultrasonography_cost = int(history.medical_ultrasonography_cost) + int(history.medical_ultrasonography_cost_2) + int(history.medical_ultrasonography_cost_3)
+        if total_ultrasonography_cost > 0:
             ws.merge_range("A{}:C{}".format(str(row_drug+2),str(row_drug+2)),"Tiền siêu âm (VNĐ)",normal_style)
-            ws.merge_range("D{}:G{}".format(str(row_drug+2),str(row_drug+2)),int(settings_service.medical_ultrasonography_cost),number_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+2),str(row_drug+2)),total_ultrasonography_cost,number_style)
+
         if settings_service.endoscopy_cost:
             ws.merge_range("A{}:C{}".format(str(row_drug+3),str(row_drug+3)),"Tiền nội soi (VNĐ)",normal_style)
             ws.merge_range("D{}:G{}".format(str(row_drug+3),str(row_drug+3)),int(settings_service.endoscopy_cost),number_style)
-        if settings_service.medical_test_cost:
+
+
+        total_medical_test_cost = int(history.medical_test_cost) + int(history.medical_test_cost_2) + int(history.medical_test_cost_3)
+        if total_medical_test_cost > 0:
             ws.merge_range("A{}:C{}".format(str(row_drug+4),str(row_drug+4)),"Tiền xét nghiệm (VNĐ)",normal_style)
-            ws.merge_range("D{}:G{}".format(str(row_drug+4),str(row_drug+4)),int(settings_service.medical_test_cost),number_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+4),str(row_drug+4)),total_medical_test_cost,number_style)
+
+        ws.merge_range("A{}:C{}".format(str(row_drug+5),str(row_drug+5)),"Tổng tiền (VNĐ)",normal_style)
+        ws.merge_range("D{}:G{}".format(str(row_drug+5),str(row_drug+5)),total_cost+total_ultrasonography_cost+total_medical_test_cost,number_style)
 
         # informtation total benefit at worksheet doctor #
         ws1.merge_range("A{}:C{}".format(str(row_drug1+1),str(row_drug1+1)),"Tổng giá bán (VNĐ)",normal_style)
@@ -1503,21 +1532,26 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
         ws1.merge_range("A{}:C{}".format(str(row_drug1+3),str(row_drug1+3)),"Tổng lợi nhuận thuốc (VNĐ)",normal_style)
         ws1.merge_range("D{}:G{}".format(str(row_drug1+3),str(row_drug1+3)),total_cost-total_import_price,number_style)
 
-        if settings_service.medical_ultrasonography_cost:
+        if total_ultrasonography_cost > 0:
             ws1.merge_range("A{}:C{}".format(str(row_drug1+4),str(row_drug1+4)),"Tiền siêu âm (VNĐ)",normal_style)
-            ws1.merge_range("D{}:G{}".format(str(row_drug1+4),str(row_drug1+4)),int(settings_service.medical_ultrasonography_cost),number_style)
+            ws1.merge_range("D{}:G{}".format(str(row_drug1+4),str(row_drug1+4)),total_ultrasonography_cost,number_style)
+
         if settings_service.endoscopy_cost:
             ws1.merge_range("A{}:C{}".format(str(row_drug1+5),str(row_drug1+5)),"Tiền nội soi (VNĐ)",normal_style)
             ws1.merge_range("D{}:G{}".format(str(row_drug1+5),str(row_drug1+5)),int(settings_service.endoscopy_cost),number_style)
-        if settings_service.medical_test_cost:
+
+        if total_medical_test_cost > 0:
             ws1.merge_range("A{}:C{}".format(str(row_drug1+6),str(row_drug1+6)),"Tiền xét nghiệm (VNĐ)",normal_style)
-            ws1.merge_range("D{}:G{}".format(str(row_drug1+6),str(row_drug1+6)),int(settings_service.medical_test_cost),number_style)
+            ws1.merge_range("D{}:G{}".format(str(row_drug1+6),str(row_drug1+6)),total_medical_test_cost,number_style)
+
+        ws1.merge_range("A{}:C{}".format(str(row_drug1+7),str(row_drug1+7)),"Tổng tiền (VNĐ)",normal_style)
+        ws1.merge_range("D{}:G{}".format(str(row_drug1+7),str(row_drug1+7)),total_cost+total_ultrasonography_cost+total_medical_test_cost,number_style)
 
         # information date in worksheet patient #
         day_name={0:"Thứ Hai",1:"Thứ Ba",2:"Thứ Tư",3:"Thứ Năm",4:"Thứ Sáu",5:"Thứ Bảy",6:"Chủ Nhật"}
-        ws.merge_range("H{}:K{}".format(str(row_drug+6),str(row_drug+6)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
+        ws.merge_range("H{}:K{}".format(str(row_drug+7),str(row_drug+7)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
         # information date in worksheet doctor #
-        ws1.merge_range("H{}:K{}".format(str(row_drug1+8),str(row_drug1+8)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
+        ws1.merge_range("H{}:K{}".format(str(row_drug1+9),str(row_drug1+9)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
 
 
         wb.close()
@@ -1599,19 +1633,26 @@ def export_final_info_excel_patient(request,pk_mrecord, pk_doctor, pk_history):
             ws.merge_range("A{}:C{}".format(str(row_drug+1),str(row_drug+1)),"Tổng tiền thuốc (VNĐ)",normal_style)
             ws.merge_range("D{}:G{}".format(str(row_drug+1),str(row_drug+1)),total_cost,number_style)
 
-        if settings_service.medical_ultrasonography_cost:
+        total_ultrasonography_cost = int(history.medical_ultrasonography_cost) + int(history.medical_ultrasonography_cost_2) + int(history.medical_ultrasonography_cost_3)
+        if total_ultrasonography_cost > 0:
             ws.merge_range("A{}:C{}".format(str(row_drug+2),str(row_drug+2)),"Tiền siêu âm (VNĐ)",normal_style)
-            ws.merge_range("D{}:G{}".format(str(row_drug+2),str(row_drug+2)),int(settings_service.medical_ultrasonography_cost),number_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+2),str(row_drug+2)),total_ultrasonography_cost,number_style)
+
         if settings_service.endoscopy_cost:
             ws.merge_range("A{}:C{}".format(str(row_drug+3),str(row_drug+3)),"Tiền nội soi (VNĐ)",normal_style)
             ws.merge_range("D{}:G{}".format(str(row_drug+3),str(row_drug+3)),int(settings_service.endoscopy_cost),number_style)
-        if settings_service.medical_test_cost:
+
+        total_medical_test_cost = int(history.medical_test_cost) + int(history.medical_test_cost_2) + int(history.medical_test_cost_3)
+        if total_medical_test_cost > 0:
             ws.merge_range("A{}:C{}".format(str(row_drug+4),str(row_drug+4)),"Tiền xét nghiệm (VNĐ)",normal_style)
-            ws.merge_range("D{}:G{}".format(str(row_drug+4),str(row_drug+4)),int(settings_service.medical_test_cost),number_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+4),str(row_drug+4)),total_medical_test_cost,number_style)
+
+        ws.merge_range("A{}:C{}".format(str(row_drug+5),str(row_drug+5)),"Tổng tiền (VNĐ)",normal_style)
+        ws.merge_range("D{}:G{}".format(str(row_drug+5),str(row_drug+5)),total_cost+total_ultrasonography_cost+total_medical_test_cost,number_style)
 
         # information date in worksheet patient #
         day_name={0:"Thứ Hai",1:"Thứ Ba",2:"Thứ Tư",3:"Thứ Năm",4:"Thứ Sáu",5:"Thứ Bảy",6:"Chủ Nhật"}
-        ws.merge_range("H{}:K{}".format(str(row_drug+6),str(row_drug+6)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
+        ws.merge_range("H{}:K{}".format(str(row_drug+7),str(row_drug+7)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
 
 
         wb.close()

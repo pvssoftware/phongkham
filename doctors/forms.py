@@ -158,45 +158,53 @@ class MedicalHistoryFormMix(forms.ModelForm):
         super(MedicalHistoryFormMix, self).__init__(*args, **kwargs)
         
     def clean_medical_ultrasonography_file(self):
-        file = self.cleaned_data.get("medical_ultrasonography_file")
+        file = self.files.get("medical_ultrasonography_file",None)
         
         return clean_upload_file(file)
 
     def clean_medical_ultrasonography_file_2(self):
-        file = self.cleaned_data.get("medical_ultrasonography_file_2")
+        file = self.files.get("medical_ultrasonography_file_2",None)
         
         return clean_upload_file(file)
 
     def clean_medical_ultrasonography_file_3(self):
-        file = self.cleaned_data.get("medical_ultrasonography_file_3")
+        file = self.files.get("medical_ultrasonography_file_3",None)
         
         return clean_upload_file(file)
 
     def clean_endoscopy_file(self):
-        file = self.cleaned_data.get("endoscopy_file")
+        file = self.files.get("endoscopy_file",None)
         return clean_upload_file(file)
 
     def clean_medical_test_file(self):
-        file = self.cleaned_data.get("medical_test_file")
+        file = self.files.get("medical_test_file",None)
         return clean_upload_file(file)
 
     def clean_medical_test_file_2(self):
-        file = self.cleaned_data.get("medical_test_file_2")
+        file = self.files.get("medical_test_file_2",None)
         return clean_upload_file(file)
         
     def clean_medical_test_file_3(self):
-        file = self.cleaned_data.get("medical_test_file_3")
+        file = self.files.get("medical_test_file_3",None)
         return clean_upload_file(file)
 
     def save(self,commit=True):
         history = super().save(commit=commit)
-        print("save")
-        print(commit)
-        print(history.medical_ultrasonography_cost)
-    
-        history.medical_ultrasonography_cost = history.medical_ultrasonography_cost_2 = history.medical_ultrasonography_cost_3 = get_price_app_or_setting(self.user.doctor.settingsservice.medical_ultrasonography_cost,"0")
 
-        history.medical_test_cost = history.medical_test_cost_2 = history.medical_test_cost_3 = get_price_app_or_setting(self.user.doctor.settingsservice.medical_test_cost,"0")
+        
+        if self.clean_medical_ultrasonography_file():
+            history.medical_ultrasonography_cost = get_price_app_or_setting(self.user.doctor.settingsservice.medical_ultrasonography_cost,"0")
+        if self.clean_medical_ultrasonography_file_2():
+            history.medical_ultrasonography_cost_2 = get_price_app_or_setting(self.user.doctor.settingsservice.medical_ultrasonography_cost,"0")   
+        if self.clean_medical_ultrasonography_file_3():
+            history.medical_ultrasonography_cost_3 = get_price_app_or_setting(self.user.doctor.settingsservice.medical_ultrasonography_cost,"0")
+        
+        if self.clean_medical_test_file():
+            history.medical_test_cost = get_price_app_or_setting(self.user.doctor.settingsservice.medical_test_cost,"0")
+        if self.clean_medical_test_file_2():
+            history.medical_test_cost_2 = get_price_app_or_setting(self.user.doctor.settingsservice.medical_test_cost,"0")
+        if self.clean_medical_test_file_3():
+            history.medical_test_cost_3 = get_price_app_or_setting(self.user.doctor.settingsservice.medical_test_cost,"0")
         
         if commit:
             history.save()

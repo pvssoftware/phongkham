@@ -13,7 +13,7 @@ class MedicalRecordAdmin(admin.ModelAdmin):
     search_fields = ('phone','full_name','doctor__email')
 
 class MedicalHistoryAdmin(admin.ModelAdmin):
-    list_display = ["medical_record","date","get_email","id"]
+    list_display = ["medical_record","date_booked","get_email","id"]
     model = MedicalHistory
     search_fields = ('medical_record__doctor__email','medical_record__full_name')
     def get_email(self, obj):

@@ -53,23 +53,62 @@
                 <th>Họ và tên</th>
                 <th>Ngày khám</th>
                 <th>Tiền siêu âm (VNĐ)</th>
-                <th>Tiền bán thuốc (VNĐ)</th>
-                <th>Tiền nhập thuốc (VNĐ)</th>
-                <th>Lợi nhuận (VNĐ)</th>
+                <th>Tiền xét nghiệm (VNĐ)</th>
+                <th>Tiền thuốc (VNĐ)</th>
+                <th>Doanh thu (VNĐ)</th>
             </tr>
         </thead>
         <tbody>
             {% for history in histories_object %}
             <tr>
-                <td scope="row">{{ history.history.medical_record.full_name }}</td>
+                <td scope="row"><a tabindex="0" class="btn btn-link" role="button" data-popover-content="#{{ forloop.counter0 }}" data-toggle="popover" data-placement="right" data-container="body">{{ history.history.medical_record.full_name }}</a></td>
+                <div id="{{ forloop.counter0 }}" style="display:none;">                   
+                    <div>
+                        <p>Siêu âm 1: <span  class="convert_number">{{ history.history.medical_ultrasonography_cost }}</span> VNĐ</p>
+                    </div>
+                    <div>
+                        <p>Siêu âm 2: <span  class="convert_number">{{ history.history.medical_ultrasonography_cost_2 }}</span> VNĐ</p>
+                    </div>
+                    <div>
+                        <p>Siêu âm 3: <span  class="convert_number">{{ history.history.medical_ultrasonography_cost_3 }}</span> VNĐ</p>
+                    </div>
+                    <hr>
+                    <div>
+                        <p>Xét nghiệm 1: <span  class="convert_number">{{ history.history.medical_test_cost }}</span> VNĐ</p>
+                    </div>
+                    <div>
+                        <p>Xét nghiệm 2: <span  class="convert_number">{{ history.history.medical_test_cost_2 }}</span> VNĐ</p>
+                    </div>
+                    <div>
+                        <p>Xét nghiệm 3: <span  class="convert_number">{{ history.history.medical_test_cost_3 }}</span> VNĐ</p>
+                    </div>
+                    <hr>
+                    <div>
+                        <p>Bán thuốc: <span  class="convert_number">{{ history.revenue_drug }}</span> VNĐ</p>
+                    </div>
+                    <div>
+                        <p>Nhập thuốc: <span  class="convert_number">{{ history.expense_drug }}</span> VNĐ</p>
+                    </div>
+                    <div>
+                        <p>Lợi nhuận: <span  class="convert_number">{{ history.benefit_drug }}</span> VNĐ</p>
+                    </div>
+                    <hr>
+                    <div>
+                        <p>Tổng doanh thu: <span  class="convert_number">{{ history.total_revenue}}</span> VNĐ</p>
+                    </div>
+                    <div>
+                        <p>Tổng lợi nhuận: <span  class="convert_number">{{ history.total_benefit }}</span> VNĐ</p>
+                    </div>
+                </div> 
                 <td>{{ history.history.date |date:"P  d-m-Y"}}</td>
-                <td class="convert_number">{{ history.history.medical_ultrasonography_cost }}</td>
-                <td class="convert_number">{{ history.revenue }}</td>
-                <td class="convert_number">{{ history.expense }}</td>
-                <td class="convert_number"> {{ history.benefit }}</td>
+                <td class="convert_number">{{ history.ultra_cost }}</td>
+                <td class="convert_number">{{ history.test_cost }}</td>
+                <td class="convert_number">{{ history.revenue_drug }}</td>
+                <td class="convert_number"> {{ history.total_revenue }}</td>
+                   
             </tr>
-            {% endfor %}
             
+            {% endfor %}            
         </tbody>
         
     </table>
@@ -86,6 +125,7 @@ $(document).ready(function(){
       let cost = parseInt($(this).text());
       $(this).text(cost.toLocaleString());
     }); // end each
+
     // validate datetime format dd/mm/Y
     function ValidateDate(value){
       regex = new RegExp("^([0-2]\\d{1}|3[0-1])\\/(0\\d{1}|1[0-2])\\/(19|20)\\d{2}$");
@@ -133,6 +173,23 @@ $(document).ready(function(){
             $("#cal_benefit_form").submit();
         }
     }); // end click
+
+    // popover
+	$(function () {
+      $('[data-toggle="popover"]').popover({
+        html : true,
+        content: function() {
+          var content = $(this).attr("data-popover-content");
+          return $(content).html();
+        }
+      });
+    }); //end popper
+
+    $('.popover-dismiss').popover({
+    //   trigger: 'focus',
+    }); // end popper
+
+
 }); // end ready
 </script>
 
