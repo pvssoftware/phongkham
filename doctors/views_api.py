@@ -102,9 +102,9 @@ def get_examination_patients(request):
         
         examination_list = MedicalHistory.objects.filter(medical_record__doctor__pk=request.user.pk,is_waiting=True).filter(date_booked__date__lte=date_book).order_by("date_booked")
         service = request.GET.get("service")
-        if service == "ultrasound":
+        if service == "ultrasound/":
             examination_serializer = ExaminationPatientsUltrasoundSerializer(examination_list, many=True,context={"request": request})
-        elif service == "medicaltest":
+        elif service == "medicaltest/":
             examination_serializer = ExaminationPatientsMedicalTestSerializer(examination_list, many=True,context={"request": request})
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
