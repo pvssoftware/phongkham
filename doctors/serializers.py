@@ -88,7 +88,7 @@ class UploadMedicalUltrasonographySerializer(serializers.ModelSerializer):
             instance,
             validated_data.get("medical_ultrasonography",instance.medical_ultrasonography),
             file_upload,
-            get_price_app_or_setting(instance.medical_record.doctor.user.doctor.settingsservice.medical_ultrasonography_cost,validated_data.get("medical_ultrasonography_cost","0")),
+            get_price_app_or_setting(instance.medical_record.doctor.doctor.settingsservice.medical_ultrasonography_cost,validated_data.get("medical_ultrasonography_cost","0")),
             self.context.get("is_waiting"),
             list(self.fields.keys())
         )
@@ -114,7 +114,7 @@ class UploadMedicalUltrasonographySerializer2(serializers.ModelSerializer):
             instance,
             validated_data.get("medical_ultrasonography_2",instance.medical_ultrasonography_2),
             file_upload,
-            get_price_app_or_setting(instance.medical_record.doctor.user.doctor.settingsservice.medical_ultrasonography_cost,validated_data.get("medical_ultrasonography_cost_2","0")),
+            get_price_app_or_setting(instance.medical_record.doctor.doctor.settingsservice.medical_ultrasonography_cost,validated_data.get("medical_ultrasonography_cost_2","0")),
             self.context.get("is_waiting"),
             list(self.fields.keys())
         )
@@ -140,7 +140,7 @@ class UploadMedicalUltrasonographySerializer3(serializers.ModelSerializer):
             instance,
             validated_data.get("medical_ultrasonography_3",instance.medical_ultrasonography_3),
             file_upload,
-            get_price_app_or_setting(instance.medical_record.doctor.user.doctor.settingsservice.medical_ultrasonography_cost,validated_data.get("medical_ultrasonography_cost_3","0")),
+            get_price_app_or_setting(instance.medical_record.doctor.doctor.settingsservice.medical_ultrasonography_cost,validated_data.get("medical_ultrasonography_cost_3","0")),
             self.context.get("is_waiting"),
             list(self.fields.keys())
         )
