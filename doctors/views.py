@@ -1374,6 +1374,13 @@ def final_info(request,pk_doctor,pk_mrecord,pk_history):
         for drug in history.prescriptiondrug_set.all():
             total_cost += int(drug.cost)
 
+        today = date.today()
+                        
+        date_book = date(year=today.year,month=today.month,day=today.day)
+        
+        # update list examination patients finished
+        update_examination_patients_finished_list(doctor,date_book)
+
         return render(request,'doctors/doctor_final_info.html',{"doctor":doctor,"mrecord":mrecord,"history":history,"total_cost":total_cost,"settings_service":settings_service})
 
 # export to excel file

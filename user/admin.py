@@ -21,7 +21,7 @@ class CustomUserAdmin(UserAdmin):
 
 	add_form = CustomUserCreationForm
 	form = CustomUserChangeForm
-	list_display = ["email","is_staff","is_active","doctor","pk"]
+	list_display = ["email","is_staff","is_active","doctor","pk","group"]
 	model = User
 	ordering = ["email",]
 	fieldsets = (
@@ -37,14 +37,20 @@ class CustomUserAdmin(UserAdmin):
             'fields': ('email', 'password1', 'password2', 'doctor','is_admin','is_staff','is_active','is_superuser','user_permissions','groups')}
         ),
     )
-	search_fields = ('email',"pk")
+	search_fields = ('email',"pk","groups__name")
 	
+	def group(self,obj):
+		groups = []
+		for group in obj.groups.all():
+			groups.append(group.name)
+		return " ".join(groups)
+	group.short_description = "Groups"
 
 class DoctorProfileAdmin(admin.ModelAdmin):
 	model = DoctorProfile
-	list_display = ["full_name","phone","get_email","get_id"]
+	list_display = ["full_name","phone","get_email","get_id","group"]
 	ordering = ["full_name","kind",]
-	search_fields = ('full_name','user__email','user__pk')
+	search_fields = ('full_name','user__email','user__pk','user__groups__name')
 
 	def get_email(self, obj):
 		return obj.user.email
@@ -53,6 +59,13 @@ class DoctorProfileAdmin(admin.ModelAdmin):
 	def get_id(self, obj):
 		return obj.user.id
 	get_id.short_description = 'id_doctor'
+
+	def group(self,obj):
+		groups = []
+		for group in obj.user.groups.all():
+			groups.append(group.name)
+		return " ".join(groups)
+	group.short_description = "Groups"
 
 class SettingsTimeAdmin(DoctorMixin,admin.ModelAdmin):
 	model = SettingsTime
