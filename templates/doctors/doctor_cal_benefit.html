@@ -55,6 +55,7 @@
                 <th>Tiền siêu âm (VNĐ)</th>
                 <th>Tiền xét nghiệm (VNĐ)</th>
                 <th>Tiền thuốc (VNĐ)</th>
+                <th>Tiền khám (VNĐ)</th>
                 <th>Doanh thu (VNĐ)</th>
             </tr>
         </thead>
@@ -94,6 +95,10 @@
                     </div>
                     <hr>
                     <div>
+                        <p>Tiền khám: <span  class="convert_number">{{ history.history.medical_examination_cost }}</span> VNĐ</p>
+                    </div>
+                    <hr>
+                    <div>
                         <p>Tổng doanh thu: <span  class="convert_number">{{ history.total_revenue}}</span> VNĐ</p>
                     </div>
                     <div>
@@ -104,6 +109,7 @@
                 <td class="convert_number">{{ history.ultra_cost }}</td>
                 <td class="convert_number">{{ history.test_cost }}</td>
                 <td class="convert_number">{{ history.revenue_drug }}</td>
+                <td class="convert_number">{{ history.history.medical_examination_cost }}</td>
                 <td class="convert_number"> {{ history.total_revenue }}</td>
                    
             </tr>

@@ -227,6 +227,7 @@ def settings_service(request,pk_doctor):
                     settings_service.medical_test_cost = form.cleaned_data["medical_test_cost"]
                     settings_service.medical_test_multi = form.cleaned_data["medical_test_multi"]
                     settings_service.examination_online_cost = form.cleaned_data["examination_online_cost"]
+                    settings_service.medical_examination_cost = form.cleaned_data["medical_examination_cost"]
                     settings_service.password = form.cleaned_data["password"]
                     settings_service.password_field = form.cleaned_data["password_field"]
 
@@ -375,9 +376,11 @@ def cal_benefit(request,pk_doctor):
 
                 his["test_cost"] = int(history.medical_test_cost) + int(history.medical_test_cost_2) + int(history.medical_test_cost_3)
 
-                his["total_revenue"] = his["revenue_drug"] + his["ultra_cost"] + his["test_cost"]
+                his["total_revenue"] = his["revenue_drug"] + his["ultra_cost"] + his["test_cost"] + int(history.medical_examination_cost)
 
-                his["total_benefit"] = his["benefit_drug"] + his["ultra_cost"] + his["test_cost"]
+                his["total_benefit"] = his["benefit_drug"] + his["ultra_cost"] + his["test_cost"] + int(history.medical_examination_cost)
+
+                gross_revenue += int(history.medical_examination_cost)
 
                 histories_object.append(his)
             gross_profit = gross_revenue - accrued_expenses
@@ -978,6 +981,7 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                 history_edit.diagnostis =form.cleaned_data["diagnostis"]
                 history_edit.service = form.cleaned_data['service']
                 history_edit.is_waiting = form.cleaned_data['is_waiting']
+                history_edit.medical_examination_cost = form.cleaned_data["medical_examination_cost"]
                 
                 if form.cleaned_data['service']== 'khám phụ khoa':
                     if form.cleaned_data['co_tu_cung_pk']:
@@ -1374,12 +1378,12 @@ def final_info(request,pk_doctor,pk_mrecord,pk_history):
         for drug in history.prescriptiondrug_set.all():
             total_cost += int(drug.cost)
 
-        today = date.today()
+        # today = date.today()
                         
-        date_book = date(year=today.year,month=today.month,day=today.day)
+        # date_book = date(year=today.year,month=today.month,day=today.day)
         
-        # update list examination patients finished
-        update_examination_patients_finished_list(doctor,date_book)
+        # # update list examination patients finished
+        # update_examination_patients_finished_list(doctor,date_book)
 
         return render(request,'doctors/doctor_final_info.html',{"doctor":doctor,"mrecord":mrecord,"history":history,"total_cost":total_cost,"settings_service":settings_service})
 
@@ -1526,8 +1530,13 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
             ws.merge_range("A{}:C{}".format(str(row_drug+4),str(row_drug+4)),"Tiền xét nghiệm (VNĐ)",normal_style)
             ws.merge_range("D{}:G{}".format(str(row_drug+4),str(row_drug+4)),total_medical_test_cost,number_style)
 
-        ws.merge_range("A{}:C{}".format(str(row_drug+5),str(row_drug+5)),"Tổng tiền (VNĐ)",normal_style)
-        ws.merge_range("D{}:G{}".format(str(row_drug+5),str(row_drug+5)),total_cost+total_ultrasonography_cost+total_medical_test_cost,number_style)
+        medical_examination_cost = int(history.medical_examination_cost)
+        if medical_examination_cost > 0:
+            ws.merge_range("A{}:C{}".format(str(row_drug+5),str(row_drug+5)),"Tiền khám (VNĐ)",normal_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+5),str(row_drug+5)),medical_examination_cost,number_style)
+
+        ws.merge_range("A{}:C{}".format(str(row_drug+6),str(row_drug+6)),"Tổng tiền (VNĐ)",normal_style)
+        ws.merge_range("D{}:G{}".format(str(row_drug+6),str(row_drug+6)),total_cost+total_ultrasonography_cost+total_medical_test_cost+medical_examination_cost,number_style)
 
         # informtation total benefit at worksheet doctor #
         ws1.merge_range("A{}:C{}".format(str(row_drug1+1),str(row_drug1+1)),"Tổng giá bán (VNĐ)",normal_style)
@@ -1551,14 +1560,18 @@ def export_final_info_excel(request,pk_doctor,pk_mrecord,pk_history):
             ws1.merge_range("A{}:C{}".format(str(row_drug1+6),str(row_drug1+6)),"Tiền xét nghiệm (VNĐ)",normal_style)
             ws1.merge_range("D{}:G{}".format(str(row_drug1+6),str(row_drug1+6)),total_medical_test_cost,number_style)
 
-        ws1.merge_range("A{}:C{}".format(str(row_drug1+7),str(row_drug1+7)),"Tổng tiền (VNĐ)",normal_style)
-        ws1.merge_range("D{}:G{}".format(str(row_drug1+7),str(row_drug1+7)),total_cost+total_ultrasonography_cost+total_medical_test_cost,number_style)
+        if medical_examination_cost > 0:
+            ws1.merge_range("A{}:C{}".format(str(row_drug+7),str(row_drug+7)),"Tiền khám (VNĐ)",normal_style)
+            ws1.merge_range("D{}:G{}".format(str(row_drug+7),str(row_drug+7)),medical_examination_cost,number_style)
+
+        ws1.merge_range("A{}:C{}".format(str(row_drug1+8),str(row_drug1+8)),"Tổng tiền (VNĐ)",normal_style)
+        ws1.merge_range("D{}:G{}".format(str(row_drug1+8),str(row_drug1+8)),total_cost+total_ultrasonography_cost+total_medical_test_cost+medical_examination_cost,number_style)
 
         # information date in worksheet patient #
         day_name={0:"Thứ Hai",1:"Thứ Ba",2:"Thứ Tư",3:"Thứ Năm",4:"Thứ Sáu",5:"Thứ Bảy",6:"Chủ Nhật"}
-        ws.merge_range("H{}:K{}".format(str(row_drug+7),str(row_drug+7)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
+        ws.merge_range("H{}:K{}".format(str(row_drug+8),str(row_drug+8)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
         # information date in worksheet doctor #
-        ws1.merge_range("H{}:K{}".format(str(row_drug1+9),str(row_drug1+9)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
+        ws1.merge_range("H{}:K{}".format(str(row_drug1+10),str(row_drug1+10)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
 
 
         wb.close()
@@ -1654,12 +1667,17 @@ def export_final_info_excel_patient(request,pk_mrecord, pk_doctor, pk_history):
             ws.merge_range("A{}:C{}".format(str(row_drug+4),str(row_drug+4)),"Tiền xét nghiệm (VNĐ)",normal_style)
             ws.merge_range("D{}:G{}".format(str(row_drug+4),str(row_drug+4)),total_medical_test_cost,number_style)
 
-        ws.merge_range("A{}:C{}".format(str(row_drug+5),str(row_drug+5)),"Tổng tiền (VNĐ)",normal_style)
-        ws.merge_range("D{}:G{}".format(str(row_drug+5),str(row_drug+5)),total_cost+total_ultrasonography_cost+total_medical_test_cost,number_style)
+        medical_examination_cost = int(history.medical_examination_cost)
+        if medical_examination_cost > 0:
+            ws.merge_range("A{}:C{}".format(str(row_drug+5),str(row_drug+5)),"Tiền khám (VNĐ)",normal_style)
+            ws.merge_range("D{}:G{}".format(str(row_drug+5),str(row_drug+5)),medical_examination_cost,number_style) 
+
+        ws.merge_range("A{}:C{}".format(str(row_drug+6),str(row_drug+6)),"Tổng tiền (VNĐ)",normal_style)
+        ws.merge_range("D{}:G{}".format(str(row_drug+6),str(row_drug+6)),total_cost+total_ultrasonography_cost+total_medical_test_cost+medical_examination_cost,number_style)
 
         # information date in worksheet patient #
         day_name={0:"Thứ Hai",1:"Thứ Ba",2:"Thứ Tư",3:"Thứ Năm",4:"Thứ Sáu",5:"Thứ Bảy",6:"Chủ Nhật"}
-        ws.merge_range("H{}:K{}".format(str(row_drug+7),str(row_drug+7)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
+        ws.merge_range("H{}:K{}".format(str(row_drug+8),str(row_drug+8)),day_name[history.date.weekday()]+", ngày "+str(history.date.day)+", tháng "+str(history.date.month)+", năm "+str(history.date.year))
 
 
         wb.close()

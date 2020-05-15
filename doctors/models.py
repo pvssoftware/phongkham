@@ -55,6 +55,7 @@ class MedicalHistory(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     date_booked = models.DateTimeField(blank=True,null=True)
     ordinal_number = models.CharField(max_length=10,null=True,blank=True)
+    medical_examination_cost = models.CharField(max_length=200,blank=True,default="0")
 
     medical_ultrasonography = models.CharField(max_length=200,blank=True,default="")
     medical_ultrasonography_file = models.FileField(upload_to=locate_medical_ultrasonography_upload,blank=True,null=True)

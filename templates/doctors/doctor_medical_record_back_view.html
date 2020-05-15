@@ -401,12 +401,29 @@
             <label for="disease_symptom">Triệu chứng</label>
             <textarea class="form-control" id="disease_symptom" name="disease_symptom" rows="3">{{ form.disease_symptom.value }}</textarea>
             <span id="alert_disease_symptom" style="color: #d9534f;font-size:15px"></span>
-          </div>
+        </div>
         <div class="form-group">
             <label for="diagnostis">Chẩn đoán</label>
             <textarea class="form-control" id="diagnostis" name="diagnostis" rows="3">{{ form.diagnostis.value }}</textarea>
             <span id="alert_diagnostis" style="color: #d9534f;font-size:15px"></span>
-          </div>
+        </div>
+        <div class="form-group">
+            <label for="medical_examination_cost">Tiền khám (VNĐ)</label>
+            <input
+              type="text"
+              class="form-control"
+              id="medical_examination_cost"
+              name="medical_examination_cost"
+              
+              {% if history_edit.medical_examination_cost != "0" %}
+               value="{{ history_edit.medical_examination_cost }}"   
+              {% endif %}              
+            />
+            <span
+              id="alert_medical_examination_cost"
+              style="color: red;font-size:15px"
+            ></span>
+        </div>
         <button class="btn btn-submit btn_history mb-4" type="button">Kê thuốc</button>
         <button class="btn btn-finished btn_is_waiting float-right mb-4">Lưu hồ sơ chuyển bác sĩ khám</button>
      </form>

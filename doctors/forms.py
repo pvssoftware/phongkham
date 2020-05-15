@@ -71,6 +71,8 @@ class SettingsServiceForm(forms.ModelForm):
     medical_test_multi = forms.BooleanField(required=False)
     password = forms.BooleanField(required=False)
     examination_online_cost = forms.CharField(required=False)
+    medical_examination_cost = forms.CharField(required=False)
+    
     
     class Meta:
         model = SettingsService
@@ -151,7 +153,7 @@ class MedicalHistoryFormMix(forms.ModelForm):
 
     class Meta:
         model = MedicalHistory
-        fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","last_menstrual_period","co_tu_cung_ps","note_co_tu_cung_ps","tim_thai_ps","note_tim_thai_ps","can_go_ps","note_con_go_ps","co_tu_cung_pk","note_co_tu_cung_pk","am_dao_pk","note_am_dao_pk","is_waiting","medical_ultrasonography","medical_ultrasonography_file","medical_ultrasonography_2","medical_ultrasonography_file_2","medical_ultrasonography_3","medical_ultrasonography_file_3","endoscopy","endoscopy_file","blood_pressure","weight","glycemic","ph_meter","medical_test","medical_test_file","medical_test_2","medical_test_file_2","medical_test_3","medical_test_file_3",]
+        fields = ["disease_symptom", "diagnostis","service","PARA","contraceptive","last_menstrual_period","co_tu_cung_ps","note_co_tu_cung_ps","tim_thai_ps","note_tim_thai_ps","can_go_ps","note_con_go_ps","co_tu_cung_pk","note_co_tu_cung_pk","am_dao_pk","note_am_dao_pk","is_waiting","medical_ultrasonography","medical_ultrasonography_file","medical_ultrasonography_2","medical_ultrasonography_file_2","medical_ultrasonography_3","medical_ultrasonography_file_3","endoscopy","endoscopy_file","blood_pressure","weight","glycemic","ph_meter","medical_test","medical_test_file","medical_test_2","medical_test_file_2","medical_test_3","medical_test_file_3","medical_examination_cost"]
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user',None)
@@ -188,6 +190,11 @@ class MedicalHistoryFormMix(forms.ModelForm):
         file = self.files.get("medical_test_file_3",None)
         return clean_upload_file(file)
 
+    def clean_medical_examination_cost(self):
+        if self.cleaned_data["medical_examination_cost"] == "":
+            return "0"
+        return self.cleaned_data["medical_examination_cost"]
+
     def save(self,commit=True):
         history = super().save(commit=commit)
 
@@ -205,6 +212,8 @@ class MedicalHistoryFormMix(forms.ModelForm):
             history.medical_test_cost_2 = get_price_app_or_setting(self.user.doctor.settingsservice.medical_test_cost,"0")
         if self.clean_medical_test_file_3():
             history.medical_test_cost_3 = get_price_app_or_setting(self.user.doctor.settingsservice.medical_test_cost,"0")
+
+        history.medical_examination_cost = get_price_app_or_setting(self.user.doctor.settingsservice.medical_examination_cost,self.cleaned_data["medical_examination_cost"])
         
         if commit:
             history.save()

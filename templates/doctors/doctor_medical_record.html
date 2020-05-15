@@ -601,6 +601,19 @@
       ></textarea>
       <span id="alert_diagnostis" style="color: #d9534f;font-size:15px"></span>
     </div>
+    <div class="form-group">
+      <label for="medical_examination_cost">Tiền khám (VNĐ)</label>
+      <input
+        type="text"
+        class="form-control"
+        id="medical_examination_cost"
+        name="medical_examination_cost"
+      />
+      <span
+        id="alert_medical_examination_cost"
+        style="color: red;font-size:15px"
+      ></span>
+    </div>
     <button class="btn btn-submit btn_history mb-4" type="button">
       Kê thuốc
     </button>
@@ -906,6 +919,13 @@
 <script src="{% static 'js/easy-modal-plugin.js' %}"></script>
 <script>
   $(document).ready(function() {
+
+    // validate digital
+    function ValidateDigit(value) {
+        regex = new RegExp("^[1-9][0-9]*$");
+        var isValid = regex.test(value);
+        return isValid;
+    }
     // validate datetime format dd/mm/Y
     function ValidateDate(value) {
       regex = new RegExp(
@@ -1105,6 +1125,8 @@
       var disease_symptom = $("#disease_symptom").val();
       var diagnostis = $("#diagnostis").val();
 
+      var medical_examination_cost = $("#medical_examination_cost").val();
+
       var valid = true;
 
       // if (PARA === "") {
@@ -1164,6 +1186,13 @@
           $("#alert_weight").text("");
         }
       }
+
+      if(medical_examination_cost !== "" && !ValidateDigit(medical_examination_cost)){
+        valid &= false;
+        $("#alert_medical_examination_cost").text("Giá trị không hợp lệ!");
+        } else{
+            $("#alert_medical_examination_cost").text("");
+        }
       // if (!medical_ultrasonography_field) {
       //   if (medical_ultrasonography === "") {
       //     $("#alert_medical_ultrasonography").text(

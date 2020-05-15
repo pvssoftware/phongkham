@@ -18,7 +18,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 
 from user.models import User, DoctorProfile, SettingsTime
 from user.license import check_licenses, check_premium_licenses
-from .utils import get_days_detail, history_serializer_mix, update_examination_patients_list, update_examination_patients_finished_list
+from .utils import get_days_detail, history_serializer_mix, update_examination_patients_list, update_examination_patients_finished_list,update_examination_cost
 from .custom_token import ExpiringTokenAuthentication,is_token_expired
 from .models import BookedDay, MedicalRecord, MedicalHistory, AppWindow
 from .serializers import MedicalRecordSerializer, ExaminationPatientsUltrasoundSerializer, MedicalRecordExaminationSerializer,UploadMedicalUltrasonographySerializer, UploadMedicalUltrasonographySerializer2, UploadMedicalUltrasonographySerializer3, ResponseUploadMedicalUltrasonographySerializer, CreateUploadMedicalUltrasonographySerializer, UploadMedicalTestSerializer, UploadMedicalTestSerializer2, UploadMedicalTestSerializer3, ResponseUploadMedicalTestSerializer, CreateUploadMedicalTestSerializer, ExaminationPatientsMedicalTestSerializer
@@ -164,13 +164,16 @@ def upload_medical_ultrasonography_file(request):
             if history_serializer.is_valid():
                 history_serializer.save()
 
+                if not json_file["is_waiting"]:
+                    update_examination_patients_list(request.user,history)
+
                 # update list examination patients
                 update_examination_patients_list(request.user,date.today(),False)
 
                 # update list examination patients finished
                 update_examination_patients_finished_list(request.user,date.today())
 
-                history = MedicalHistory.objects.get(pk=history_serializer.data["id"])
+                # history = MedicalHistory.objects.get(pk=history_serializer.data["id"])
                 # response_data = CreateUploadMedicalUltrasonographySerializer(history,context={"request": request})
                 response_data = ResponseUploadMedicalUltrasonographySerializer(history,context={"request": request})
                 
@@ -302,6 +305,9 @@ def upload_medical_ultrasonography_file(request):
             if json_file["is_waiting"]:
                 print(date_book)
                 update_examination_patients_list(request.user,date_book,full_booked)
+            else:
+                history = MedicalHistory.objects.get(pk=history_serializer.data["id"])
+                update_examination_cost(request.user,history)
             # update list examination patients finished
             update_examination_patients_finished_list(request.user,date_book)           
              
@@ -346,13 +352,17 @@ def upload_medical_test_file(request):
             if history_serializer.is_valid():
                 history_serializer.save()
 
+                # update examination cost
+                if not json_file["is_waiting"]:
+                    update_examination_cost(request.user,history)
+
                 # update list examination patients
                 update_examination_patients_list(request.user,date.today(),False)
 
                 # update list examination patients finished
                 update_examination_patients_finished_list(request.user,date.today())
 
-                history = MedicalHistory.objects.get(pk=history_serializer.data["id"])
+                # history = MedicalHistory.objects.get(pk=history_serializer.data["id"])
                 
                 response_data = ResponseUploadMedicalTestSerializer(history,context={"request": request})
                 
@@ -484,6 +494,9 @@ def upload_medical_test_file(request):
             if json_file["is_waiting"]:
                 print(date_book)
                 update_examination_patients_list(request.user,date_book,full_booked)
+            else:
+                history = MedicalHistory.objects.get(pk=history_serializer.data["id"])
+                update_examination_cost(request.user,history)
             # update list examination patients finished
             update_examination_patients_finished_list(request.user,date_book)           
              

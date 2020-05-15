@@ -124,6 +124,20 @@
 
         <div class="form-inline">
           <div class="my-3">
+            <p class="mt-2">Nhập giá tiền khám bệnh (VNĐ)</p>
+          </div>
+          <div class="form-group mx-sm-3 my-3">
+            <label for="medical_examination_cost" class="sr-only">Giá tiền</label>
+            <input type="text" class="form-control" name="medical_examination_cost" id="medical_examination_cost" placeholder="Nhập giá tiền" 
+            {% if doctor.settingsservice.medical_examination_cost %}
+                value="{{ doctor.settingsservice.medical_examination_cost }}"
+            {% endif %}>
+            <small id="alert_medical_examination_cost"  class="text-muted" style="color: #d9534f !important;"></small>
+        </div>
+        </div>
+
+        <div class="form-inline">
+          <div class="my-3">
             <p class="mt-2">Nhập giá tiền khám bệnh online (VNĐ)</p>
           </div>
           <div class="form-group mx-sm-3 my-3">
@@ -247,6 +261,7 @@ $(document).ready(function(){
     var medical_test_cost = $("#medical_test_cost").val();
     var password_field = $("#password_field").val();
     var examination_online_cost = $("#examination_online_cost").val();
+    var medical_examination_cost = $("#medical_examination_cost").val();
     console.log(medical_ultrasonography_cost);
     console.log(ValidateDigit(""));
 
@@ -282,6 +297,13 @@ $(document).ready(function(){
         $("#alert_examination_online_cost").text("Giá trị không hợp lệ!");
     } else{
         $("#alert_examination_online_cost").text("");
+    }
+    
+    if(medical_examination_cost !== "" && !ValidateDigit(medical_examination_cost)){
+        valid &= false;
+        $("#alert_medical_examination_cost").text("Giá trị không hợp lệ!");
+    } else{
+        $("#alert_medical_examination_cost").text("");
     }
 
     if ($("#password").prop("checked")){

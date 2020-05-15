@@ -27,8 +27,13 @@ class DoctorProfile(models.Model):
     time_end_trial = models.DateField(blank=True,null=True)
     license_ultrasound = models.BooleanField(default=False)
 
+    # def __str__(self):
+    #     return "{}-{}".format(self.full_name,self.get_kind_display())
     def __str__(self):
-        return "{}-{}".format(self.full_name,self.get_kind_display())
+        if self.clinic_name:
+            return "Bs. {} - Pk. {} - {}".format(self.full_name,self.clinic_name,self.phone)
+        else:
+            return "Bs. {} - {}".format(self.full_name,self.phone)
 
     def has_license(self):
         try:
@@ -137,6 +142,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
+    def __str__(self):
+        if self.doctor:
+            return "Bs. {} - email: {}".format(self.doctor.full_name,self.email)
+        else:
+            return self.email
+
 class SettingsTime(models.Model):
     # mon_opening = models.TimeField(blank=True,null=True)
     # mon_closing = models.TimeField(blank=True,null=True)
@@ -202,6 +213,7 @@ class SettingsService(models.Model):
     password_field = models.CharField(max_length=20,blank=True,null=True)
 
     examination_online_cost = models.CharField(max_length=200,blank=True,default="")
+    medical_examination_cost = models.CharField(max_length=200,blank=True,null=True)
 
     doctor = models.OneToOneField(
         DoctorProfile, on_delete=models.CASCADE, blank=True, null=True)

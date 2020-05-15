@@ -17,6 +17,7 @@ from .models import Medicine, MedicalHistory
 from .serializers import MedicalHistorySerializer
 from .bulk_sms import send_sms
 from user.models import DoctorProfile, SettingsService, User
+from user.utils import get_price_app_or_setting
 from user.license import check_licenses, check_premium_licenses
 
 
@@ -38,6 +39,15 @@ def sum_cost_medical_test_service(histories):
     for history in histories:
         revenue += int(history.medical_test_cost) + int(history.medical_test_cost_2) + int(history.medical_test_cost_3)
     return revenue
+
+# Update medical examination cost
+def update_examination_cost(doctor,history):
+    try:
+        settings_service = doctor.doctor.settingsservice
+    except DoctorProfile.settingsservice.RelatedObjectDoesNotExist:
+        settings_service = SettingsService.objects.create(doctor=request.user.doctor)
+    history.medical_examination_cost = get_price_app_or_setting(settings_service.medical_examination_cost,history.medical_examination_cost)
+    history.save()
 
 # update list examination patients function
 def update_examination_patients_list(doctor,date_book,full_booked):
