@@ -1,4 +1,4 @@
-import xlsxwriter, xlrd, io, os, re, pytz
+import xlsxwriter, xlrd, io, os, re, pytz, docx
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from datetime import datetime, timedelta, date
@@ -1688,3 +1688,94 @@ def export_final_info_excel_patient(request,pk_mrecord, pk_doctor, pk_history):
         response['Content-Disposition'] = 'attachment;filename=Toa thuoc_{}_{}.xlsx'.format(mrecord.phone,history.date_booked.strftime("%d/%m/%Y"))
 
         return response
+
+
+# export doc file drugs
+def export_doc_file_drug(request,pk_mrecord, pk_doctor, pk_history):
+    doctor = User.objects.get(pk=pk_doctor)
+    if doctor == request.user:
+        # check license
+        if check_licenses(request):
+            return render(request,"user/not_license.html",{})
+
+    mrecord = MedicalRecord.objects.get(pk=pk_mrecord)
+    history = MedicalHistory.objects.get(pk=pk_history)
+    settings_service = doctor.doctor.settingsservice
+    output = io.BytesIO()
+    document = docx.Document()
+
+    section = document.sections[0]
+    section.page_height = docx.shared.Mm(210)
+    section.page_width = docx.shared.Mm(80)
+    section.left_margin = docx.shared.Mm(4)
+    section.right_margin = docx.shared.Mm(4)
+    section.top_margin = docx.shared.Mm(15)
+    section.bottom_margin = docx.shared.Mm(10)
+    section.header_distance = docx.shared.Mm(7)
+    section.footer_distance = docx.shared.Mm(7)
+
+    
+    info_doctor = document.add_paragraph()
+    # info_doctor.paragraph_format.line_spacing_rule = docx.enum.text.WD_LINE_SPACING.ONE_POINT_FIVE
+    
+    info_doctor.alignment =  docx.enum.text.WD_ALIGN_PARAGRAPH.CENTER
+    info_doctor_run = info_doctor.add_run(doctor.doctor.clinic_name)
+    info_doctor_run.bold = True
+    info_doctor_run.font.size = docx.shared.Pt(14)
+    info_doctor.paragraph_format.space_after = docx.shared.Pt(0)
+    info_doctor.paragraph_format.space_before = docx.shared.Pt(3)
+    
+
+    info_address = document.add_paragraph()
+    info_address.paragraph_format.space_before = docx.shared.Pt(0)
+    info_address.alignment =  docx.enum.text.WD_ALIGN_PARAGRAPH.CENTER
+    info_address.add_run(doctor.doctor.clinic_address)
+
+
+    title = document.add_paragraph()
+    title.alignment =  docx.enum.text.WD_ALIGN_PARAGRAPH.CENTER
+    title_run = title.add_run("Đơn thuốc")
+    title_run.bold = True
+    title_run.font.size = docx.shared.Pt(18)
+
+    table = document.add_table(rows=1,cols=3)
+    # table.alignment = docx.enum.table.WD_TABLE_ALIGNMENT.CENTER
+    table.columns[0].width = docx.shared.Inches(1.45)
+    table.columns[1].width = docx.shared.Inches(0.32)
+    table.columns[2].width = docx.shared.Inches(1.08)
+    hdr_cells = table.rows[0].cells
+    hdr_cells_0 = hdr_cells[0].add_paragraph()
+    hdr_cells_0.add_run("Thuốc").bold = True
+    hdr_cells_1 = hdr_cells[1].add_paragraph()
+    hdr_cells_1.add_run("SL").bold = True
+    hdr_cells_2 = hdr_cells[2].add_paragraph()
+    hdr_cells_2.add_run("Giá (VNĐ)").bold = True
+    
+
+    total_price = 0
+    for drug in history.prescriptiondrug_set.all():
+        row_cells = table.add_row().cells
+        row_cells[0].text = drug.medicine.full_name
+        row_cells[1].text = drug.quantity
+        row_cells[2].text = "{:,}".format(int(drug.medicine.sale_price))
+        total_price += int(drug.cost)
+
+    for drug in history.prescriptiondrugoutstock_set.all():
+        row_cells = table.add_row().cells
+        row_cells[0].text = drug.name
+        row_cells[1].text = drug.quantity
+        row_cells[2].text = "--"
+        # total_price += int(drug.cost)
+    print(total_price)
+    total_price_info = document.add_paragraph()
+    total_price_info.add_run("Tổng tiền: "+"{:,}".format(total_price) + " VNĐ").bold = True
+    
+
+    document.save(output)
+    
+    output.seek(0)
+
+    response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response['Content-Disposition'] = 'attachment;filename=Toa thuoc_{}_{}.docx'.format(mrecord.phone,history.date_booked.strftime("%d/%m/%Y"))
+
+    return response

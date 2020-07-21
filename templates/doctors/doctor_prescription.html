@@ -130,6 +130,11 @@
       >Tiếp theo</a
     >
   </button>
+  <button class="btn btn-finished ml-3 mt-4" type="button">
+    <a href="{% url 'export_doc_file_drug' pk_doctor pk_mrecord pk_history %}"
+      >Đơn thuốc</a
+    >
+  </button>
   <button class="btn btn-del float-right mt-4" type="button">
     <a href="{% url 'medical_history_del' pk_doctor pk_mrecord pk_history %}"
       >Huỷ</a
