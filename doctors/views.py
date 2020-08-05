@@ -435,13 +435,15 @@ def search_navbar(request,pk_doctor):
                 
                 date_obj = datetime.strptime(search_value,'%d/%m/%Y')
                 histories = MedicalHistory.objects.filter(medical_record__doctor=user,date_booked__date=date_obj)
-                mrecords = MedicalRecord.objects.filter(doctor=user,medicalhistory__isnull=True,created_at=date_obj)
+                # mrecords = MedicalRecord.objects.filter(doctor=user,medicalhistory__isnull=True,created_at=date_obj)
+                mrecords = None
                 
 
             except ValueError:
-                histories = MedicalHistory.objects.filter(Q(medical_record__doctor=user),Q(medical_record__full_name__icontains=form.cleaned_data['search_navbar']) | Q(medical_record__phone__icontains=form.cleaned_data['search_navbar']))
+                # histories = MedicalHistory.objects.filter(Q(medical_record__doctor=user),Q(medical_record__full_name__icontains=form.cleaned_data['search_navbar']) | Q(medical_record__phone__icontains=form.cleaned_data['search_navbar']))
+                histories = None
                 date_obj = None
-                mrecords = MedicalRecord.objects.filter(Q(doctor=user),Q(medicalhistory__isnull=True),Q(full_name__icontains=form.cleaned_data['search_navbar']) | Q(phone__icontains=form.cleaned_data['search_navbar']))
+                mrecords = MedicalRecord.objects.filter(Q(doctor=user),Q(full_name__icontains=form.cleaned_data['search_navbar']) | Q(phone__icontains=form.cleaned_data['search_navbar']))
 
             results = {"histories":histories,"mrecords":mrecords}
             settings_service = user.doctor.settingsservice

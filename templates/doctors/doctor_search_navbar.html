@@ -5,14 +5,23 @@
  <div class="container">
 
      
-     {% if results %}
      <div class="my-3 p-3 bg-light rounded box-shadow">
+      {% if results.mrecords or results.histories %}
       <div class="d-flex justify-content-between align-items-center border-bottom border-gray">
-        <h4 class="pb-2 mb-0">Kết quả tìm kiếm</h4>
+        <h4 class="pb-2 mb-0">
+          
+          {% if results.mrecords %}
+            Hồ sơ bệnh nhân
+          {% else %}
+            Lịch sử khám bệnh
+          {% endif %}
+        </h4>
         <span class="page-link-mix" style="font-weight: bold">Dịch vụ khám</span>
       </div>
+      {% else %}
+      <h2>Không tìm thấy thấy thông tin</h2>
+      {% endif %}
       <!--  medical record search -->
-      
       {% for mrecord in results.mrecords %}
       <div class="media text-muted pt-3">
         <i class="fa fa-square mr-2"
@@ -28,17 +37,33 @@
                 - ĐT: {{ mrecord.phone }}
               {% endif %}
             </a></strong>
+            {% if mrecord.medicalhistory_set.all %}
+            <span class="page-link-mix">Đã khám {{ mrecord.medicalhistory_set.all.count }} lần</span>
+            {% else %}
             <span class="page-link-mix">Chưa khám - <a href="{% url 'medical_record_del' pk_doctor mrecord.pk %}?path_search={{request.get_full_path |urlencode}}" class="page-link-mix" style="color: #d9534f">Xóa</a></span>
-                        
+            {% endif %}            
           </div>
-          <div >
-            <span>Thơi gian tạo hồ sơ -- <i class="fa fa-calendar"></i> {{ mrecord.created_at | date:" D. d-m-Y" }}</span>
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <div>
+              {% if mrecord.sex %}
+              <i class="fa fa-female"></i>
+              {% else %}
+              <i class="fa fa-male"></i>
+              {% endif %}
+            <span >{{ mrecord.birth_date |date:"Y"}}</span>
+            </div>
+            {% if mrecord.medicalhistory_set.all %}
+            <span class="font-italic font-weight-light">Lần gần nhất {{ mrecord.medicalhistory_set.first.date_booked | date:"H:i  d-m-Y" }}</span>
+            {% endif %}
           </div>
           
         </div>
         
       </div>
       {% endfor %}
+      
+        
+      
         
       <!-- history search -->
       {% for history in results.histories %}
@@ -51,7 +76,7 @@
             {% endif %}></i>
           <div class="media-body pb-3 mb-0 lh-125 border-bottom border-gray">
             <div class="d-flex justify-content-between align-items-center w-100">
-              <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_view' pk_doctor history.medical_record.pk %}">{{ history.medical_record.full_name }}
+              <strong class="text-gray-dark"><a class="page-link-mix" href="{% url 'medical_record_back_view' pk_doctor history.medical_record.pk history.pk %}">{{ history.medical_record.full_name }}
                 {% if history.medical_record.phone %}
                   - ĐT: {{ history.medical_record.phone }}
                 {% endif %}
@@ -131,17 +156,7 @@
       {% endfor %}
       <!-- end history search -->
     </div>
-    {% else %}
-    <h4 class="mt-3">Không tìm thấy bệnh nhân
-      
-      {% if date_obj %}
-        nào khám trong ngày {{ date_obj | date:"d-m-Y" }}
-      {% endif %}
-        
-    </h4>
-     {% endif %}
-       
-         
+               
  </div>
  <script src="{% static 'js/easy-modal-plugin.js' %}"></script>
 <script>
