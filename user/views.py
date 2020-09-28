@@ -82,11 +82,11 @@ class LoginViewMix(LoginView):
         # return reverse_lazy("doctor_profile",kwargs={"pk_doctor":user.pk})
         if user.doctor.kind == "obstetrician-gynecologist":
             return reverse_lazy("list_examination_finished",kwargs={"pk_doctor":user.pk})
-    # def get(self,request, *args, **kwargs):
-    #     if request.user.is_authenticated:
-    #         return redirect("doctor_profile")
-    #     else:
-    #         return self.render_to_response(self.get_context_data())
+    def get(self,request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect(reverse("doctor_profile",kwargs={'pk_doctor':request.user.pk}))
+        else:
+            return self.render_to_response(self.get_context_data())
 
 class ActivateAccount(View):
     success_url = reverse_lazy('login')
