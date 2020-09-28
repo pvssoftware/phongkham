@@ -45,7 +45,7 @@ def update_examination_cost(doctor,history):
     try:
         settings_service = doctor.doctor.settingsservice
     except DoctorProfile.settingsservice.RelatedObjectDoesNotExist:
-        settings_service = SettingsService.objects.create(doctor=request.user.doctor)
+        settings_service = SettingsService.objects.create(doctor=history.medical_record.doctor.doctor)
     history.medical_examination_cost = get_price_app_or_setting(settings_service.medical_examination_cost,history.medical_examination_cost)
     history.save()
 

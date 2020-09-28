@@ -165,7 +165,7 @@ def upload_medical_ultrasonography_file(request):
                 history_serializer.save()
 
                 if not json_file["is_waiting"]:
-                    update_examination_patients_list(request.user,history)
+                    update_examination_cost(request.user,history)
 
                 # update list examination patients
                 update_examination_patients_list(request.user,date.today(),False)
@@ -518,7 +518,8 @@ def get_doctor(request):
             if doctor.doctor.settings_time.enable_voice:
                 return Response({
                     "maBS":int(data["maBS"]),
-                    "tenBS":doctor.doctor.full_name
+                    "tenBS":doctor.doctor.full_name,
+                    "hotline":doctor.doctor.hotline
                 },
                 status=status.HTTP_200_OK)
             return Response(status=status.HTTP_400_BAD_REQUEST)
