@@ -13,7 +13,13 @@
     <p>Phòng khám: <span>{{ doctor.doctor.clinic_name }}</span></p>
     <p>ĐC phòng khám: <span>{{ doctor.doctor.clinic_address }}</span></p>
     <p>Điện thoại: <span>{{ doctor.doctor.phone }}</span></p>
-    <p>Mã phòng khám: {{ doctor.pk }}</p>
+    <p>Mã phòng khám: {{ doctor.pk }}
+      
+      {% if doctor.doctor.hotline %}
+        - Hotline: {{ doctor.doctor.hotline }}
+      {% endif %}
+        
+    </p>
   </div>
   
 </div>

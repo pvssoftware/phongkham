@@ -19,6 +19,7 @@ class DoctorProfile(models.Model):
     ]
 
     phone = models.CharField(max_length=14)
+    hotline = models.CharField(max_length=14,default="")
     full_name = models.CharField(max_length=30)
     clinic_address = models.CharField(max_length=70)
     clinic_name = models.CharField(max_length=100,default="")
