@@ -493,7 +493,7 @@ def search_drugs(request,pk_doctor):
                 return render(request,"doctors/doctor_search_drugs_date.html",{"pk_doctor":pk_doctor,"results":results,"search_drug_value":search_drug_value})
             except ValueError:
 
-                drug_results = Medicine.objects.filter(Q(name__icontains=search_drug_value)| Q(full_name__icontains=search_drug_value))
+                drug_results = Medicine.objects.filter(Q(name__icontains=search_drug_value)| Q(full_name__icontains=search_drug_value), Q(doctor = doctor))
 
                 return render(request,'doctors/doctor_search_drugs.html',{"pk_doctor":pk_doctor,"drug_results":drug_results,"search_drug_value":search_drug_value})
 
