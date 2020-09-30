@@ -197,6 +197,8 @@ class SettingsService(models.Model):
     weight = models.BooleanField(default=False)
     glycemic = models.BooleanField(default=False)
     ph_meter = models.BooleanField(default=False)
+    take_care_pregnant_baby = models.BooleanField(default=False)
+    point_based = models.BooleanField(default=False)
 
     medical_ultrasonography = models.BooleanField(default=False)
     medical_ultrasonography_cost = models.CharField(max_length=50,blank=True,null=True)

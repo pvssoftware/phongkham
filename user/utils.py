@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # get price from app or setting
 def get_price_app_or_setting(settings_price,app_price):
-    if app_price != "0":
+    if app_price != "0" and app_price != "":
         price = app_price
     else:
         try:

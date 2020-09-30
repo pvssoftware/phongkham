@@ -26,6 +26,7 @@ class MedicalRecord(models.Model):
     password = models.CharField(max_length=10,default="")
     doctor = models.ForeignKey(User,on_delete=models.CASCADE)
     created_at = models.DateField(auto_now_add=True,blank=True,null=True)
+    total_point_based = models.CharField(max_length=200,blank=True,default="0")
 
     def __str__(self):
         return "{}-{}".format(self.full_name, self.phone)
@@ -51,11 +52,15 @@ class MedicalHistory(models.Model):
     glycemic = models.CharField(max_length=50,blank=True,default="")
     # Giấy quỳ pH
     ph_meter = models.CharField(max_length=30,blank=True,default="")
+    # Chăm sóc bầu và bé
+    take_care_pregnant_baby = models.CharField(max_length=100,blank=True,default="")
 
     date = models.DateTimeField(auto_now_add=True)
     date_booked = models.DateTimeField(blank=True,null=True)
     ordinal_number = models.CharField(max_length=10,null=True,blank=True)
     medical_examination_cost = models.CharField(max_length=200,blank=True,default="0")
+    point_based = models.CharField(max_length=200,blank=True,default="0")
+
 
     medical_ultrasonography = models.CharField(max_length=200,blank=True,default="")
     medical_ultrasonography_file = models.FileField(upload_to=locate_medical_ultrasonography_upload,blank=True,null=True)
@@ -98,6 +103,13 @@ class MedicalHistory(models.Model):
 
     am_dao_pk = models.BooleanField(default=False,help_text='chỉ check khi khám phụ khoa')
     note_am_dao_pk = models.CharField(max_length=100,blank=True,default="",help_text='chỉ check khi khám âm đạo phụ khoa')
+
+    hiem_muon_nam = models.BooleanField(default=False,help_text='chỉ check khi khám hiếm muộn')
+    note_hiem_muon_nam = models.CharField(max_length=150,blank=True,default="",help_text='chỉ check khi khám hiếm muộn nam')
+    hiem_muon_nu = models.BooleanField(default=False,help_text='chỉ check khi khám hiếm muộn')
+    note_hiem_muon_nu = models.CharField(max_length=150,blank=True,default="",help_text='chỉ check khi khám hiếm muộn nữ')
+
+
     
     is_waiting = models.BooleanField(default=False)
     medical_record = models.ForeignKey(MedicalRecord, on_delete=models.CASCADE)

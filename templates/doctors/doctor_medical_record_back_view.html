@@ -42,6 +42,13 @@
                  <th>Địa chỉ</th>
                  <td>{{ mrecord.address }}</td>
              </tr>
+             <tr class="table-active"
+            {% if not settings_service.point_based %}
+                style="display: none;"
+            {% endif %}>
+                <th>Tích điểm</th>
+                <td>{{ mrecord.total_point_based }}</td>
+            </tr>
             
          </tbody>
      </table>
@@ -124,6 +131,15 @@
                 <input type="text" class="form-control" id="weight" name="weight" placeholder=""  value="{{ history_edit.weight }}">
                 <span id="alert_weight" style="color: #d9534f;font-size:15px"></span>
             </div> 
+            <div class="form-group col-md-4" id="take_care_pregnant_baby_field"
+                {% if not settings_service.take_care_pregnant_baby %}
+                style="display: none;"   
+                {% endif %}
+            >
+                <label for="take_care_pregnant_baby">Chăm sóc bà bầu và bé sau sinh<span class="required-input">*</span></label>
+                <input type="text" class="form-control" id="take_care_pregnant_baby" name="take_care_pregnant_baby" placeholder=""  value="{{ history_edit.take_care_pregnant_baby }}">
+                <span id="alert_take_care_pregnant_baby" style="color: #d9534f;font-size:15px"></span>
+            </div> 
         </div>
 
         <div class="mb-2">
@@ -135,13 +151,21 @@
                     {% endif %}>
                     <span>Khám phụ sản</span>
                 </label>
-                <label class="custom_radio">
+                <label class="custom_radio mr-5">
                     <input type="radio" name="service" value="khám phụ khoa" id="phu_khoa_radio"
                     id="phu_san_radio"
                     {% if form.service.value == 'khám phụ khoa'%}
                     checked
                     {% endif %}>
                     <span>Khám phụ khoa</span>
+                </label>
+                <label class="custom_radio">
+                    <input type="radio" name="service" value="khám hiếm muộn" id="hiem_muon_radio"
+                    id="hiem_muon_radio"
+                    {% if form.service.value == 'khám hiếm muộn'%}
+                    checked
+                    {% endif %}>
+                    <span>Khám hiếm muộn</span>
                 </label>
             </div>
         </div>
@@ -238,7 +262,66 @@
                 </div>
             </div>
                 
+        </div>
+
+        <div class="mb-3 ml-3" id="hiem_muon">
+            <div>
+              <div class="form-check check_service">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value="Hiếm muộn nam"
+                  id="hiem_muon_nam"
+                  name="hiem_muon_nam"
+                  {% if history_edit.hiem_muon_nam %}
+                    checked
+                  {% endif %}
+                />
+                <label class="form-check-label" for="hiem_muon_nam">
+                  Hiếm muộn nam
+                </label>
+              </div>
+              <div class="form-group ml-4 mt-1">
+                <input
+                  type="text"
+                  class="form-control"
+                  name="note_hiem_muon_nam"
+                  placeholder="Ghi chú về hiếm muộn nam..."
+                  {% if history_edit.note_hiem_muon_nam %}
+                    value="{{ history_edit.note_hiem_muon_nam }}"
+                  {% endif %}
+                />
+              </div>
             </div>
+            <div>
+              <div class="form-check check_service">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value="Hiếm muộn nữ"
+                  id="hiem_muon_nu"
+                  name="hiem_muon_nu"
+                  {% if history_edit.hiem_muon_nu %}
+                    checked
+                  {% endif %}
+                />
+                <label class="form-check-label" for="hiem_muon_nu">
+                  Hiếm muộn nữ
+                </label>
+              </div>
+              <div class="form-group ml-4 mt-1">
+                <input
+                  type="text"
+                  class="form-control"
+                  name="note_hiem_muon_nu"
+                  placeholder="Ghi chú về hiếm muộn nữ..."
+                  {% if history_edit.note_hiem_muon_nu %}
+                    value="{{ history_edit.note_hiem_muon_nu }}"
+                  {% endif %}
+                />
+              </div>
+            </div>
+          </div>
 
     <div class="mb-3" id="medical_ultrasonography_field" 
             {% if not settings_service.medical_ultrasonography %}
@@ -422,6 +505,26 @@
             <span
               id="alert_medical_examination_cost"
               style="color: red;font-size:15px"
+            ></span>
+        </div>
+        <div class="form-group"
+            {% if not settings_service.point_based %}
+                style="display: none;"
+            {% endif %}>
+            <label for="point_based">Tích điểm</label>
+            <input
+                type="text"
+                class="form-control"
+                id="point_based"
+                name="point_based"
+
+                {% if history_edit.point_based != "0" %}
+                value="{{ history_edit.point_based }}"   
+                {% endif %} 
+            />
+            <span
+                id="alert_point_based"
+                style="color: red;font-size:15px"
             ></span>
         </div>
         <button class="btn btn-submit btn_history mb-4" type="button">Kê thuốc</button>
@@ -631,6 +734,12 @@
                {% if history.am_dao_pk %}
                <p class="mb-1">-Âm đạo: {{ history.note_am_dao_pk }}</p>
                {% endif %}
+               {% if history.hiem_muon_nam %}
+                <p class="mb-1">-Hiếm muộn nam: {{ history.note_hiem_muon_nam }}</p> 
+                {% endif %}         
+                {% if history.hiem_muon_nu %}
+                <p class="mb-1">-Hiếm muộn nữ: {{ history.note_hiem_muon_nu }}</p> 
+                {% endif %} 
             </div>
         </div>
          <div class="media pt-3 info_disease_symptom">
@@ -662,6 +771,13 @@
 <script src="{% static 'js/easy-modal-plugin.js' %}"></script>
  <script>
      $(document).ready(function(){
+
+         // validate digital
+        function ValidateDigit(value) {
+            regex = new RegExp("^[1-9][0-9]*$");
+            var isValid = regex.test(value);
+            return isValid;
+        }
          // validate datetime format dd/mm/Y
          function ValidateDate(value){
         regex = new RegExp("^([0-2]\\d{1}|3[0-1])\\/(0\\d{1}|1[0-2])\\/(19|20)\\d{2}$");
@@ -750,18 +866,32 @@
         if($("#phu_san_radio").prop("checked")){
                 $("#phu_san").show();
                 $("#phu_khoa").hide();
-            } else {
+                $("#hiem_muon").hide();
+            } else if ($("#hiem_muon_radio").prop("checked")) {
+                $("#phu_san").hide();
+                $("#phu_khoa").hide();
+                $("#hiem_muon").show();
+            }
+             else {
                 $("#phu_san").hide();
                 $("#phu_khoa").show();
+                $("#hiem_muon").hide();
             }
         // choose phu san or phu khoa
-        $("#phu_san_radio,#phu_khoa_radio").click(function(){
+        $("#phu_san_radio,#phu_khoa_radio,#hiem_muon_radio").click(function(){
             if($("#phu_san_radio").prop("checked")){
                 $("#phu_san").show();
                 $("#phu_khoa").hide();
-            } else {
+                $("#hiem_muon").hide();
+            } else if ($("#hiem_muon_radio").prop("checked")) {
+                $("#phu_san").hide();
+                $("#phu_khoa").hide();
+                $("#hiem_muon").show();
+            }
+            else {
                 $("#phu_san").hide();
                 $("#phu_khoa").show();
+                $("#hiem_muon").hide();
             }
         });// end click
 
@@ -821,6 +951,9 @@
             var weight_field = $("#weight_field").is(":hidden");
             var weight = $("#weight").val();
 
+            var take_care_pregnant_baby_field = $("#take_care_pregnant_baby_field").is(":hidden");
+            var take_care_pregnant_baby = $("#take_care_pregnant_baby").val();
+
             var medical_ultrasonography_field = $("#medical_ultrasonography_field").is(":hidden");
             var medical_ultrasonography = $("#medical_ultrasonography").val();
 
@@ -832,6 +965,8 @@
             
             var disease_symptom = $('#disease_symptom').val();
             var diagnostis = $("#diagnostis").val();
+            var medical_examination_cost = $("#medical_examination_cost").val();
+            var point_based = $("#point_based").val();
 
             var valid = true;
 
@@ -854,8 +989,8 @@
             //     $("#alert_diagnostis").text("");
             // }
             if(contraceptive ==="Lựa chọn..."){
-            $("#alert_contraceptive").text("Bạn chưa nhập cách ngừa thai");
-            valid &= false;
+                $("#alert_contraceptive").text("Bạn chưa nhập cách ngừa thai");
+                valid &= false;
             } else{
                 $("#alert_contraceptive").text("");
             }
@@ -864,7 +999,7 @@
                 if(blood_pressure ===""){
                     $("#alert_blood_pressure").text("Bạn chưa nhập thông tin huyết áp");
                     valid &= false;
-                    } else{
+                } else{
                         $("#alert_blood_pressure").text("");
                 } 
             }
@@ -872,7 +1007,7 @@
                 if(glycemic ===""){
                     $("#alert_glycemic").text("Bạn chưa nhập thông tin đường huyết");
                     valid &= false;
-                    } else{
+                } else{
                         $("#alert_glycemic").text("");
                 } 
             }
@@ -880,7 +1015,7 @@
                 if(ph_meter ===""){
                     $("#alert_ph_meter").text("Bạn chưa nhập thông tin pH");
                     valid &= false;
-                    } else{
+                } else{
                         $("#alert_ph_meter").text("");
                 } 
             }
@@ -888,9 +1023,32 @@
                 if(weight ===""){
                     $("#alert_weight").text("Bạn chưa nhập cân nặng");
                     valid &= false;
-                    } else{
+                } else{
                         $("#alert_weight").text("");
                 } 
+            }
+
+            if (!take_care_pregnant_baby_field) {
+                if (take_care_pregnant_baby === "") {
+                    $("#alert_take_care_pregnant_baby").text("Bạn chưa nhập chăm sóc bà bầu và bé");
+                    valid &= false;
+                } else {
+                    $("#alert_take_care_pregnant_baby").text("");
+                }
+            }
+
+            if(medical_examination_cost !== "" && !ValidateDigit(medical_examination_cost)){
+                valid &= false;
+                $("#alert_medical_examination_cost").text("Giá trị không hợp lệ!");
+            } else{
+                $("#alert_medical_examination_cost").text("");
+            }
+
+            if(point_based !== "" && !ValidateDigit(point_based)){
+                valid &= false;
+                $("#alert_point_based").text("Giá trị không hợp lệ!");
+            } else{
+                $("#alert_point_based").text("");
             }
             // if(!medical_ultrasonography_field){
             //     if(medical_ultrasonography ===""){
