@@ -19,24 +19,31 @@
             </div>
             <div class="col-md-2 mb-3">
                 <label for="phone">Điện thoại<span class="required-input">*</span></label>
-                <input type="text" id="phone" name="phone" class="form-control" placeholder="Số điện thoại" id="phone" value="{{ form.phone.value }}">
+                <input type="text" id="phone" name="phone" class="form-control" placeholder="Số điện thoại" value="{{ form.phone.value }}">
                 {% for error in form.phone.errors %}
                 <span id="alert_phone" style="color: #d9534f;font-size:13px">{{ error }}</span>
                 {% endfor %}
             </div>
             <div class="col-md-2 mb-3">
                 <label for="password">Mật khẩu</label>
-                <input type="text" id="password" name="password" class="form-control" placeholder="Mật khẩu" id="password" value="{{ form.password.value }}">
-                {% for error in form.password.errors %}
-                <span id="alert_phone" style="color: #d9534f;font-size:13px">{{ error }}</span>
-                {% endfor %}
+                <input type="text" id="password" name="password" class="form-control" placeholder="Mật khẩu" value="{{ form.password.value }}">
+                <span id="alert_password" style="color: #d9534f;font-size:13px"></span>
             </div>
         </div>
-        <div class="mb-3">
-            <label for="address">Địa chỉ<span class="required-input">*</span></label>
-            <input type="text" id="address" name="address" class="form-control" placeholder="" value="{{ form.address.value }}">
-            <span id="alert_address" style="color: #d9534f;font-size:15px"></span>
+        <div class="row">
+            <div class="col-md-10 mb-3">
+                <label for="address">Địa chỉ<span class="required-input">*</span></label>
+                <input type="text" id="address" name="address" class="form-control" placeholder="" value="{{ form.address.value }}">
+                <span id="alert_address" style="color: #d9534f;font-size:15px"></span>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label for="total_point_based">Tích điểm</label>
+                <input type="text" id="total_point_based" name="total_point_based" class="form-control" placeholder="Điểm" value="{{ form.total_point_based.value }}">
+                
+                <span id="alert_total_point_based" style="color: #d9534f;font-size:13px"></span>
+            </div>
         </div>
+        
         <div class="row">
             <div class="col-md-3 mb-3">
                 <p class="mb-0">Giới tính</p>
@@ -80,6 +87,13 @@ $(document).ready(function(){
       return isValid;
     }
 
+    // validate digital
+    function ValidateDigit(value) {
+        regex = new RegExp("^((0)|([1-9][0-9]*))$");
+        var isValid = regex.test(value);
+        return isValid;
+    }
+
     // Kiem tra dinh dang cho chu
     function ValidateWord(value){
         regex = new RegExp("^[a-zA-Z_ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêếìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶ" + "ẸẺẼỀỀỂẾưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợ" + "ụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹý\\s]+$");
@@ -100,6 +114,7 @@ $(document).ready(function(){
         var full_name = $("#full_name").val();
         var birth_date = $("#birth_date").val();
         var address = $("#address").val();
+        var total_point_based = $("#total_point_based").val();
         var valid = true;
 
         if(!ValidateWord(full_name)){
@@ -113,6 +128,13 @@ $(document).ready(function(){
             valid &= false;
         } else{
             $("#alert_address").text("");
+        }
+
+        if(!ValidateDigit(total_point_based)){
+            $("#alert_total_point_based").text("Điểm không hợp lệ");
+            valid &= false;
+        } else{
+            $("#alert_total_point_based").text("");
         }
 
         if(!ValidateDate(birth_date)){

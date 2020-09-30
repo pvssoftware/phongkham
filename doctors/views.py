@@ -218,6 +218,8 @@ def settings_service(request,pk_doctor):
                     settings_service.weight = form.cleaned_data["weight"]
                     settings_service.glycemic = form.cleaned_data["glycemic"]
                     settings_service.ph_meter = form.cleaned_data["ph_meter"]
+                    settings_service.take_care_pregnant_baby = form.cleaned_data["take_care_pregnant_baby"]
+                    settings_service.point_based = form.cleaned_data["point_based"]
                     settings_service.medical_ultrasonography = form.cleaned_data["medical_ultrasonography"]
                     settings_service.medical_ultrasonography_cost = form.cleaned_data["medical_ultrasonography_cost"]
                     settings_service.medical_ultrasonography_multi = form.cleaned_data["medical_ultrasonography_multi"]
@@ -235,7 +237,7 @@ def settings_service(request,pk_doctor):
                 except DoctorProfile.settingsservice.RelatedObjectDoesNotExist:
                     form = form.save()
                     form.doctor = user.doctor
-                    print("except")
+                    
                     form.save()
                 return render(request,"doctors/doctor_settings_service.html",{"doctor":user.doctor})
         if user.doctor.settingsservice.password:
@@ -719,13 +721,14 @@ def medical_record_edit(request,pk_doctor,pk_mrecord):
                 mrecord.sex = form.sex
                 mrecord.phone = form.phone
                 mrecord.password = form.password
+                mrecord.total_point_based = form.total_point_based
                 
                 mrecord.save()
                 return redirect(reverse('medical_record_view',kwargs={"pk_doctor":pk_doctor,"pk_mrecord":pk_mrecord}))
             else:
                 return render(request,"doctors/doctor_medical_record_edit.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord})
         else:
-            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":mrecord.birth_date.year,"address":mrecord.address,"phone":mrecord.phone,"password":mrecord.password})
+            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":mrecord.birth_date.year,"address":mrecord.address,"phone":mrecord.phone,"password":mrecord.password,"total_point_based":mrecord.total_point_based})
             return render(request,"doctors/doctor_medical_record_edit.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord})
 # Medical record edit back history view
 def medical_record_edit_back_history(request,pk_doctor,pk_mrecord,pk_history):
@@ -750,6 +753,7 @@ def medical_record_edit_back_history(request,pk_doctor,pk_mrecord,pk_history):
                 mrecord.sex = form.sex
                 mrecord.phone = form.phone
                 mrecord.password = form.password
+                mrecord.total_point_based = form.total_point_based
                 
                 mrecord.save()
                 return redirect(reverse('medical_record_back_view',kwargs={"pk_doctor":pk_doctor,"pk_mrecord":pk_mrecord,"pk_history":pk_history}))
@@ -757,7 +761,7 @@ def medical_record_edit_back_history(request,pk_doctor,pk_mrecord,pk_history):
                 return render(request,"doctors/doctor_medical_record_edit_back_history.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord,"pk_history":pk_history})
         else:
             birth_date = lambda x: x.year if (x) else ""
-            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":birth_date(mrecord.birth_date),"address":mrecord.address,"phone":mrecord.phone,"password":mrecord.password})
+            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":birth_date(mrecord.birth_date),"address":mrecord.address,"phone":mrecord.phone,"password":mrecord.password,"total_point_based":mrecord.total_point_based})
             return render(request,"doctors/doctor_medical_record_edit_back_history.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord,"pk_history":pk_history})
 
 
@@ -930,6 +934,23 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
                         form.note_tim_thai_ps = ''
                         form.can_go_ps = False
                         form.note_con_go_ps = ''
+                        form.hiem_muon_nam = False
+                        form.note_hiem_muon_nam = ''
+                        form.hiem_muon_nu = False
+                        form.note_hiem_muon_nu = ''
+
+                    elif form.service == 'khám hiếm muộn':
+                        form.co_tu_cung_ps = False
+                        form.note_co_tu_cung_ps = ''
+                        form.tim_thai_ps = False
+                        form.note_tim_thai_ps = ''
+                        form.can_go_ps = False
+                        form.note_con_go_ps = ''
+
+                        form.co_tu_cung_pk = False
+                        form.note_co_tu_cung_pk = ''
+                        form.am_dao_pk = False
+                        form.note_am_dao_pk = ''
 
                     else:
                         # if form.cleaned_data['co_tu_cung_ps']:
@@ -942,10 +963,21 @@ def medical_record_view(request, pk_mrecord, pk_doctor):
                         form.note_co_tu_cung_pk = ''
                         form.am_dao_pk = False
                         form.note_am_dao_pk = ''
+                        form.hiem_muon_nam = False
+                        form.note_hiem_muon_nam = ''
+                        form.hiem_muon_nu = False
+                        form.note_hiem_muon_nu = ''
                         
                     
                     form.date_booked = datetime.now()
                     form.save()
+
+                    # plus point_based of history to total_point_based
+                    total_point_based = int(form.medical_record.total_point_based)
+                    total_point_based += int(form.point_based)
+                    form.medical_record.total_point_based = str(total_point_based)
+                    form.medical_record.save()
+
 
                     # update list examination patients finished
                     update_examination_patients_finished_list(doctor,date_book)
@@ -984,6 +1016,7 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                 history_edit.service = form.cleaned_data['service']
                 history_edit.is_waiting = form.cleaned_data['is_waiting']
                 history_edit.medical_examination_cost = form.cleaned_data["medical_examination_cost"]
+                history_edit.point_based = get_price_app_or_setting("0",form.cleaned_data["point_based"])
                 
                 if form.cleaned_data['service']== 'khám phụ khoa':
                     if form.cleaned_data['co_tu_cung_pk']:
@@ -1005,6 +1038,36 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                     history_edit.note_tim_thai_ps = ''
                     history_edit.can_go_ps = False
                     history_edit.note_con_go_ps = ''
+                    history_edit.hiem_muon_nam = False
+                    history_edit.note_hiem_muon_nam = ''
+                    history_edit.hiem_muon_nu = False
+                    history_edit.note_hiem_muon_nu = ''
+
+                elif form.cleaned_data['service']== 'khám hiếm muộn':
+                    if form.cleaned_data['hiem_muon_nam']:
+                        history_edit.hiem_muon_nam = True
+                        history_edit.note_hiem_muon_nam = form.cleaned_data['note_hiem_muon_nam']
+                    else:
+                        history_edit.hiem_muon_nam = False
+                        history_edit.note_hiem_muon_nam = ''
+
+                    if form.cleaned_data['hiem_muon_nu']:
+                        history_edit.hiem_muon_nu = True
+                        history_edit.note_hiem_muon_nu = form.cleaned_data['note_hiem_muon_nu']
+                    else:
+                        history_edit.hiem_muon_nu = False
+                        history_edit.note_hiem_muon_nu = ''
+
+                    history_edit.co_tu_cung_ps = False
+                    history_edit.note_co_tu_cung_ps = ''
+                    history_edit.tim_thai_ps = False
+                    history_edit.note_tim_thai_ps = ''
+                    history_edit.can_go_ps = False
+                    history_edit.note_con_go_ps = ''
+                    history_edit.co_tu_cung_pk = False
+                    history_edit.note_co_tu_cung_pk = ''
+                    history_edit.am_dao_pk = False
+                    history_edit.note_am_dao_pk = ''
                 else:
                     if form.cleaned_data['co_tu_cung_ps']:
                         history_edit.co_tu_cung_ps = True
@@ -1029,6 +1092,10 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                     history_edit.note_co_tu_cung_pk = ''
                     history_edit.am_dao_pk = False
                     history_edit.note_am_dao_pk = ''
+                    history_edit.hiem_muon_nam = False
+                    history_edit.note_hiem_muon_nam = ''
+                    history_edit.hiem_muon_nu = False
+                    history_edit.note_hiem_muon_nu = ''
                     
 
 
@@ -1039,6 +1106,7 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
                 history_edit.weight = form.cleaned_data['weight']
                 history_edit.glycemic = form.cleaned_data['glycemic']
                 history_edit.ph_meter = form.cleaned_data['ph_meter']
+                history_edit.take_care_pregnant_baby = form.cleaned_data['take_care_pregnant_baby']
 
                 history_edit.medical_ultrasonography = form.cleaned_data['medical_ultrasonography']
                 if "medical_ultrasonography_file" in request.FILES:
@@ -1091,6 +1159,12 @@ def medical_record_back_view(request, pk_mrecord, pk_doctor, pk_history):
 
                 if history_edit.is_waiting:
                     return redirect(reverse("list_examination",kwargs={"pk_doctor": pk_doctor}))
+
+                # plus point_based of history to total_point_based
+                total_point_based = int(history_edit.medical_record.total_point_based)
+                total_point_based += int(history_edit.point_based)
+                history_edit.medical_record.total_point_based = str(total_point_based)
+                history_edit.medical_record.save()
 
                 # histories = MedicalHistory.objects.filter(medical_record__doctor=doctor,is_waiting=True).filter(date_booked__date__lte=date.today()).order_by("date_booked")
                 # html_patients = render_to_string("doctors/doctor_list_patients.html",{"pk_doctor":pk_doctor,"histories":histories})
