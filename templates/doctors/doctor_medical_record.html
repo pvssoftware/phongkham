@@ -794,7 +794,20 @@
         {{ history.ph_meter }}
       </p>
     </div>
-    {% endif %} {% if settings_service.medical_ultrasonography %}
+    {% endif %}
+
+    {% if settings_service.take_care_pregnant_baby %}
+    <div class="media pt-3 info_ph_meter">
+      <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+        <strong class="d-block text-gray-dark">Chăm sóc bầu và em bé</strong>
+        {{ history.take_care_pregnant_baby }}
+      </p>
+    </div>
+    {% endif %}
+
+
+    
+    {% if settings_service.medical_ultrasonography %}
     <div class="info_medical_ultrasonography">
       <div class="media pt-3 d-flex justify-content-between">
         <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">

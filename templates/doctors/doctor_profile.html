@@ -5,7 +5,7 @@
 
 <div class="my-3">
   <div class="d-flex justify-content-between align-items-center">
-    <h3>Bác sĩ {{ doctor.doctor.full_name }}</h3>
+    <h3>{{ doctor.doctor.full_name }}</h3>
     <button class="btn btn-back"><a href="{% url 'pw_change' %}">Đổi Password</a></button>
   </div>
   
@@ -59,7 +59,12 @@
         </a>
         </strong>
         {% if ob.medicalhistory_set.all %}
-        <a href="?service=da_kham" class="page-link-mix">Đã khám {{ ob.medicalhistory_set.all.count }} lần</a>
+        <span><a href="?service=da_kham" class="page-link-mix">Đã khám {{ ob.medicalhistory_set.all.count }} lần</a>
+          {% if doctor.doctor.settingsservice.point_based %}
+            ({{ ob.total_point_based }} điểm)
+          {% endif %}
+        </span>
+                 
         {% else %}
         <div>
           <a href="?service=chua_kham" class="page-link-mix">Chưa khám</a> - 

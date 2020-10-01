@@ -171,4 +171,11 @@ class AppWindow(models.Model):
     def __str__(self):
         return self.version
 
+class BackgroundColor(models.Model):
+    navbar = models.CharField(max_length=8, default = "#009688")
+    doctor = models.OneToOneField(DoctorProfile,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.doctor.full_name
+
 
