@@ -127,6 +127,16 @@
     
 }
 
+.pick-color {
+    width: 50%;
+    height: 25px;
+    border: 1px;
+    border-radius: 3px;
+    border-color: #FFFFFF;
+}
+
+
+
 
 
 

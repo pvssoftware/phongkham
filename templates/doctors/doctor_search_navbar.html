@@ -38,7 +38,12 @@
               {% endif %}
             </a></strong>
             {% if mrecord.medicalhistory_set.all %}
-            <span class="page-link-mix">Đã khám {{ mrecord.medicalhistory_set.all.count }} lần</span>
+            <span>
+              <span class="page-link-mix">Đã khám {{ mrecord.medicalhistory_set.all.count }} lần</span>
+              {% if settings_service.point_based %}
+                ({{ mrecord.total_point_based }} điểm)
+              {% endif %}
+            </span>
             {% else %}
             <span class="page-link-mix">Chưa khám - <a href="{% url 'medical_record_del' pk_doctor mrecord.pk %}?path_search={{request.get_full_path |urlencode}}" class="page-link-mix" style="color: #d9534f">Xóa</a></span>
             {% endif %}            

@@ -3,11 +3,16 @@ from django import forms
 from django.core.exceptions import ValidationError, ObjectDoesNotExist 
 from django.conf import settings
 from user.models import SettingsTime, SettingsService, WeekDay
-from .models import MedicalRecord, MedicalHistory, PrescriptionDrug, PrescriptionDrugOutStock, Medicine
+from .models import MedicalRecord, MedicalHistory, PrescriptionDrug, PrescriptionDrugOutStock, Medicine, BackgroundColor
 from .utils_forms import clean_upload_file
 from user.utils import get_price_app_or_setting
 
 
+class BackgroundColorForm(forms.ModelForm):
+
+    class Meta:
+        model = BackgroundColor
+        fields = ("navbar",)
 
 class PatientLoginForm(forms.Form):
     phone = forms.CharField(label="Số điện thoại",max_length=14,help_text="Số điện thoại cá nhân.")

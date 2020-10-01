@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_edit_back_history, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, remove_drug_out_stock, final_info, export_final_info_excel, export_final_info_excel_patient, MedicineList, medicine_create, medicine_edit,  medicine_edit_protect, medicine_del, upload_medicine_excel, search_drugs, cal_benefit, cal_benefit_protect, list_examination, list_examination_finished, list_tickets_booked, settings_openingtime, settings_service, settings_service_protect, create_weekday, delete_weekday, download_medical_ultrasonography, download_endoscopy, merge_history_search, merge_history_confirm, merge_history, changelog_update_app, patient_login, patient_profile, patient_book_examination, patient_logout, check_license, download_app_ultrasound, add_link_meeting, export_doc_file_drug
+from .views import search_navbar,DoctorProfileView, medical_record_create, medical_record_edit, medical_record_edit_back_history, medical_record_del,medical_record_view, medical_record_back_view, prescription_drug, take_drug, medical_history_del, remove_drug, remove_drug_out_stock, final_info, export_final_info_excel, export_final_info_excel_patient, MedicineList, medicine_create, medicine_edit,  medicine_edit_protect, medicine_del, upload_medicine_excel, search_drugs, cal_benefit, cal_benefit_protect, list_examination, list_examination_finished, list_tickets_booked, settings_openingtime, settings_service, settings_service_protect, create_weekday, delete_weekday, download_medical_ultrasonography, download_endoscopy, merge_history_search, merge_history_confirm, merge_history, changelog_update_app, patient_login, patient_profile, patient_book_examination, patient_logout, check_license, download_app_ultrasound, add_link_meeting, export_doc_file_drug, change_theme
 from .views_api import download_xml_update
 
 
@@ -25,6 +25,7 @@ urlpatterns = [
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/delete-weekday/(?P<pk_weekday>\d+)/$",delete_weekday,name="delete_weekday"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/settings-openingtime/$",settings_openingtime,name="settings_openingtime"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/settings-service/$",settings_service,name="settings_service"),
+    url(r"^doctor-profile/(?P<pk_doctor>\d+)/change-theme/$",change_theme,name="change_theme"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/settings-service-protect/$",settings_service_protect,name="settings_service_protect"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/cal-benefit/$",cal_benefit,name="cal_benefit"),
     url(r"^doctor-profile/(?P<pk_doctor>\d+)/cal-benefit-protect/$",cal_benefit_protect,name="cal_benefit_protect"),

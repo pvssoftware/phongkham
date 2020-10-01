@@ -14,9 +14,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from user.models import User, DoctorProfile, WeekDay, SettingsTime, SettingsService
 from user.utils import get_price_app_or_setting
 from user.license import check_licenses, check_premium_licenses
-from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, PrescriptionDrugOutStock, BookedDay, AppWindow
+from .models import MedicalRecord, MedicalHistory, Medicine, PrescriptionDrug, PrescriptionDrugOutStock, BookedDay, AppWindow, BackgroundColor
 from .utils import PageLinksMixin, DoctorProfileMixin, MedicineMixin, weekday_context, combine_datetime, get_days_detail, download_medical_ultrasonography_file, download_endoscopy_file, password_protect, check_date_format, update_examination_patients_list, update_examination_patients_finished_list, count_and_calculate_service, sum_cost_ultra_service, sum_cost_medical_test_service
-from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, TakeDrugOutStockForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm, PatientLoginForm, PatientBookForm, AddLinkMeetingForm
+from .forms import MedicalHistoryFormMix, SearchDrugForm, TakeDrugForm, TakeDrugOutStockForm, UploadMedicineForm,MedicalRecordForm, SearchNavBarForm, MedicineForm, MedicineEditForm, CalculateBenefitForm, SettingsServiceForm, SettingsTimeForm, WeekDayForm, PasswordProtectForm, PatientLoginForm, PatientBookForm, AddLinkMeetingForm, BackgroundColorForm
 from .custom_serializers import remove_file
 
 
@@ -281,6 +281,29 @@ def settings_openingtime(request,pk_doctor):
         except DoctorProfile.settings_time.RelatedObjectDoesNotExist:
             days = {}
         return render(request,"doctors/doctor_settings_openingtime.html",{"doctor":user.doctor,"days":days})
+
+# change theme
+def change_theme(request, pk_doctor):
+    user = User.objects.get(pk=pk_doctor)
+    try:
+        bg_color = user.doctor.backgroundcolor
+    except:
+        bg_color = BackgroundColor.objects.create(doctor=user.doctor)
+
+    if request.method == "POST":
+
+        form = BackgroundColorForm(request.POST)
+        if form.is_valid():
+            
+            bg_color.navbar = form.cleaned_data["navbar"]
+            bg_color.save()
+
+
+            return render(request,"doctors/doctor_change_theme.html",{"bg_color":bg_color})
+
+
+
+    return render(request,"doctors/doctor_change_theme.html",{"bg_color":bg_color})
 
 # create weekday
 def create_weekday(request,pk_doctor):

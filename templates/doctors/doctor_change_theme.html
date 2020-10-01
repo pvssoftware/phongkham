@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container my-3" style="border: solid #f7f7f9;border-width: 3px;">
+    <h3 class="mt-3">Thay đổi màu sắc giao diện website</h3>
+
+    <form action="{% url 'change_theme' request.user.pk %}" class="mt-4" method="post">
+        {% csrf_token %}
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="navbar" id="bg-color" value="#009688" style="background: #009688!important;"
+            
+            {% if bg_color.navbar == "#009688" %}
+                checked
+            {% endif %}
+                >
+            <label class="form-check-label pick-color ml-3" for="bg-color" style="background-color: #009688;">
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="navbar" id="bg-color" value="#C68E17" style="background: #C68E17!important;"
+            {% if bg_color.navbar == "#C68E17" %}
+                checked
+            {% endif %}>
+            <label class="form-check-label pick-color ml-3" for="bg-color" style="background-color: #C68E17;">
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="navbar" id="bg-color" value="#184FC7" style="background: #184FC7!important;"
+
+            {% if bg_color.navbar == "#184FC7" %}
+                checked
+            {% endif %}>
+            <label class="form-check-label pick-color ml-3" for="bg-color" style="background-color: #184FC7;">
+            </label>
+        </div>
+
+        <button class="btn btn-submit my-3" type="submit">Thay đổi</button>
+    </form>
+
+
+
+</div>
+{% endblock %}
