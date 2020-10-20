@@ -4,7 +4,7 @@ from datetime import datetime
 from django.views.generic import ListView
 from django.shortcuts import render
 from django.http import HttpResponse
-from django.db.models import Q
+from django.db.models import Q, functions, IntegerField
 from django.template.loader import render_to_string
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -185,6 +185,9 @@ weekday_dic ={
 def get_days_detail(weekdays,date_book,examination_period):
     days = weekdays.filter(day=weekday_dic[date_book.weekday()]).order_by("opening_time")
     object_list = []
+    print(weekdays)
+    print(date_book.weekday())
+    print(days)
     if days:
         for day in days:
             time_duration = int((datetime.combine(date_book,day.closing_time) - datetime.combine(date_book,day.opening_time)).total_seconds()//60)
@@ -365,6 +368,8 @@ class DoctorProfileMixin:
 
             elif service == "da_kham":
                 self.object_list = self.object_list.exclude(medicalhistory__isnull=True)
+            elif service == "point":
+                self.object_list = self.object_list.annotate(point_as_int=functions.Cast("total_point_based",output_field=IntegerField())).order_by("-point_as_int")
                 
             
             context = self.get_context_data()

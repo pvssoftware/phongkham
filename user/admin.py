@@ -1,8 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, DoctorProfile, SettingsTime, SettingsService, Payment, License
+from .models import User, DoctorProfile, SettingsTime, SettingsService, Payment, License, WeekDay
 from .forms import CustomUserChangeForm, CustomUserCreationForm
 
+class WeekDayAdmin(admin.ModelAdmin):
+	model = WeekDay
+	list_display = ["settingstime","day"]
 
 # Mixin class
 
@@ -95,3 +98,4 @@ admin.site.register(SettingsTime,SettingsTimeAdmin)
 admin.site.register(SettingsService,SettingsServiceAdmin)
 admin.site.register(Payment,PaymentAdmin)
 admin.site.register(License,LicenseAdmin)
+admin.site.register(WeekDay, WeekDayAdmin)

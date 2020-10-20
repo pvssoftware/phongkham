@@ -212,7 +212,9 @@ def upload_medical_ultrasonography_file(request):
         if json_file['is_waiting']:
             
             if settings_time.enable_voice:
+                print(settings_time)
                 days_detail = get_days_detail(settings_time.weekday_set.all(),date_book,settings_time.examination_period)
+                print(days_detail)
                 if not days_detail:
                     response_data = MedicalRecordExaminationSerializer(mrecord,context={"request": request})
                     return Response(response_data.data,status=status.HTTP_400_BAD_REQUEST)
