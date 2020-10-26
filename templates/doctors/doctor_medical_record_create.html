@@ -26,7 +26,7 @@
                 <span id="alert_birth_date" style="color: #d9534f;font-size:15px"></span>
             </div>
             <div class="col-md-2 mb-3">
-                <label for="phone">Điện thoại<span class="required-input">*</span></label>
+                <label for="phone">Điện thoại</label>
                 <input type="text" id="phone" name="phone" class="form-control" placeholder="Số điện thoại" id="phone"
                 {% if form.phone.value %}
                 value="{{ form.phone.value }}" 
@@ -47,7 +47,7 @@
             </div>
         </div>
         <div class="mb-3">
-            <label for="address">Địa chỉ<span class="required-input">*</span></label>
+            <label for="address">Địa chỉ</label>
             <input type="text" id="address" name="address" class="form-control" placeholder="Địa chỉ" id="address"
             {% if form.address.value %}
                 value="{{ form.address.value }}" 
@@ -118,7 +118,7 @@ $(document).ready(function(){
     $(".btn-submit").click(function(){
         var full_name = $("#full_name").val();
         var birth_date = $("#birth_date").val();
-        var address = $("#address").val();
+        // var address = $("#address").val();
 
         var valid = true;
 
@@ -128,19 +128,22 @@ $(document).ready(function(){
         } else{
             $("#alert_full_name").text("");
         }
-        if(address ===""){
-            $("#alert_address").text("Bạn chưa nhập địa chỉ");
-            valid &= false;
-        } else{
-            $("#alert_address").text("");
-        }
+        // if(address ===""){
+        //     $("#alert_address").text("Bạn chưa nhập địa chỉ");
+        //     valid &= false;
+        // } else{
+        //     $("#alert_address").text("");
+        // }
 
-        if(!ValidateDate(birth_date)){
-            $("#alert_birth_date").text("Năm sinh không hợp lệ");
-            valid &= false;
-        } else{
-            $("#alert_birth_date").text("");
+        if (birth_date !== "") {
+           if(!ValidateDate(birth_date)){
+                $("#alert_birth_date").text("Năm sinh không hợp lệ");
+                valid &= false;
+            } else{
+                $("#alert_birth_date").text("");
+            } 
         }
+        
 
         if(valid){
             $(this).prop("disabled",true);

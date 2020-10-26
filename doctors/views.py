@@ -751,7 +751,11 @@ def medical_record_edit(request,pk_doctor,pk_mrecord):
             else:
                 return render(request,"doctors/doctor_medical_record_edit.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord})
         else:
-            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":mrecord.birth_date.year,"address":mrecord.address,"phone":mrecord.phone,"password":mrecord.password,"total_point_based":mrecord.total_point_based})
+            if mrecord.birth_date:
+                year = mrecord.birth_date.year
+            else:
+                year = ""
+            form = MedicalRecordForm(initial={"full_name":mrecord.full_name,"birth_date":year,"address":mrecord.address,"phone":mrecord.phone,"password":mrecord.password,"total_point_based":mrecord.total_point_based})
             return render(request,"doctors/doctor_medical_record_edit.html",{"form":form,"pk_doctor":pk_doctor,"mrecord":mrecord})
 # Medical record edit back history view
 def medical_record_edit_back_history(request,pk_doctor,pk_mrecord,pk_history):
