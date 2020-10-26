@@ -13,13 +13,17 @@
                 <span id="alert_full_name" style="color: #d9534f;font-size:15px"></span>
             </div>
             <div class="col-md-2 mb-3">
-                <label for="birth_date">Năm sinh<span class="required-input">*</span></label>
+                <label for="birth_date">Năm sinh</label>
                 <input type="text" id="birth_date" name="birth_date" class="form-control" placeholder="Chọn năm sinh" value="{{ form.birth_date.value }}" autocomplete="off">
                 <span id="alert_birth_date" style="color: #d9534f;font-size:15px"></span>
             </div>
             <div class="col-md-2 mb-3">
-                <label for="phone">Điện thoại<span class="required-input">*</span></label>
-                <input type="text" id="phone" name="phone" class="form-control" placeholder="Số điện thoại" value="{{ form.phone.value }}">
+                <label for="phone">Điện thoại</label>
+                <input type="text" id="phone" name="phone" class="form-control" placeholder="Số điện thoại"               
+                {% if form.phone.value %}
+                  value="{{ form.phone.value }}"  
+                {% endif %}
+                >
                 {% for error in form.phone.errors %}
                 <span id="alert_phone" style="color: #d9534f;font-size:13px">{{ error }}</span>
                 {% endfor %}
@@ -32,7 +36,7 @@
         </div>
         <div class="row">
             <div class="col-md-10 mb-3">
-                <label for="address">Địa chỉ<span class="required-input">*</span></label>
+                <label for="address">Địa chỉ</label>
                 <input type="text" id="address" name="address" class="form-control" placeholder="" value="{{ form.address.value }}">
                 <span id="alert_address" style="color: #d9534f;font-size:15px"></span>
             </div>
@@ -113,7 +117,7 @@ $(document).ready(function(){
     $(".btn-submit").click(function(){
         var full_name = $("#full_name").val();
         var birth_date = $("#birth_date").val();
-        var address = $("#address").val();
+        // var address = $("#address").val();
         var total_point_based = $("#total_point_based").val();
         var valid = true;
 
@@ -123,12 +127,12 @@ $(document).ready(function(){
         } else{
             $("#alert_full_name").text("");
         }
-        if(address ===""){
-            $("#alert_address").text("Bạn chưa nhập địa chỉ");
-            valid &= false;
-        } else{
-            $("#alert_address").text("");
-        }
+        // if(address ===""){
+        //     $("#alert_address").text("Bạn chưa nhập địa chỉ");
+        //     valid &= false;
+        // } else{
+        //     $("#alert_address").text("");
+        // }
 
         if(!ValidateDigit(total_point_based)){
             $("#alert_total_point_based").text("Điểm không hợp lệ");
@@ -137,11 +141,13 @@ $(document).ready(function(){
             $("#alert_total_point_based").text("");
         }
 
-        if(!ValidateDate(birth_date)){
-            $("#alert_birth_date").text("Năm sinh không hợp lệ");
-            valid &= false;
-        } else{
-            $("#alert_birth_date").text("");
+        if (birth_date !== "") {
+           if(!ValidateDate(birth_date)){
+                $("#alert_birth_date").text("Năm sinh không hợp lệ");
+                valid &= false;
+            } else{
+                $("#alert_birth_date").text("");
+            } 
         }
 
         if(valid){

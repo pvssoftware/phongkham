@@ -104,7 +104,7 @@ class SearchNavBarForm(forms.Form):
 
 class MedicalRecordForm(forms.ModelForm):
     sex = forms.CharField()
-    birth_date = forms.DateField(input_formats=["%Y"])
+    birth_date = forms.DateField(input_formats=["%Y"],required=False)
     password = forms.CharField(required=False)
 
     class Meta:
