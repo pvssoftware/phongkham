@@ -540,12 +540,29 @@ def create_record_ticket(request):
             return Response(status=status.HTTP_400_BAD_REQUEST)
             
         date_book = data["ngay"]
-        date_book = datetime.strptime(date_book,"%d/%m/%Y")
+        
+
+        try:
+
+            date_book = datetime.strptime(date_book,"%d/%m/%Y")
+        
+        except ValueError:
+            return Response({"alert":"Nhập ngày không hợp lệ!!!"},status=status.HTTP_406_NOT_ACCEPTABLE)
+
 
         today = date.today()
-
+        now = datetime.now()
+        # check if date_book in the past and plus 1 year to date_book
         if date(day=date_book.day,month=date_book.month,year=date_book.year) < today:
+            date_book = datetime(day=date_book.day,month=date_book.month,year=(date_book.year) + 1)
+            if (now + timedelta(days=7)) < date_book:
+                print("past")
+                return Response({"alert":"Nhập ngày không hợp lệ!!!"},status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        if (now + timedelta(days=7)) < date_book:
             return Response({"alert":"Nhập ngày không hợp lệ!!!"},status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        
         
         try:
             settings_time = doctor.doctor.settings_time
