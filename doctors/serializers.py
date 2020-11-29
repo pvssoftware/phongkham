@@ -4,7 +4,7 @@ from rest_framework.exceptions import ValidationError
 # from rest_framework.utils import model_meta
 from django.conf import settings
 from .models import MedicalRecord, MedicalHistory
-from .custom_serializers import CustomHyperlinkedIdentityField, CustomHyperlinkedRelatedField, RecordSerializerField, validated_file, remove_file, update_file_serializer
+from .custom_serializers import CustomHyperlinkedIdentityField, CustomHyperlinkedRelatedField, RecordSerializerField, validated_file, remove_file, update_file_serializer, BirthDateSerializerField
 from user.utils import get_price_app_or_setting
 from user.models import User, DoctorProfile
 
@@ -36,7 +36,8 @@ class MedicalHistorySerializer(serializers.HyperlinkedModelSerializer):
 
 
 class MedicalRecordExaminationSerializer(serializers.ModelSerializer):
-    birth_date = serializers.DateField(format="%Y")
+    # birth_date = serializers.DateField(format="%Y")
+    birth_date = BirthDateSerializerField()
     class Meta:
         model = MedicalRecord
         fields = ("id","full_name","sex","birth_date","address","phone")
