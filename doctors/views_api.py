@@ -140,7 +140,10 @@ def upload_medical_ultrasonography_file(request):
             try:
                 mrecord = MedicalRecord.objects.get(pk=int(data["id_patient"]),doctor=request.user)
                 mrecord.full_name = data['full_name']
-                mrecord.birth_date = date(year=int(data["birth_date"]),month=1,day=1)
+                if int(data["birth_date"]) == 0:
+                    mrecord.birth_date = None
+                else:
+                    mrecord.birth_date = date(year=int(data["birth_date"]),month=1,day=1)
                 mrecord.address = data['address']
                 mrecord.sex = json_file['sex']
                 mrecord.save()
@@ -186,12 +189,18 @@ def upload_medical_ultrasonography_file(request):
     elif request.method == 'POST':
         data = request.data
         json_file = json.loads(data['json_file'])
+        if int(data["birth_date"]) == 0:
+            birth_date = None
+        else:
+            birth_date = date(year=int(data["birth_date"]),month=1,day=1)
         # update info patient
         if data['id_patient']:
+            
             try:
                 mrecord = MedicalRecord.objects.get(pk=int(data["id_patient"]),doctor=request.user)
                 mrecord.full_name = data['full_name']
-                mrecord.birth_date = date(year=int(data["birth_date"]),month=1,day=1)
+                
+                mrecord.birth_date = birth_date
                 mrecord.address = data['address']
                 mrecord.sex = json_file['sex']
                 mrecord.save()
@@ -199,7 +208,7 @@ def upload_medical_ultrasonography_file(request):
                 return Response({"alert":"Mã bệnh nhân không hợp lệ!!!"},status=status.HTTP_404_NOT_FOUND)
 
         else:
-            mrecord = MedicalRecord.objects.create(doctor=request.user,full_name=data['full_name'],birth_date=date(year=int(data["birth_date"]),month=1,day=1),sex=json_file['sex'],phone=data['phone'],address=data['address'])
+            mrecord = MedicalRecord.objects.create(doctor=request.user,full_name=data['full_name'],birth_date=birth_date,sex=json_file['sex'],phone=data['phone'],address=data['address'])
         
         try:
             settings_time = request.user.doctor.settings_time
@@ -330,7 +339,10 @@ def upload_medical_test_file(request):
             try:
                 mrecord = MedicalRecord.objects.get(pk=int(data["id_patient"]),doctor=request.user)
                 mrecord.full_name = data['full_name']
-                mrecord.birth_date = date(year=int(data["birth_date"]),month=1,day=1)
+                if int(data["birth_date"]) == 0:
+                    mrecord.birth_date = None
+                else:
+                    mrecord.birth_date = date(year=int(data["birth_date"]),month=1,day=1)
                 mrecord.address = data['address']
                 mrecord.sex = json_file['sex']
                 mrecord.save()
@@ -377,12 +389,17 @@ def upload_medical_test_file(request):
     elif request.method == 'POST':
         data = request.data
         json_file = json.loads(data['json_file'])
+        if int(data["birth_date"]) == 0:
+            birth_date = None
+        else:
+            birth_date = date(year=int(data["birth_date"]),month=1,day=1)
         # update info patient
         if data['id_patient']:
+            
             try:
                 mrecord = MedicalRecord.objects.get(pk=int(data["id_patient"]),doctor=request.user)
                 mrecord.full_name = data['full_name']
-                mrecord.birth_date = date(year=int(data["birth_date"]),month=1,day=1)
+                mrecord.birth_date = birth_date
                 mrecord.address = data['address']
                 mrecord.sex = json_file['sex']
                 mrecord.save()
@@ -390,7 +407,7 @@ def upload_medical_test_file(request):
                 return Response({"alert":"Mã bệnh nhân không hợp lệ!!!"},status=status.HTTP_404_NOT_FOUND)
 
         else:
-            mrecord = MedicalRecord.objects.create(doctor=request.user,full_name=data['full_name'],birth_date=date(year=int(data["birth_date"]),month=1,day=1),sex=json_file['sex'],phone=data['phone'],address=data['address'])
+            mrecord = MedicalRecord.objects.create(doctor=request.user,full_name=data['full_name'],birth_date=birth_date,sex=json_file['sex'],phone=data['phone'],address=data['address'])
         
         try:
             settings_time = request.user.doctor.settings_time
