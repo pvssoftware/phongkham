@@ -91,4 +91,17 @@ class BirthDateSerializerField(serializers.Field):
         if value.birth_date:
             return "{}".format(value.birth_date.strftime("%Y"))
         return "0"
+
+class PhoneSerializerField(serializers.Field):
+    def get_attribute(self, instance):
+        # We pass the object instance onto `to_representation`,
+        # not just the field attribute.
+        return instance
+    def to_representation(self, value):
+        # print(value,"serial")
+        if value.phone:
+            return value.phone
+        return ""
+
+
         
