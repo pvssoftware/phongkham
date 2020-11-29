@@ -90,5 +90,5 @@ class BirthDateSerializerField(serializers.Field):
         # print(value,"serial")
         if value.birth_date:
             return "{}".format(value.birth_date.strftime("%Y"))
-        return ""
+        return "0"
         
