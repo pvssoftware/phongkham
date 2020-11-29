@@ -79,3 +79,16 @@ class RecordSerializerField(serializers.SlugRelatedField):
         if hasattr(self.root, 'pk_doctor'):
             queryset = queryset.filter(doctor__pk=self.root.pk_doctor)
         return queryset
+
+
+class BirthDateSerializerField(serializers.Field):
+    def get_attribute(self, instance):
+        # We pass the object instance onto `to_representation`,
+        # not just the field attribute.
+        return instance
+    def to_representation(self, value):
+        # print(value,"serial")
+        if value.birth_date:
+            return "{}".format(value.birth_date.strftime("%Y"))
+        return ""
+        
