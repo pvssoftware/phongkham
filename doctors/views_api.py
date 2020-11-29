@@ -140,7 +140,10 @@ def upload_medical_ultrasonography_file(request):
             try:
                 mrecord = MedicalRecord.objects.get(pk=int(data["id_patient"]),doctor=request.user)
                 mrecord.full_name = data['full_name']
-                mrecord.birth_date = date(year=int(data["birth_date"]),month=1,day=1)
+                if int(data["birth_date"]) == 0:
+                    mrecord.birth_date = None
+                else:
+                    mrecord.birth_date = date(year=int(data["birth_date"]),month=1,day=1)
                 mrecord.address = data['address']
                 mrecord.sex = json_file['sex']
                 mrecord.save()
