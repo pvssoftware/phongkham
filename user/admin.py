@@ -24,9 +24,9 @@ class CustomUserAdmin(UserAdmin):
 
 	add_form = CustomUserCreationForm
 	form = CustomUserChangeForm
-	list_display = ["email","is_staff","is_active","doctor","pk","group"]
+	list_display = ["email","is_staff","is_active","doctor","pk","last_login"]
 	model = User
-	ordering = ["email",]
+	ordering = ["email","last_login"]
 	fieldsets = (
         (None, {'fields': ('email',)}),
         ('Password', {'fields': ('password',)}),
@@ -48,6 +48,12 @@ class CustomUserAdmin(UserAdmin):
 			groups.append(group.name)
 		return " ".join(groups)
 	group.short_description = "Groups"
+
+	def get_form(self, request, obj=None, **kwargs):
+		form = super().get_form(request, obj, **kwargs)
+		form.base_fields["doctor"].queryset = DoctorProfile.objects.filter(user__isnull=True)
+		
+		return form
 
 class DoctorProfileAdmin(admin.ModelAdmin):
 	model = DoctorProfile
