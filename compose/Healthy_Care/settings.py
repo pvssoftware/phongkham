@@ -261,3 +261,7 @@ LOGGING = {
 
 # Assigns read+write to user, and read only to group
 FILE_UPLOAD_PERMISSIONS = 0o644
+
+# Gateway company id
+GW_COMPANY_ID = config('GW_COMPANY_ID')
+INVOICE_SERVICE_HOST = config('INVOICE_SERVICE_HOST')

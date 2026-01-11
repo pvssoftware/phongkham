@@ -2,7 +2,7 @@ from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.authtoken.views import obtain_auth_token
 # from rest_framework_simplejwt.views import TokenRefreshView
-from .views_api import  create_record_ticket, get_doctor, CustomAuthToken, get_examination_patients, get_info_patient, upload_medical_ultrasonography_file, upload_medical_test_file, delete_token_logout, check_version_app
+from .views_api import  create_record_ticket, get_doctor, CustomAuthToken, get_examination_patients, get_info_patient, upload_medical_ultrasonography_file, upload_medical_test_file, delete_token_logout, check_version_app, create_invoice
 # from .jwt_custom import MyTokenObtainPairView
 
 urlpatterns = format_suffix_patterns([
@@ -17,5 +17,6 @@ urlpatterns = format_suffix_patterns([
     url(r'^upload-medical-ultrasonography-file/', upload_medical_ultrasonography_file),
     url(r'^upload-medical-test-file/', upload_medical_test_file),
     url(r'^check-update-app-win/', check_version_app),
+    url(r'^create-invoice/(?P<history_id>\d+)/$', create_invoice),
     # url(r'^update-status-merchant/', update_status_merchant,name="update_status_merchant"),
 ])

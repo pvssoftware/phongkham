@@ -57,6 +57,7 @@
                 <th>Tiền thuốc (VNĐ)</th>
                 <th>Tiền khám (VNĐ)</th>
                 <th>Doanh thu (VNĐ)</th>
+                <th>Hành động</th>
             </tr>
         </thead>
         <tbody>
@@ -112,9 +113,31 @@
                 <td class="convert_number">{{ history.history.medical_examination_cost }}</td>
                 <td class="convert_number"> {{ history.total_revenue }}</td>
                    
+                <td class="">
+                    {% if history.invoice_uuid != "" %}
+                    <button id="{{ history.history.id }}" type="button" class="btn btn-success mb-3 btn-invoice"
+                        data-invoice-uuid="{{ history.invoice_uuid }}"
+                        data-patient-name="{{ history.history.medical_record.full_name }}"
+                        data-ultra-cost="{{ history.ultra_cost }}"
+                        data-test-cost="{{ history.test_cost }}"
+                        data-medical-cost="{{ history.history.medical_examination_cost }}">
+                        Xem hóa đơn
+                    </button>
+                    {% else %}
+                    <button id="{{ history.history.id }}" type="button" class="btn btn-primary mb-3 btn-invoice"
+                        data-invoice-uuid="{{ history.invoice_uuid }}"
+                        data-patient-name="{{ history.history.medical_record.full_name }}"
+                        data-ultra-cost="{{ history.ultra_cost }}"
+                        data-test-cost="{{ history.test_cost }}"
+                        data-medical-cost="{{ history.history.medical_examination_cost }}">
+                        Xuất hóa đơn
+                    </button>
+                    {% endif %}
+                <td>
             </tr>
             
-            {% endfor %}            
+            {% endfor %}
+            <input type="hidden" id="current_history_id" name="current_history_id" />            
         </tbody>
         
     </table>
@@ -125,6 +148,205 @@
 </div>
 
 <script>
+window.INVOICE_SERVICE_HOST = "{{ invoice_service_host|escapejs }}";
+window.GW_COMPANY_ID = "{{ gw_company_id|escapejs }}";
+window.INVOICE_COMMON_CODE = "{{ invoice_common_code|escapejs }}";
+
+class ApiRequestManager {
+    constructor() {
+        this.defaultTimeout = 200000; // ms
+    }
+
+    _getCsrfToken() {
+        const name = 'csrftoken';
+        const cookies = document.cookie ? document.cookie.split(';') : [];
+        for (let i = 0; i < cookies.length; i++) {
+            const c = cookies[i].trim();
+            if (c.startsWith(name + '=')) return decodeURIComponent(c.substring(name.length + 1));
+        }
+        return '';
+    }
+
+    makeRequest(url, method = 'GET', payload = null, options = {}) {
+        const settings = Object.assign({
+            url: url,
+            method: method.toUpperCase(),
+            dataType: 'json',
+            timeout: this.defaultTimeout,
+            contentType: 'application/json; charset=utf-8'
+        }, options);
+
+        if (settings.method === 'GET') {
+            if (payload && typeof payload === 'object') settings.data = payload;
+            else if (payload && typeof payload === 'string') settings.url += (settings.url.indexOf('?') === -1 ? '?' : '&') + payload;
+        } else {
+            settings.data = payload ? JSON.stringify(payload) : null;
+            const csrftoken = this._getCsrfToken();
+            if (csrftoken) settings.headers = Object.assign({}, settings.headers || {}, {'X-CSRFToken': csrftoken});
+        }
+
+        return new Promise(function(resolve, reject) {
+            $.ajax(settings).done(function(data) {
+                resolve(data);
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                let err = {
+                    status: jqXHR.status,
+                    statusText: jqXHR.statusText,
+                    text: jqXHR.responseText,
+                    error: errorThrown || textStatus
+                };
+                reject(err);
+            });
+        });
+    }
+
+    get(url, params = null, options = {}) {
+        return this.makeRequest(url, 'GET', params, options);
+    }
+
+    post(url, payload = null, options = {}) {
+        return this.makeRequest(url, 'POST', payload, options);
+    }
+}
+
+class PublishInvoiceLib {
+    constructor(config = {}) {
+        this.company_id = config.company_id || 1;
+        this.invoiceServiceHost = (config.invoiceServiceHost || '').replace(/\/$/, '') || 'http://example.com';
+        this.api = config.apiManager || new ApiRequestManager();
+        this.invoiceCommonCode = config.invoiceCommonCode;
+        this._ensureModal();
+    }
+
+    _endpoint(path) {
+        return this.invoiceServiceHost + (path.startsWith('/') ? path : '/' + path);
+    }
+
+    getActiveSeries() {
+        const url = this._endpoint('/get-active-series');
+        return this.api.get(url, null, { headers: {'X-Company-Id': this.company_id} }).then(function(resp) {
+            if (Array.isArray(resp)) return resp;
+            if (resp && resp.series) return resp.series;
+            return [];
+        });
+    }
+
+    makeInvoicePayload(patientName, ultraCost, testCost, medicalExaminationCost, paymentMethod = 'CK') {
+        const lines = [];
+
+        if (Number(ultraCost) > 0) {
+            lines.push({
+                name: 'Tiền siêu âm',
+                unit: null,
+                quantity: null,
+                price: Number(ultraCost),
+                type: 'DICH_VU',
+                rate: null,
+                subtotal: Number(ultraCost),
+            });
+        }
+
+        if (Number(testCost) > 0) {
+            lines.push({
+                name: 'Tiền xét nghiệm',
+                unit: null,
+                quantity: null,
+                price: Number(testCost),
+                type: 'DICH_VU',
+                rate: null,
+                subtotal: Number(testCost),
+            });
+        }
+
+        if (Number(medicalExaminationCost) > 0) {
+            lines.push({
+                name: 'Tiền khám bệnh',
+                unit: null,
+                quantity: null,
+                price: Number(medicalExaminationCost),
+                type: 'DICH_VU',
+                rate: null,
+                subtotal: Number(medicalExaminationCost),
+            });
+        }
+
+        const payload = {
+            invoice_common_code: this.invoiceCommonCode,
+            payment_method: paymentMethod,
+            lines: lines,
+            buyer_data: {
+                buyer_name: patientName || '',
+                buyer_type: 'PERSIONAL'
+            }
+        };
+
+        return payload;
+    }
+
+    previewAnInvoice(invoicePayload) {
+        const url = this._endpoint('/e-invoices/create');
+        const body = Object.assign({}, invoicePayload,{
+            is_publish_now: false,
+            is_draf_preview: true,
+        });
+
+        const self = this;
+        return this.api.post(url, body, { headers: {'X-Company-Id': this.company_id} }).then(function(resp) {
+            const pdfUrl = (resp && (resp.data && resp.data.preview_file)) || null;
+            if (pdfUrl) {
+                self._showPdfModal(pdfUrl);
+                return { pdf_url: pdfUrl };
+            }
+            return Promise.reject({ message: 'PDF url not returned', resp: resp });
+        });
+    }
+
+    createAnInvoice(invoicePayload, historyId, publishNow = true) {
+        const url = '/doctor-api/api/create-invoice/' + historyId + '/';
+        const body = Object.assign({}, invoicePayload, { is_publish_now: !!publishNow });
+        const self = this;
+
+        return this.api.post(url, body, { headers: {'X-Company-Id': this.company_id} }).then(function(resp) {
+            self._closePdfModal();
+            return resp;
+        });
+    }
+
+    _ensureModal() {
+        if ($('#invoicePreviewModal').length) return;
+        const modal = `
+        <div class="modal fade" id="invoicePreviewModal" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog modal-xl" role="document" style="max-width:95%;">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 id="modal-title" class="modal-title">Xem hóa đơn nháp trước khi phát hành</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              </div>
+              <div class="modal-body" style="height:80vh;padding:0;">
+                <iframe id="invoicePreviewIframe" src="about:blank" style="width:100%;height:100%;border:0;"></iframe>
+              </div>
+              <div class="modal-footer">
+                <button id="btn-publish-invoice" type="button" class="btn btn-success">Ký và phát hành</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+        $('body').append(modal);
+    }
+
+    _showPdfModal(pdfUrl) {
+        this._ensureModal();
+        $('#invoicePreviewIframe').attr('src', pdfUrl);
+        $('#invoicePreviewModal').modal('show');
+    }
+
+    _closePdfModal() {
+        $('#invoicePreviewIframe').attr('src', 'about:blank');
+        $('#invoicePreviewModal').modal('hide');
+    }
+}
+
 $(document).ready(function(){
 
     $(".convert_number").each(function() {
@@ -207,6 +429,62 @@ $(document).ready(function(){
         });
     }
 
+
+    // Initialize invoice library (configure invoiceServiceHost via global if needed)
+    var invoiceLib = new PublishInvoiceLib(
+        {
+            invoiceServiceHost: window.INVOICE_SERVICE_HOST || '',
+            company_id: window.GW_COMPANY_ID,
+            invoiceCommonCode: window.INVOICE_COMMON_CODE,
+        }
+    );
+
+    // Click handler for invoice buttons per row
+    $(document).on('click', 'button.btn-invoice', function(e){
+        e.preventDefault();
+        var btn = $(this);
+        var historyId = btn.attr('id');
+        $("#current_history_id").val(historyId);
+        var patientName = btn.data('patient-name') || btn.closest('tr').find('td a').text().trim();
+        var ultraCost = parseInt(btn.data('ultra-cost')) || 0;
+        var testCost = parseInt(btn.data('test-cost')) || 0;
+        var medicalCost = parseInt(btn.data('medical-cost')) || 0;
+        var invoiceUuid = parseInt(btn.data('invoice-uuid')) || "";
+
+        var payload = invoiceLib.makeInvoicePayload(patientName, ultraCost, testCost, medicalCost, 'CK');
+
+        if (invoiceUuid) {
+            console.log("get invoice from api and show")
+        } else {
+            // preview invoice before publish
+            console.log("preview invoice before publish")
+            invoiceLib.previewAnInvoice(payload).then(function(res){
+                console.log("preview res", res)
+            }).catch(function(err){
+                console.error(err);
+                alert('Không thể xem trước hóa đơn. Vui lòng thử lại.');
+            });
+        }
+    });
+
+    $(document).on('click', '#btn-publish-invoice', function(e){
+        e.preventDefault();
+        var historyId = $("#current_history_id").val();
+        var btn = $('#' + historyId);
+        var patientName = btn.data('patient-name') || btn.closest('tr').find('td a').text().trim();
+        var ultraCost = parseInt(btn.data('ultra-cost')) || 0;
+        var testCost = parseInt(btn.data('test-cost')) || 0;
+        var medicalCost = parseInt(btn.data('medical-cost')) || 0;
+
+        var payload = invoiceLib.makeInvoicePayload(patientName, ultraCost, testCost, medicalCost, 'CK');
+
+        invoiceLib.createAnInvoice(payload, historyId, true).then(function(res){
+            console.log("publish invoice res", res)
+        }).catch(function(err){
+            console.error(err);
+            alert('Lỗi xuất hóa đơn. Vui lòng thử lại.');
+        });
+    });
 
 }); // end ready
 </script>

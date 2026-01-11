@@ -359,6 +359,10 @@ def cal_benefit_protect(request,pk_doctor):
 
 def cal_benefit(request,pk_doctor):
     user = User.objects.get(pk=pk_doctor)
+    # only allow the doctor themselves to access this view
+    if user != request.user:
+        return redirect("/")
+
     if user == request.user:
         # check premium license
         if check_premium_licenses(request):
@@ -404,17 +408,39 @@ def cal_benefit(request,pk_doctor):
                 his["total_revenue"] = his["revenue_drug"] + his["ultra_cost"] + his["test_cost"] + int(history.medical_examination_cost)
 
                 his["total_benefit"] = his["benefit_drug"] + his["ultra_cost"] + his["test_cost"] + int(history.medical_examination_cost)
-
+                his["invoice_uuid"] = history.get_metadata().get("invoice_data",{}).get("uu_id","")
                 gross_revenue += int(history.medical_examination_cost)
 
                 histories_object.append(his)
             gross_profit = gross_revenue - accrued_expenses
-            return render(request,'doctors/doctor_cal_benefit.html',{"histories_object":histories_object,"gross_revenue":gross_revenue,"accrued_expense":accrued_expenses,"gross_profit":gross_profit,"pk_doctor":pk_doctor,"form":form,"count_ultrasonography":count_ultrasonography,"ultrasonography_revenue":ultrasonography_revenue,"count_endoscopy":count_endoscopy,"endoscopy_revenue":endoscopy_revenue,"count_medical_test":count_medical_test,"medical_test_revenue":medical_test_revenue,"count_histories":count_histories})
+            return render(request,'doctors/doctor_cal_benefit.html',{
+                "histories_object":histories_object,
+                "gross_revenue":gross_revenue,
+                "accrued_expense":accrued_expenses,
+                "gross_profit":gross_profit,
+                "pk_doctor":pk_doctor,
+                "form":form,
+                "count_ultrasonography":count_ultrasonography,
+                "ultrasonography_revenue":ultrasonography_revenue,
+                "count_endoscopy":count_endoscopy,
+                "endoscopy_revenue":endoscopy_revenue,
+                "count_medical_test":count_medical_test,
+                "medical_test_revenue":medical_test_revenue,
+                "count_histories":count_histories,
+                "invoice_service_host": settings.INVOICE_SERVICE_HOST,
+                "gw_company_id": settings.GW_COMPANY_ID,
+                "invoice_common_code": settings.INVOICE_COMMON_CODE,
+            })
         else:
             if user.doctor.settingsservice.password:
                 return redirect(reverse("cal_benefit_protect",kwargs={"pk_doctor":pk_doctor}))
             form = CalculateBenefitForm()
-            return render(request,'doctors/doctor_cal_benefit.html',{"pk_doctor":pk_doctor,"form":form})
+            return render(request,'doctors/doctor_cal_benefit.html',{
+                "pk_doctor":pk_doctor,"form":form,
+                "invoice_service_host": settings.INVOICE_SERVICE_HOST,
+                "gw_company_id": settings.GW_COMPANY_ID,
+                "invoice_common_code": settings.INVOICE_COMMON_CODE,
+            })
 
 
 

@@ -1,5 +1,6 @@
 import re, os
 import pytz
+import json
 from django.db import models
 from user.models import User, DoctorProfile
 from .utils_models import locate_medical_ultrasonography_upload, locate_medical_ultrasonography_upload_2, locate_medical_ultrasonography_upload_3,locate_endoscopy_upload, locate_medical_test_upload, locate_medical_test_upload_2, locate_medical_test_upload_3
@@ -115,11 +116,36 @@ class MedicalHistory(models.Model):
     medical_record = models.ForeignKey(MedicalRecord, on_delete=models.CASCADE)
 
     link_meeting = models.TextField(blank=True, default="")
+    # Store additional information as JSON text (compatibility):
+    # we store a JSON string in `metadata` and provide helpers
+    # to read/write as a Python dict.
+    metadata = models.TextField(blank=True, default='{}')
 
     def __str__(self):
         return self.medical_record.full_name
     class Meta:
         ordering = ['-date_booked']
+
+    def get_metadata(self):
+        if not self.metadata:
+            return {}
+        try:
+            return json.loads(self.metadata)
+        except Exception:
+            return {}
+
+    def set_metadata(self, data):
+        try:
+            self.metadata = json.dumps(data, ensure_ascii=False)
+        except Exception:
+            # fallback: store empty object
+            self.metadata = '{}'
+        self.save(update_fields=['metadata'])
+
+    def update_metadata_by_key(self, key, value):
+        data = self.get_metadata() or {}
+        data[key] = value
+        self.set_metadata(data)
 
 class Medicine(models.Model):
     name = models.CharField(max_length=50)
