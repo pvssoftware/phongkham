@@ -136,7 +136,15 @@
 }
 
 
-
+.status-color-green {
+    color: green;
+}
+.status-color-red {
+    color: red;
+}
+.status-color-orange {
+    color: orange;
+}
 
 
 

@@ -57,6 +57,7 @@
                 <th>Tiền thuốc (VNĐ)</th>
                 <th>Tiền khám (VNĐ)</th>
                 <th>Doanh thu (VNĐ)</th>
+                <th>Trạng thái hóa đơn</th>
                 <th>Hành động</th>
             </tr>
         </thead>
@@ -112,7 +113,7 @@
                 <td class="convert_number">{{ history.revenue_drug }}</td>
                 <td class="convert_number">{{ history.history.medical_examination_cost }}</td>
                 <td class="convert_number"> {{ history.total_revenue }}</td>
-                   
+                <td class="status-color-{{history.status_label_color}}">{{ history.status_label }}</td>
                 <td class="">
                     {% if history.invoice_uuid != "" %}
                     <button id="{{ history.history.id }}" type="button" class="btn btn-success mb-3 btn-invoice"

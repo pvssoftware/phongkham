@@ -408,7 +408,30 @@ def cal_benefit(request,pk_doctor):
                 his["total_revenue"] = his["revenue_drug"] + his["ultra_cost"] + his["test_cost"] + int(history.medical_examination_cost)
 
                 his["total_benefit"] = his["benefit_drug"] + his["ultra_cost"] + his["test_cost"] + int(history.medical_examination_cost)
-                his["invoice_uuid"] = history.get_metadata().get("invoice_data",{}).get("uu_id","")
+
+                invoice_data = history.get_metadata().get("invoice_data",{})
+                his["invoice_uuid"] = invoice_data.get("uu_id","")
+                his["invoice_status"] = invoice_data.get("status","")
+                his["invoice_number"] = invoice_data.get("invoice_number","")
+                his["invoice_common_code"] = invoice_data.get("invoice_common_code","")
+                his["message_tax_deny"] = invoice_data.get("message_tax_deny", "")
+
+                is_code_tax_approved = invoice_data.get("is_code_tax_approved", False)
+                his["status_label"] = ""
+                his["status_label_color"] = ""
+                if is_code_tax_approved is True:
+                    his["status_label"] = "Đã cấp mã"
+                    his["status_label_color"] = "green"
+                elif his["invoice_uuid"]:
+                    is_tax_deny = invoice_data.get("is_tax_deny", False)
+                    if is_tax_deny is True:
+                        his["status_label"] = "Từ chối cấp mã"
+                        his["status_label_color"] = "red"
+                    else:
+                        his["status_label"] = "Chờ cấp mã"
+                        his["status_label_color"] = "orange"
+
+
                 gross_revenue += int(history.medical_examination_cost)
 
                 histories_object.append(his)
