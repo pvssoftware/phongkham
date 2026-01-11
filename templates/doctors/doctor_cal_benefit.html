@@ -118,6 +118,7 @@
                     {% if history.invoice_uuid != "" %}
                     <button id="{{ history.history.id }}" type="button" class="btn btn-success mb-3 btn-invoice"
                         data-invoice-uuid="{{ history.invoice_uuid }}"
+                        data-message-tax-deny="{{ history.message_tax_deny }}"
                         data-patient-name="{{ history.history.medical_record.full_name }}"
                         data-ultra-cost="{{ history.ultra_cost }}"
                         data-test-cost="{{ history.test_cost }}"
@@ -127,6 +128,7 @@
                     {% else %}
                     <button id="{{ history.history.id }}" type="button" class="btn btn-primary mb-3 btn-invoice"
                         data-invoice-uuid="{{ history.invoice_uuid }}"
+                        data-message-tax-deny="{{ history.message_tax_deny }}"
                         data-patient-name="{{ history.history.medical_record.full_name }}"
                         data-ultra-cost="{{ history.ultra_cost }}"
                         data-test-cost="{{ history.test_cost }}"
@@ -516,7 +518,12 @@ $(document).ready(function(){
             invoiceLib.getAnInvoice(historyId).then(function(res){
                 // when viewing an already-published invoice: hide publish controls and set title
                 $('#btn-publish-invoice').hide();
-                $('#modal-title').text('Xem hóa đơn');
+                const messageTaxDeny = btn.data('message-tax-deny') || "";
+                var label = 'Xem hóa đơn';
+                if (messageTaxDeny && messageTaxDeny.length > 10) {
+                    label += "(Lỗi cấp mã với lý do: "+ messageTaxDeny +" )";
+                }
+                $('#modal-title').text(label);
             }).catch(function(err){
                 console.error(err);
                 alert('Không thể xem hóa đơn. Vui lòng thử lại.');
@@ -557,7 +564,7 @@ $(document).ready(function(){
             btn.attr('data-invoice-uuid', invoiceUuid).data('invoice-uuid', invoiceUuid);
             btn.removeClass('btn-primary').addClass('btn-success');
             btn.text('Xem hóa đơn');
-            
+
         }).catch(function(err){
             console.error(err);
             alert('Lỗi xuất hóa đơn. Vui lòng thử lại.');
