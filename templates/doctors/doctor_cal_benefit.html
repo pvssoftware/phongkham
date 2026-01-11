@@ -137,7 +137,8 @@
             </tr>
             
             {% endfor %}
-            <input type="hidden" id="current_history_id" name="current_history_id" />            
+            <input type="hidden" id="current_history_id" name="current_history_id" />   
+            <div id="pageAlert" style="display: none; position: fixed; top: 1rem; right: 1rem; z-index: 1060; min-width: 260px; max-width: 380px;" class="alert alert-dismissible fade" role="alert"></div>         
         </tbody>
         
     </table>
@@ -365,6 +366,51 @@ $(document).ready(function(){
       $(this).text(cost.toLocaleString());
     }); // end each
 
+    // AlertBox: manage single bootstrap alert element (show/hide, message types)
+    class AlertBox {
+        constructor(selector, container = '.container') {
+            this.$el = $(selector);
+            if (!this.$el.length) {
+                this.$el = $('<div id="pageAlert" class="alert alert-dismissible fade" role="alert" style="display:none;"></div>');
+                $(container).prepend(this.$el);
+            }
+            this.hideTimeout = null;
+        }
+
+        _setMessage(message, type) {
+            // remove any existing alert- classes and set new type
+            this.$el.removeClass(function(i, cls) {
+                return (cls.match(/(^|\s)alert-\S+/g) || []).join(' ');
+            });
+            this.$el.addClass('alert-' + type);
+            this.$el.empty().append(document.createTextNode(message));
+            this.$el.append('<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>');
+        }
+
+        show(message, type = 'success', timeout = 3000) {
+            clearTimeout(this.hideTimeout);
+            this._setMessage(message, type);
+            this.$el.stop(true, true).show().addClass('show');
+            if (timeout > 0) {
+                this.hideTimeout = setTimeout(() => this.hide(), timeout);
+            }
+        }
+
+        hide() {
+            clearTimeout(this.hideTimeout);
+            this.$el.removeClass('show').fadeOut(200, () => { this.$el.hide(); });
+        }
+
+        showSuccess(message, timeout = 3000) { this.show(message, 'success', timeout); }
+        showError(message, timeout = 5000) { this.show(message, 'danger', timeout); }
+        showInvoiceCreated(invoiceNumber) {
+            const msg = invoiceNumber ? ('Tạo hóa đơn thành công: Số hóa đơn ' + invoiceNumber + '.') : 'Tạo hóa đơn thành công.';
+            this.showSuccess(msg, 3000);
+        }
+    }
+
+    const pageAlert = new AlertBox('#pageAlert', '.container');
+
     // validate datetime format dd/mm/Y
     function ValidateDate(value){
       regex = new RegExp("^([0-2]\\d{1}|3[0-1])\\/(0\\d{1}|1[0-2])\\/(19|20)\\d{2}$");
@@ -467,6 +513,9 @@ $(document).ready(function(){
         if (invoiceUuid) {
             console.log("get invoice from api and show")
             invoiceLib.getAnInvoice(historyId).then(function(res){
+                // when viewing an already-published invoice: hide publish controls and set title
+                $('#btn-publish-invoice').hide();
+                $('#modal-title').text('Xem hóa đơn');
             }).catch(function(err){
                 console.error(err);
                 alert('Không thể xem hóa đơn. Vui lòng thử lại.');
@@ -474,6 +523,10 @@ $(document).ready(function(){
         } else {
             // preview invoice before publish
             console.log("preview invoice before publish")
+            if (payload.lines.length == 0) {
+                alert('Không thể lập hóa đơn khi chi phí khám bệnh và dịch vụ bằng 0.');
+                return;
+            }
             invoiceLib.previewAnInvoice(payload).then(function(res){
                 console.log("preview res", res)
             }).catch(function(err){
@@ -496,6 +549,14 @@ $(document).ready(function(){
 
         invoiceLib.createAnInvoice(payload, historyId, true).then(function(res){
             console.log("publish invoice res", res)
+            var invoiceNumber = (res && res.data && res.data.invoice_number) ? res.data.invoice_number : null;
+            pageAlert.showInvoiceCreated(invoiceNumber);
+            // set data-invoice-uuid for btn and update its label/class to "Xem hóa đơn"
+            var invoiceUuid = res.data.uu_id;
+            btn.attr('data-invoice-uuid', invoiceUuid).data('invoice-uuid', invoiceUuid);
+            btn.removeClass('btn-primary').addClass('btn-success');
+            btn.text('Xem hóa đơn');
+            
         }).catch(function(err){
             console.error(err);
             alert('Lỗi xuất hóa đơn. Vui lòng thử lại.');
