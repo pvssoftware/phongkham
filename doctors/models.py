@@ -147,6 +147,21 @@ class MedicalHistory(models.Model):
         data[key] = value
         self.set_metadata(data)
 
+    def get_invoice_uuid(self):
+        data = self.get_metadata() or {}
+        invoice_data = data.get('invoice_data', {})
+        return invoice_data.get('uu_id', '')
+    
+    def get_invoice_id(self):
+        data = self.get_metadata() or {}
+        invoice_data = data.get('invoice_data', {})
+        return invoice_data.get('id', '')
+    
+    def get_invoice_signed_pdf_url(self):
+        data = self.get_metadata() or {}
+        invoice_data = data.get('invoice_data', {})
+        return invoice_data.get('signed_pdf', '')
+
 class Medicine(models.Model):
     name = models.CharField(max_length=50)
     full_name = models.CharField(max_length=50)

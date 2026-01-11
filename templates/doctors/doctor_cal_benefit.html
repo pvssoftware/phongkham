@@ -312,6 +312,17 @@ class PublishInvoiceLib {
         });
     }
 
+    getAnInvoice(historyId) {
+        const url = '/doctor-api/api/get-invoice/' + historyId + '/';
+        const self = this;
+
+        return this.api.get(url, null, { headers: {'X-Company-Id': this.company_id} }).then(function(resp) {
+            const pdf_url = resp.data.signed_pdf;
+            self._showPdfModal(pdf_url);
+            return resp;
+        });
+    }
+
     _ensureModal() {
         if ($('#invoicePreviewModal').length) return;
         const modal = `
@@ -455,6 +466,11 @@ $(document).ready(function(){
 
         if (invoiceUuid) {
             console.log("get invoice from api and show")
+            invoiceLib.getAnInvoice(historyId).then(function(res){
+            }).catch(function(err){
+                console.error(err);
+                alert('Không thể xem hóa đơn. Vui lòng thử lại.');
+            });
         } else {
             // preview invoice before publish
             console.log("preview invoice before publish")

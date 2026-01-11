@@ -525,7 +525,6 @@ def upload_medical_test_file(request):
         return Response(history_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# forward invoice payload to external invoice backend
 @api_view(["POST"])
 def create_invoice(request, history_id):
     """Accept JSON payload and header X-Company-Id, forward to external backend.
@@ -538,6 +537,12 @@ def create_invoice(request, history_id):
         history = MedicalHistory.objects.get(pk=history_id)
     except MedicalHistory.DoesNotExist:
         return Response({'error': 'MedicalHistory not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if history.get_invoice_uuid():
+        return Response(
+            {'error': 'Invoice already created for this MedicalHistory'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     invoice_payload = request.data
     company_id = request.META.get('HTTP_X_COMPANY_ID') or request.headers.get('X-Company-Id')
@@ -571,6 +576,54 @@ def create_invoice(request, history_id):
             print(f"Warning: invoice UUID mismatch: sent {uu_id}, got {invoice_uuid}")
         history.update_metadata_by_key('invoice_data', data)
 
+    return Response(resp_data, status=status_code)
+
+@api_view(["GET"])
+def get_invoice(request, history_id):
+    """Accept JSON payload and header X-Company-Id, forward to external backend.
+
+    Expects settings.INVOICE_FORWARD_URL to be set to target URL.
+    Forwards request body as JSON and includes X-Company-Id header if provided.
+    """
+    # double check history exists
+    try:
+        history = MedicalHistory.objects.get(pk=history_id)
+    except MedicalHistory.DoesNotExist:
+        return Response({'error': 'MedicalHistory not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if not history.get_invoice_uuid():
+        return Response(
+            {'error': 'No invoice found for this MedicalHistory'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    company_id = request.META.get('HTTP_X_COMPANY_ID') or request.headers.get('X-Company-Id')
+
+    invoice_id = history.get_invoice_id()
+    target_url = settings.INVOICE_SERVICE_HOST + '/e-invoices/get/' + str(invoice_id)
+
+    headers = {'Content-Type': 'application/json'}
+    if company_id:
+        headers['X-Company-Id'] = str(company_id)
+
+    try:
+        resp = requests.get(target_url, headers=headers, timeout=30)
+    except requests.RequestException as exc:
+        return Response({'error': str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
+
+    status_code = resp.status_code
+    try:
+        resp_data = resp.json()
+    except ValueError:
+        resp_data = resp.text
+
+    # update invoice_uuid to history record if successful
+    if status_code == 200:
+        data = resp_data["data"]
+        signed_pdf_url = data['signed_pdf']
+        if history.get_invoice_signed_pdf_url() != signed_pdf_url:
+            print(f"Updating signed PDF URL for history {history_id}")
+            history.update_metadata_by_key('invoice_data', data)
     return Response(resp_data, status=status_code)
 
 
