@@ -423,7 +423,7 @@ $(document).ready(function(){
         showSuccess(message, timeout = 3000) { this.show(message, 'success', timeout); }
         showError(message, timeout = 5000) { this.show(message, 'danger', timeout); }
         showInvoiceCreated(invoiceNumber) {
-            const msg = invoiceNumber ? ('Tạo hóa đơn thành công: Số hóa đơn ' + invoiceNumber + '.') : 'Tạo hóa đơn thành công.';
+            const msg = invoiceNumber ? ('Tạo hóa đơn thành công: Số hóa đơn ' + invoiceNumber + '.') : 'Tạo hóa đơn nháp thành công.';
             this.showSuccess(msg, 3000);
         }
     }
@@ -545,7 +545,7 @@ $(document).ready(function(){
                 $('#modal-title').text(label);
             }).catch(function(err){
                 console.error(err);
-                alert('Không thể xem hóa đơn. Vui lòng thử lại.');
+                alert('Không thể xem hóa đơn. Vui lòng thử lại. ' + err.text);
             });
         } else {
             // preview invoice before publish
@@ -558,7 +558,7 @@ $(document).ready(function(){
                 console.log("preview res", res)
             }).catch(function(err){
                 console.error(err);
-                alert('Không thể xem trước hóa đơn. Vui lòng thử lại.');
+                alert('Không thể xem trước hóa đơn. Vui lòng thử lại. ' + err.text);
             });
         }
     });
@@ -586,7 +586,7 @@ $(document).ready(function(){
 
         }).catch(function(err){
             console.error(err);
-            alert('Lỗi xuất hóa đơn. Vui lòng thử lại.');
+            alert('Lỗi xuất hóa đơn. Vui lòng thử lại. ' + err.text);
         });
     });
 
