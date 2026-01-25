@@ -536,11 +536,11 @@ def create_invoice(request, history_id):
     try:
         history = MedicalHistory.objects.get(pk=history_id)
     except MedicalHistory.DoesNotExist:
-        return Response({'error': 'MedicalHistory not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'message': 'Bản ghi doanh thu không tồn tại'}, status=status.HTTP_404_NOT_FOUND)
     
     if history.get_invoice_uuid():
         return Response(
-            {'error': 'Invoice already created for this MedicalHistory'},
+            {'message': 'Bản ghi doanh thu đã có hóa đơn liên kết'},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -589,11 +589,11 @@ def get_invoice(request, history_id):
     try:
         history = MedicalHistory.objects.get(pk=history_id)
     except MedicalHistory.DoesNotExist:
-        return Response({'error': 'MedicalHistory not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'message': 'Bản ghi doanh thu không tồn tại'}, status=status.HTTP_404_NOT_FOUND)
     
     if not history.get_invoice_uuid():
         return Response(
-            {'error': 'No invoice found for this MedicalHistory'},
+            {'message': 'Không thấy hóa đơn liên kết với bản ghi doanh thu này'},
             status=status.HTTP_404_NOT_FOUND
         )
 
