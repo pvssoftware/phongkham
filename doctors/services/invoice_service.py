@@ -50,3 +50,46 @@ def get_invoice(history_id):
             print(f"Updating signed PDF URL for history {history_id}")
             history.update_metadata_by_key('invoice_data', data)
     return base_service.make_success(resp_data, "OK", code=status_code)
+
+
+def sign_draft_invoice(history_id):
+    try:
+        history = MedicalHistory.objects.get(pk=history_id)
+    except MedicalHistory.DoesNotExist:
+        return base_service.make_error(
+            [], "Bản ghi doanh thu không tồn tại", code=404
+        )
+
+    if not history.get_invoice_uuid():
+        return base_service.make_error(
+            [], "Không thấy hóa đơn liên kết với bản ghi doanh thu này", code=404
+        )
+
+    company_id = settings.GW_COMPANY_ID
+
+    invoice_id = history.get_invoice_id()
+    target_url = settings.INVOICE_SERVICE_HOST + '/e-invoices/release/' + str(invoice_id)
+
+    headers = {'Content-Type': 'application/json'}
+    if company_id:
+        headers['X-Company-Id'] = str(company_id)
+
+    try:
+        resp = requests.post(target_url, headers=headers, timeout=30)
+    except requests.RequestException as exc:
+        return base_service.make_error(
+            [], f"Lỗi khi gọi dịch vụ hóa đơn: {str(exc)}", code=502
+        )
+
+    status_code = resp.status_code
+    try:
+        resp_data = resp.json()
+    except ValueError:
+        resp_data = resp.text
+
+    # update invoice data to history record if successful
+    if status_code == 200:
+        data = resp_data["data"]
+        history.update_metadata_by_key('invoice_data', data)
+        return base_service.make_success(resp_data, "OK", code=status_code)
+    return base_service.make_error([], "Lỗi lạ", code=500)

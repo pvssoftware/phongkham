@@ -155,6 +155,7 @@
 window.INVOICE_SERVICE_HOST = "{{ invoice_service_host|escapejs }}";
 window.GW_COMPANY_ID = "{{ gw_company_id|escapejs }}";
 window.INVOICE_COMMON_CODE = "{{ invoice_common_code|escapejs }}";
+window.SIGN_METHOD = "{{ sign_method|escapejs }}"
 
 class ApiRequestManager {
     constructor() {
@@ -219,6 +220,7 @@ class PublishInvoiceLib {
         this.invoiceServiceHost = (config.invoiceServiceHost || '').replace(/\/$/, '') || 'http://example.com';
         this.api = config.apiManager || new ApiRequestManager();
         this.invoiceCommonCode = config.invoiceCommonCode;
+        this.signMethod = config.signMethod;
         this._ensureModal();
     }
 
@@ -306,14 +308,25 @@ class PublishInvoiceLib {
     }
 
     createAnInvoice(invoicePayload, historyId, publishNow = true) {
-        const url = '/doctor-api/api/create-invoice/' + historyId + '/';
-        const body = Object.assign({}, invoicePayload, { is_publish_now: !!publishNow });
-        const self = this;
+        if (window.SIGN_METHOD == "HSM") {
+            const url = '/doctor-api/api/create-invoice/' + historyId + '/';
+            const body = Object.assign({}, invoicePayload, { is_publish_now: !!publishNow });
+            const self = this;
 
-        return this.api.post(url, body, { headers: {'X-Company-Id': this.company_id} }).then(function(resp) {
-            self._closePdfModal();
-            return resp;
-        });
+            return this.api.post(url, body, { headers: {'X-Company-Id': this.company_id} }).then(function(resp) {
+                self._closePdfModal();
+                return resp;
+            });
+        } else {
+            console.log("sign by USB...")
+            const url = '/doctor-api/api/create-invoice/' + historyId + '/';
+            const body = Object.assign({}, invoicePayload, { is_publish_now: false });
+            const self = this;
+
+            return this.api.post(url, body, { headers: {'X-Company-Id': this.company_id} }).then(function(resp) {
+                return resp;
+            });
+        }
     }
 
     getAnInvoice(historyId) {
@@ -321,7 +334,10 @@ class PublishInvoiceLib {
         const self = this;
 
         return this.api.get(url, null, { headers: {'X-Company-Id': this.company_id} }).then(function(resp) {
-            const pdf_url = resp.data.signed_pdf;
+            var pdf_url = resp.data.signed_pdf;
+            if (pdf_url == null) {
+                pdf_url = resp.data.unsigned_pdf;
+            } 
             self._showPdfModal(pdf_url);
             return resp;
         });
@@ -496,6 +512,7 @@ $(document).ready(function(){
             invoiceServiceHost: window.INVOICE_SERVICE_HOST || '',
             company_id: window.GW_COMPANY_ID,
             invoiceCommonCode: window.INVOICE_COMMON_CODE,
+            signMethod: window.SIGN_METHOD
         }
     );
 
@@ -517,7 +534,9 @@ $(document).ready(function(){
             console.log("get invoice from api and show")
             invoiceLib.getAnInvoice(historyId).then(function(res){
                 // when viewing an already-published invoice: hide publish controls and set title
-                $('#btn-publish-invoice').hide();
+                if (res.data.status != "DRAFT") {
+                    $('#btn-publish-invoice').hide();
+                }
                 const messageTaxDeny = btn.data('message-tax-deny') || "";
                 var label = 'Xem hóa đơn';
                 if (messageTaxDeny && messageTaxDeny.length > 10) {

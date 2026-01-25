@@ -416,20 +416,24 @@ def cal_benefit(request,pk_doctor):
                 his["invoice_common_code"] = invoice_data.get("invoice_common_code","")
                 his["message_tax_deny"] = invoice_data.get("message_tax_deny", "")
 
-                is_code_tax_approved = invoice_data.get("is_code_tax_approved", False)
-                his["status_label"] = ""
-                his["status_label_color"] = ""
-                if is_code_tax_approved is True:
-                    his["status_label"] = "Đã cấp mã"
-                    his["status_label_color"] = "green"
-                elif his["invoice_uuid"]:
-                    is_tax_deny = invoice_data.get("is_tax_deny", False)
-                    if is_tax_deny is True:
-                        his["status_label"] = "Từ chối cấp mã"
-                        his["status_label_color"] = "red"
-                    else:
-                        his["status_label"] = "Chờ cấp mã"
-                        his["status_label_color"] = "orange"
+                if his["invoice_status"] != "DRAFT" and his["invoice_status"] != "CANCELED":
+                    is_code_tax_approved = invoice_data.get("is_code_tax_approved", False)
+                    his["status_label"] = ""
+                    his["status_label_color"] = ""
+                    if is_code_tax_approved is True:
+                        his["status_label"] = "Đã cấp mã"
+                        his["status_label_color"] = "green"
+                    elif his["invoice_uuid"]:
+                        is_tax_deny = invoice_data.get("is_tax_deny", False)
+                        if is_tax_deny is True:
+                            his["status_label"] = "Từ chối cấp mã"
+                            his["status_label_color"] = "red"
+                        else:
+                            his["status_label"] = "Chờ cấp mã"
+                            his["status_label_color"] = "orange"
+                else:
+                    his["status_label"] = "Nháp" if his["invoice_status"] == "DRAFT" else "Đã hủy"
+                    his["status_label_color"] = "gray"
 
 
                 gross_revenue += int(history.medical_examination_cost)
@@ -453,6 +457,7 @@ def cal_benefit(request,pk_doctor):
                 "invoice_service_host": settings.INVOICE_SERVICE_HOST,
                 "gw_company_id": settings.GW_COMPANY_ID,
                 "invoice_common_code": settings.INVOICE_COMMON_CODE,
+                "sign_method": settings.SIGN_METHOD,
             })
         else:
             if user.doctor.settingsservice.password:

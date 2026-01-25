@@ -152,6 +152,11 @@ class MedicalHistory(models.Model):
         invoice_data = data.get('invoice_data', {})
         return invoice_data.get('uu_id', '')
     
+    def get_invoice_status(self):
+        data = self.get_metadata() or {}
+        invoice_data = data.get('invoice_data', {})
+        return invoice_data.get('status', '')
+
     def get_invoice_id(self):
         data = self.get_metadata() or {}
         invoice_data = data.get('invoice_data', {})

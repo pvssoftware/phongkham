@@ -23,6 +23,7 @@ from user.license import check_licenses, check_premium_licenses
 from .utils import get_days_detail, history_serializer_mix, update_examination_patients_list, update_examination_patients_finished_list,update_examination_cost
 from .custom_token import ExpiringTokenAuthentication,is_token_expired
 from .models import BookedDay, MedicalRecord, MedicalHistory, AppWindow
+from .services.invoice_service import sign_draft_invoice
 from .serializers import MedicalRecordSerializer, ExaminationPatientsUltrasoundSerializer, MedicalRecordExaminationSerializer,UploadMedicalUltrasonographySerializer, UploadMedicalUltrasonographySerializer2, UploadMedicalUltrasonographySerializer3, ResponseUploadMedicalUltrasonographySerializer, CreateUploadMedicalUltrasonographySerializer, UploadMedicalTestSerializer, UploadMedicalTestSerializer2, UploadMedicalTestSerializer3, ResponseUploadMedicalTestSerializer, CreateUploadMedicalTestSerializer, ExaminationPatientsMedicalTestSerializer
 
 
@@ -539,10 +540,16 @@ def create_invoice(request, history_id):
         return Response({'message': 'Bản ghi doanh thu không tồn tại'}, status=status.HTTP_404_NOT_FOUND)
     
     if history.get_invoice_uuid():
-        return Response(
-            {'message': 'Bản ghi doanh thu đã có hóa đơn liên kết'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        if history.get_invoice_status() != 'DRAFT':
+            return Response(
+                {'message': 'Bản ghi doanh thu đã có hóa đơn liên kết'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        else:
+            # sign existing draft invoice
+            r_release = sign_draft_invoice(history_id)
+            return Response(r_release["data"], status=r_release["status_code"])
+
 
     invoice_payload = request.data
     company_id = request.META.get('HTTP_X_COMPANY_ID') or request.headers.get('X-Company-Id')
