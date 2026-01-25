@@ -118,6 +118,7 @@
                     {% if history.invoice_uuid != "" %}
                     <button id="{{ history.history.id }}" type="button" class="btn btn-success mb-3 btn-invoice"
                         data-invoice-uuid="{{ history.invoice_uuid }}"
+                        data-invoice-id="{{ history.invoice_id }}"
                         data-message-tax-deny="{{ history.message_tax_deny }}"
                         data-patient-name="{{ history.history.medical_record.full_name }}"
                         data-ultra-cost="{{ history.ultra_cost }}"
@@ -128,6 +129,7 @@
                     {% else %}
                     <button id="{{ history.history.id }}" type="button" class="btn btn-primary mb-3 btn-invoice"
                         data-invoice-uuid="{{ history.invoice_uuid }}"
+                        data-invoice-id="{{ history.invoice_id }}"
                         data-message-tax-deny="{{ history.message_tax_deny }}"
                         data-patient-name="{{ history.history.medical_record.full_name }}"
                         data-ultra-cost="{{ history.ultra_cost }}"
@@ -307,7 +309,14 @@ class PublishInvoiceLib {
         });
     }
 
-    createAnInvoice(invoicePayload, historyId, publishNow = true) {
+    prepareReleaseInvoice(invoiceId) {
+        const url = window.INVOICE_SERVICE_HOST +  '/e-invoices/prepare-release-by-usb/' + invoiceId;
+        return this.api.post(url, null, { headers: {'X-Company-Id': this.company_id} }).then(function(resp) {
+            return resp;
+        });
+    }
+
+    createAnInvoice(invoicePayload, historyId, invoiceId=null, publishNow = true) {
         if (window.SIGN_METHOD == "HSM") {
             const url = '/doctor-api/api/create-invoice/' + historyId + '/';
             const body = Object.assign({}, invoicePayload, { is_publish_now: !!publishNow });
@@ -319,13 +328,31 @@ class PublishInvoiceLib {
             });
         } else {
             console.log("sign by USB...")
-            const url = '/doctor-api/api/create-invoice/' + historyId + '/';
-            const body = Object.assign({}, invoicePayload, { is_publish_now: false });
             const self = this;
-
-            return this.api.post(url, body, { headers: {'X-Company-Id': this.company_id} }).then(function(resp) {
-                return resp;
-            });
+            if (invoiceId) {
+                return self.prepareReleaseInvoice(invoiceId).then(function(resPrepare){
+                    console.log("resp prepare relase resp.data.success", resPrepare.success, resPrepare.data)
+                    if (resPrepare.success == true) {
+                        // sign local pdf & xml
+                        return resPrepare;
+                    }
+                })
+            } else {
+                const url = '/doctor-api/api/create-invoice/' + historyId + '/';
+                const body = Object.assign({}, invoicePayload, { is_publish_now: false });
+                return this.api.post(url, body, { headers: {'X-Company-Id': this.company_id} }).then(function(resp) {
+                    if (resp.success == true) {
+                        // prepare release
+                        self.prepareReleaseInvoice(resp.data.id).then(function(resPrepare){
+                            console.log("resp prepare relase resp.data.success", resPrepare.success, resPrepare.data)
+                            if (resPrepare.success == true) {
+                                // sign local pdf & xml
+                                return resPrepare;
+                            }
+                        })
+                    }
+                });
+            }
         }
     }
 
@@ -573,10 +600,11 @@ $(document).ready(function(){
         var ultraCost = parseInt(btn.data('ultra-cost')) || 0;
         var testCost = parseInt(btn.data('test-cost')) || 0;
         var medicalCost = parseInt(btn.data('medical-cost')) || 0;
+        const invoiceId = btn.data('invoice-id') || null;
 
         var payload = invoiceLib.makeInvoicePayload(patientName, ultraCost, testCost, medicalCost, 'CK');
 
-        invoiceLib.createAnInvoice(payload, historyId, true).then(function(res){
+        invoiceLib.createAnInvoice(payload, historyId, invoiceId, true).then(function(res){
             console.log("publish invoice res", res)
             var invoiceNumber = (res && res.data && res.data.invoice_number) ? res.data.invoice_number : null;
             pageAlert.showInvoiceCreated(invoiceNumber);

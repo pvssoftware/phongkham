@@ -411,6 +411,7 @@ def cal_benefit(request,pk_doctor):
 
                 invoice_data = history.get_metadata().get("invoice_data",{})
                 his["invoice_uuid"] = invoice_data.get("uu_id","")
+                his["invoice_id"] = invoice_data.get("id","")
                 his["invoice_status"] = invoice_data.get("status","")
                 his["invoice_number"] = invoice_data.get("invoice_number","")
                 his["invoice_common_code"] = invoice_data.get("invoice_common_code","")
