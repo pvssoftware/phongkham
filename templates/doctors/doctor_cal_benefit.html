@@ -526,7 +526,7 @@ $(document).ready(function(){
         var ultraCost = parseInt(btn.data('ultra-cost')) || 0;
         var testCost = parseInt(btn.data('test-cost')) || 0;
         var medicalCost = parseInt(btn.data('medical-cost')) || 0;
-        var invoiceUuid = parseInt(btn.data('invoice-uuid')) || "";
+        var invoiceUuid = btn.data('invoice-uuid') || "";
 
         var payload = invoiceLib.makeInvoicePayload(patientName, ultraCost, testCost, medicalCost, 'CK');
 
@@ -534,11 +534,13 @@ $(document).ready(function(){
             console.log("get invoice from api and show")
             invoiceLib.getAnInvoice(historyId).then(function(res){
                 // when viewing an already-published invoice: hide publish controls and set title
+                var label = 'Xem hóa đơn nháp';
                 if (res.data.status != "DRAFT") {
                     $('#btn-publish-invoice').hide();
+                    label = "Xem hóa đơn đã ký"
                 }
                 const messageTaxDeny = btn.data('message-tax-deny') || "";
-                var label = 'Xem hóa đơn';
+                
                 if (messageTaxDeny && messageTaxDeny.length > 10) {
                     label += "(Lỗi cấp mã với lý do: "+ messageTaxDeny +" )";
                 }

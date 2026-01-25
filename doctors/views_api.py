@@ -627,10 +627,7 @@ def get_invoice(request, history_id):
     # update invoice_uuid to history record if successful
     if status_code == 200:
         data = resp_data["data"]
-        signed_pdf_url = data['signed_pdf']
-        if history.get_invoice_signed_pdf_url() != signed_pdf_url:
-            print(f"Updating signed PDF URL for history {history_id}")
-            history.update_metadata_by_key('invoice_data', data)
+        history.update_metadata_by_key('invoice_data', data)
     return Response(resp_data, status=status_code)
 
 
