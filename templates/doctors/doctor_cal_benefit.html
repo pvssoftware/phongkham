@@ -342,12 +342,14 @@ class PublishInvoiceLib {
             page_number: page_number
         };
         const options = {
-            xhrFields: { responseType: 'blob' },
-            dataType: 'blob'
+            xhrFields: { responseType: 'text' },
+            dataType: 'text'
         };
         const self = this;
         return this.api.post(url, payload, options).then(function(response){
             if (response) {
+                console.log(typeof(response));
+                console.log("response pdf:", response)
                 const myFilePdf = new Blob([response], {type: 'application/pdf'});
                 console.log("Has file signed PDF")
                 return {data: myFilePdf};
@@ -369,8 +371,8 @@ class PublishInvoiceLib {
             tag_path: tag_path
         };
         const options = {
-            xhrFields: { responseType: 'blob' },
-            dataType: 'blob'
+            xhrFields: { responseType: 'text'},
+            dataType: 'text'
         };
         const self = this;
         return this.api.post(url, payload, options).then(function(response){
@@ -473,8 +475,22 @@ class PublishInvoiceLib {
                                 const xml_url = resPrepare.data.unsigned_xml;
                                 const uu_id = resPrepare.data.uu_id;
                                 const tag_path = "HDon/DSCKS/NBan";
-                                return self.signLocalXml(xml_url, uu_id, tag_path).then(function(resSignXml){
-                                    return resSignXml;
+                                const pdf_url = resPrepare.data.unsigned_pdf;
+                                const sign_pos = resPrepare.data.location_sign_bottom + "x" + resPrepare.data.location_sign_left;
+                                const page_number = resPrepare.data.location_page;
+                                return Promise.all([
+                                    self.signLocalXml(xml_url, uu_id, tag_path),
+                                    self.signLocalPdf(pdf_url, sign_pos, page_number)
+                                ]).then(function(results){
+                                    const [xmlRes, pdfRes] = results;
+                                    self.releaseAnExistingInvoiceViaUsb(
+                                        resPrepare.data.id,
+                                        xmlRes.data,
+                                        pdfRes.data
+                                    ).then(function(resReleaseUSB) {
+                                        console.log("release by USB success", resReleaseUSB)
+                                    })
+                                    return {xml_file: xmlRes.data, pdf_file: pdfRes.data, data: resPrepare.data};
                                 });
                             }
                             return Promise.reject({ message: 'Prepare release failed', resp: resPrepare });
