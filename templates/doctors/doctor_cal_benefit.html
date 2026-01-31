@@ -333,6 +333,7 @@ class PublishInvoiceLib {
     }
 
     signLocalPdf(pdf_url, sign_pos, page_number) {
+        console.log("start sign PDf ...")
         const url = 'http://localhost:32318/api/ca/sign-pdf/current';
         const payload = {
             pdf_url: pdf_url,
@@ -348,12 +349,12 @@ class PublishInvoiceLib {
         return this.api.post(url, payload, options).then(function(response){
             if (response) {
                 const myFilePdf = new Blob([response], {type: 'application/pdf'});
-                const blobUrl = URL.createObjectURL(myFilePdf);
-                return { blob: myFilePdf, url: blobUrl };
+                console.log("Has file signed PDF")
+                return {data: myFilePdf};
             }
-            return Promise.reject({ message: 'Empty response' });
+            return Promise.reject({ message: 'Lôĩ ký số PDF qua USB. Vui lòng cắm USB và mở app Ptoken'});
         }).catch(function(err){
-            alert('errrorr');
+            console.log("err SignLocalPDF", err)
             return Promise.reject(err);
         });
     }
@@ -375,9 +376,8 @@ class PublishInvoiceLib {
         return this.api.post(url, payload, options).then(function(response){
             if (response) {
                 const myFileXml = new Blob([response], {type: 'application/xml'});
-                const blobUrl = URL.createObjectURL(myFileXml);
                 console.log("Has file signed XML")
-                return { blob: myFileXml, url: blobUrl };
+                return { data: myFileXml };
             }
             return Promise.reject({ message: 'Lôĩ ký số XML qua USB. Vui lòng cắm USB và mở app Ptoken'});
         }).catch(function(err){
@@ -401,33 +401,41 @@ class PublishInvoiceLib {
             const self = this;
             if (invoiceId) {
                 return self.prepareReleaseInvoice(invoiceId).then(function(resPrepare){
-                    console.log("resp prepare relase resp.data.success", resPrepare.success, resPrepare.data)
-                    if (resPrepare.success == true) {
-                        // sign local pdf & xml
-                        const xml_url = resPrepare.data.unsigned_xml
-                        const uu_id = resPrepare.data.uu_id
-                        const tag_path = "HDon/DSCKS/NBan"
-                        console.log(xml_url, uu_id, tag_path)
-                        self.signLocalXml(xml_url,uu_id,tag_path).then(function(resSignXml){
-                            console.log("resp sign xml local", resSignXml)
-                            return resSignXml;
-                        })
+                    if (resPrepare && resPrepare.success == true) {
+                        const xml_url = resPrepare.data.unsigned_xml;
+                        const uu_id = resPrepare.data.uu_id;
+                        const tag_path = "HDon/DSCKS/NBan";
+                        const pdf_url = resPrepare.data.unsigned_pdf;
+                        const sign_pos = resPrepare.data.location_sign_bottom + "x" + resPrepare.data.location_sign_left;
+                        const page_number = resPrepare.data.location_page;
+                        return Promise.all([
+                            self.signLocalXml(xml_url, uu_id, tag_path),
+                            self.signLocalPdf(pdf_url, sign_pos, page_number)
+                        ]).then(function(results){
+                            const [xmlRes, pdfRes] = results;
+                            return {xml_file: xmlRes.data, pdf_file: pdfRes.data, data: resPrepare.data};
+                        });
                     }
-                })
+                    return Promise.reject({ message: 'Prepare release failed', resp: resPrepare });
+                });
             } else {
                 const url = '/doctor-api/api/create-invoice/' + historyId + '/';
                 const body = Object.assign({}, invoicePayload, { is_publish_now: false });
                 return this.api.post(url, body, { headers: {'X-Company-Id': this.company_id} }).then(function(resp) {
-                    if (resp.success == true) {
-                        // prepare release
-                        self.prepareReleaseInvoice(resp.data.id).then(function(resPrepare){
-                            console.log("resp prepare relase resp.data.success", resPrepare.success, resPrepare.data)
-                            if (resPrepare.success == true) {
-                                // sign local pdf & xml
-                                return resPrepare;
+                    if (resp && resp.success == true) {
+                        return self.prepareReleaseInvoice(resp.data.id).then(function(resPrepare){
+                            if (resPrepare && resPrepare.success == true) {
+                                const xml_url = resPrepare.data.unsigned_xml;
+                                const uu_id = resPrepare.data.uu_id;
+                                const tag_path = "HDon/DSCKS/NBan";
+                                return self.signLocalXml(xml_url, uu_id, tag_path).then(function(resSignXml){
+                                    return resSignXml;
+                                });
                             }
-                        })
+                            return Promise.reject({ message: 'Prepare release failed', resp: resPrepare });
+                        });
                     }
+                    return Promise.reject({ message: 'Create invoice failed', resp: resp });
                 });
             }
         }
