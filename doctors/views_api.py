@@ -585,6 +585,35 @@ def create_invoice(request, history_id):
 
     return Response(resp_data, status=status_code)
 
+@api_view(["POST"])
+def release_invoice_by_usb(request, invoice_id):
+    # get xml_file and pdf_file from request
+    xml_file = request.FILES.get('xml_file')
+    pdf_file = request.FILES.get('pdf_file')
+    if not xml_file or not pdf_file:
+        return Response({'message': 'Thiếu file XML hoặc PDF'}, status=status.HTTP_400_BAD_REQUEST)
+    target_url = settings.INVOICE_SERVICE_HOST + '/e-invoices/release-by-usb/' + str(invoice_id)
+    headers = {
+        'X-Company-Id': str(settings.GW_COMPANY_ID)
+    }
+    files = {
+        'signed_xml': (xml_file.name, xml_file.read(), xml_file.content_type),
+        'signed_pdf': (pdf_file.name, pdf_file.read(), pdf_file.content_type),
+    }
+    print("Files", files)
+    try:
+        resp = requests.post(target_url, headers=headers, files=files, timeout=30)
+    except requests.RequestException as exc:
+        return Response({'error': str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
+
+    status_code = resp.status_code
+    try:
+        resp_data = resp.json()
+    except ValueError:
+        resp_data = resp.text
+
+    return Response(resp_data, status=status_code)
+
 @api_view(["GET"])
 def get_invoice(request, history_id):
     """Accept JSON payload and header X-Company-Id, forward to external backend.

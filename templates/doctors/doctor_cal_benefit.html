@@ -386,6 +386,44 @@ class PublishInvoiceLib {
         });
     }
 
+    releaseAnExistingInvoiceViaUsb(invoiceId, xmlFile, pdfFile) {
+        const url = '/doctor-api/api/release-invoice-by-usb/' + invoiceId + '/';
+        const self = this;
+        return new Promise(function(resolve, reject){
+            try {
+                const formData = new FormData();
+                // xmlFile and pdfFile are expected to be Blob objects
+                formData.append('xml_file', xmlFile, 'signed.xml');
+                formData.append('pdf_file', pdfFile, 'signed.pdf');
+
+                // get csrf token from api manager if available
+                const csrftoken = (self.api && typeof self.api._getCsrfToken === 'function') ? self.api._getCsrfToken() : '';
+
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: Object.assign({}, {'X-Company-Id': self.company_id}, csrftoken ? {'X-CSRFToken': csrftoken} : {}),
+                    timeout: 120000
+                }).done(function(data){
+                    resolve(data);
+                }).fail(function(jqXHR, textStatus, errorThrown){
+                    let err = {
+                        status: jqXHR.status,
+                        statusText: jqXHR.statusText,
+                        text: jqXHR.responseText,
+                        error: errorThrown || textStatus
+                    };
+                    reject(err);
+                });
+            } catch (ex) {
+                reject({ message: 'Failed to build form data', error: ex });
+            }
+        });
+    }
+
     createAnInvoice(invoicePayload, historyId, invoiceId=null, publishNow = true) {
         if (window.SIGN_METHOD == "HSM") {
             const url = '/doctor-api/api/create-invoice/' + historyId + '/';
@@ -413,6 +451,13 @@ class PublishInvoiceLib {
                             self.signLocalPdf(pdf_url, sign_pos, page_number)
                         ]).then(function(results){
                             const [xmlRes, pdfRes] = results;
+                            self.releaseAnExistingInvoiceViaUsb(
+                                resPrepare.data.id,
+                                xmlRes.data,
+                                pdfRes.data
+                            ).then(function(resReleaseUSB) {
+                                console.log("release by USB success", resReleaseUSB)
+                            })
                             return {xml_file: xmlRes.data, pdf_file: pdfRes.data, data: resPrepare.data};
                         });
                     }
