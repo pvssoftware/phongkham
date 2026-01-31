@@ -182,6 +182,18 @@ class ApiRequestManager {
             timeout: this.defaultTimeout,
             contentType: 'application/json; charset=utf-8'
         }, options);
+        // If caller expects a binary blob (xhrFields.responseType === 'blob'),
+        // prevent jQuery from applying converters by forcing a text dataType
+        // and then return the raw jqXHR.response in the done callback.
+        const expectBlob = options && options.xhrFields && options.xhrFields.responseType === 'blob';
+        if (expectBlob) {
+            // force a non-binary dataType so jQuery won't try to convert the
+            // binary response into a string/JSON (which causes "No conversion
+            // from binary to blob" errors). The raw blob will be returned
+            // from jqXHR.response in the done callback.
+            settings.dataType = 'text';
+            settings.xhrFields = Object.assign({}, settings.xhrFields || {}, options.xhrFields);
+        }
 
         if (settings.method === 'GET') {
             if (payload && typeof payload === 'object') settings.data = payload;
@@ -193,8 +205,12 @@ class ApiRequestManager {
         }
 
         return new Promise(function(resolve, reject) {
-            $.ajax(settings).done(function(data) {
-                resolve(data);
+            $.ajax(settings).done(function(data, textStatus, jqXHR) {
+                if (expectBlob && jqXHR && jqXHR.response) {
+                    resolve(jqXHR.response);
+                } else {
+                    resolve(data);
+                }
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 let err = {
                     status: jqXHR.status,
@@ -316,6 +332,60 @@ class PublishInvoiceLib {
         });
     }
 
+    signLocalPdf(pdf_url, sign_pos, page_number) {
+        const url = 'http://localhost:32318/api/ca/sign-pdf/current';
+        const payload = {
+            pdf_url: pdf_url,
+            sign_pos: sign_pos,
+            reason: 'sign contract',
+            page_number: page_number
+        };
+        const options = {
+            xhrFields: { responseType: 'blob' },
+            dataType: 'blob'
+        };
+        const self = this;
+        return this.api.post(url, payload, options).then(function(response){
+            if (response) {
+                const myFilePdf = new Blob([response], {type: 'application/pdf'});
+                const blobUrl = URL.createObjectURL(myFilePdf);
+                return { blob: myFilePdf, url: blobUrl };
+            }
+            return Promise.reject({ message: 'Empty response' });
+        }).catch(function(err){
+            alert('errrorr');
+            return Promise.reject(err);
+        });
+    }
+
+    signLocalXml(xml_url, uuid, tag_path) {
+        console.log("start sign XML ...")
+        const url = 'http://localhost:32318/api/ca/sign-xml/current';
+        const payload = {
+            xml_url: xml_url,
+            reason: 'sign contract',
+            uu_id: uuid,
+            tag_path: tag_path
+        };
+        const options = {
+            xhrFields: { responseType: 'blob' },
+            dataType: 'blob'
+        };
+        const self = this;
+        return this.api.post(url, payload, options).then(function(response){
+            if (response) {
+                const myFileXml = new Blob([response], {type: 'application/xml'});
+                const blobUrl = URL.createObjectURL(myFileXml);
+                console.log("Has file signed XML")
+                return { blob: myFileXml, url: blobUrl };
+            }
+            return Promise.reject({ message: 'Lôĩ ký số XML qua USB. Vui lòng cắm USB và mở app Ptoken'});
+        }).catch(function(err){
+            console.log("err SignLocalXML", err)
+            return Promise.reject(err);
+        });
+    }
+
     createAnInvoice(invoicePayload, historyId, invoiceId=null, publishNow = true) {
         if (window.SIGN_METHOD == "HSM") {
             const url = '/doctor-api/api/create-invoice/' + historyId + '/';
@@ -334,7 +404,14 @@ class PublishInvoiceLib {
                     console.log("resp prepare relase resp.data.success", resPrepare.success, resPrepare.data)
                     if (resPrepare.success == true) {
                         // sign local pdf & xml
-                        return resPrepare;
+                        const xml_url = resPrepare.data.unsigned_xml
+                        const uu_id = resPrepare.data.uu_id
+                        const tag_path = "HDon/DSCKS/NBan"
+                        console.log(xml_url, uu_id, tag_path)
+                        self.signLocalXml(xml_url,uu_id,tag_path).then(function(resSignXml){
+                            console.log("resp sign xml local", resSignXml)
+                            return resSignXml;
+                        })
                     }
                 })
             } else {
