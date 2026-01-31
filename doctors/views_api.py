@@ -600,7 +600,6 @@ def release_invoice_by_usb(request, invoice_id):
         'signed_xml': (xml_file.name, xml_file.read(), xml_file.content_type),
         'signed_pdf': (pdf_file.name, pdf_file.read(), pdf_file.content_type),
     }
-    print("Files", files)
     try:
         resp = requests.post(target_url, headers=headers, files=files, timeout=30)
     except requests.RequestException as exc:

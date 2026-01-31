@@ -342,17 +342,15 @@ class PublishInvoiceLib {
             page_number: page_number
         };
         const options = {
-            xhrFields: { responseType: 'text' },
-            dataType: 'text'
+            xhrFields: { responseType: 'arraybuffer'},
+            dataType: 'binary'
         };
         const self = this;
         return this.api.post(url, payload, options).then(function(response){
             if (response) {
-                console.log(typeof(response));
-                console.log("response pdf:", response)
-                const myFilePdf = new Blob([response], {type: 'application/pdf'});
-                console.log("Has file signed PDF")
-                return {data: myFilePdf};
+                const pdfBlob = new Blob([response], {type: 'application/pdf'});
+                console.log("Has file signed PDF", pdfBlob.size)
+                return {data: pdfBlob};
             }
             return Promise.reject({ message: 'Lôĩ ký số PDF qua USB. Vui lòng cắm USB và mở app Ptoken'});
         }).catch(function(err){
