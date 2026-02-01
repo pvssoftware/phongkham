@@ -2,6 +2,7 @@ import re, os
 import pytz
 import json
 from django.db import models
+from django.db.models import Q
 from user.models import User, DoctorProfile
 from .utils_models import locate_medical_ultrasonography_upload, locate_medical_ultrasonography_upload_2, locate_medical_ultrasonography_upload_3,locate_endoscopy_upload, locate_medical_test_upload, locate_medical_test_upload_2, locate_medical_test_upload_3
 
@@ -32,6 +33,66 @@ class MedicalRecord(models.Model):
     def __str__(self):
         return "{}-{}".format(self.full_name, self.phone)
 
+
+class MedicalHistoryQuerySet(models.QuerySet):
+    """QuerySet with helpers for MedicalHistory metadata queries.
+
+    Implementing the logic on the QuerySet allows calling
+    `MedicalHistory.objects.unapproved_tax_code()` and also
+    `some_queryset.unapproved_tax_code()`.
+    """
+
+    def waiting_approve_tax_code(self):
+        qs = self.filter(
+            Q(metadata__icontains='is_code_tax_approved') &
+            Q(metadata__icontains='is_tax_deny') &
+            Q(metadata__icontains='is_signed')
+        )
+        ids = []
+        for item in qs.values('id', 'metadata'):
+            try:
+                data = json.loads(item['metadata'] or '{}')
+            except Exception:
+                continue
+            invoice = data.get('invoice_data') or {}
+            val0 = invoice.get('is_signed')
+            val1 = invoice.get('is_code_tax_approved')
+            val2 = invoice.get('is_tax_deny')
+            if (
+                (val0 is True or (isinstance(val0, str) and val0.lower() == 'true')) and
+                (val1 is False or (isinstance(val1, str) and val1.lower() == 'false')) and
+                (val2 is False or (isinstance(val2, str) and val2.lower() == 'false'))
+            ):
+                ids.append(item['id'])
+        if not ids:
+            return self.none()
+        return self.filter(id__in=ids)
+
+    def error_approve_tax_code(self):
+        qs = self.filter(
+            Q(metadata__icontains='is_code_tax_approved') &
+            Q(metadata__icontains='is_tax_deny') &
+            Q(metadata__icontains='is_signed')
+        )
+        ids = []
+        for item in qs.values('id', 'metadata'):
+            try:
+                data = json.loads(item['metadata'] or '{}')
+            except Exception:
+                continue
+            invoice = data.get('invoice_data') or {}
+            val0 = invoice.get('is_signed')
+            val1 = invoice.get('is_code_tax_approved')
+            val2 = invoice.get('is_tax_deny')
+            if (
+                (val0 is True or (isinstance(val0, str) and val0.lower() == 'true')) and
+                (val1 is False or (isinstance(val1, str) and val1.lower() == 'false')) and
+                (val2 is True or (isinstance(val2, str) and val2.lower() == 'true'))
+            ):
+                ids.append(item['id'])
+        if not ids:
+            return self.none()
+        return self.filter(id__in=ids)
 
 
 class MedicalHistory(models.Model):
@@ -120,6 +181,7 @@ class MedicalHistory(models.Model):
     # we store a JSON string in `metadata` and provide helpers
     # to read/write as a Python dict.
     metadata = models.TextField(blank=True, default='{}')
+    objects = MedicalHistoryQuerySet.as_manager()
 
     def __str__(self):
         return self.medical_record.full_name

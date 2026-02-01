@@ -377,6 +377,8 @@ def cal_benefit(request,pk_doctor):
             histories = MedicalHistory.objects.filter(medical_record__doctor = user).filter(date__gte=from_date).filter(date__lte=to_date+timedelta(days=1))
 
             count_histories = histories.count()
+            count_waiting_approve_tax_code = histories.waiting_approve_tax_code().count()
+            count_error_approve_tax_code = histories.error_approve_tax_code().count()
 
             count_ultrasonography = histories.filter(Q(medical_ultrasonography_file__regex=r'[^-\s]')|Q(medical_ultrasonography_file_2__regex=r'[^-\s]')|Q(medical_ultrasonography_file_3__regex=r'[^-\s]')).count()
             ultrasonography_revenue = sum_cost_ultra_service(histories)
@@ -455,6 +457,8 @@ def cal_benefit(request,pk_doctor):
                 "count_medical_test":count_medical_test,
                 "medical_test_revenue":medical_test_revenue,
                 "count_histories":count_histories,
+                "count_waiting_approve_tax_code": count_waiting_approve_tax_code,
+                "count_error_approve_tax_code": count_error_approve_tax_code,
                 "invoice_service_host": settings.INVOICE_SERVICE_HOST,
                 "gw_company_id": settings.GW_COMPANY_ID,
                 "invoice_common_code": settings.INVOICE_COMMON_CODE,
