@@ -115,7 +115,7 @@
                 <td class="convert_number">{{ history.revenue_drug }}</td>
                 <td class="convert_number">{{ history.history.medical_examination_cost }}</td>
                 <td class="convert_number"> {{ history.total_revenue }}</td>
-                <td class="status-color-{{history.status_label_color}}">{{ history.status_label }}</td>
+                <td id="invoice_status_{{history.history.id}}" class="invoice_status status-color-{{history.status_label_color}}">{{ history.status_label }}</td>
                 <td class="">
                     {% if history.invoice_uuid != "" %}
                     <button id="{{ history.history.id }}" type="button" class="btn btn-success mb-3 btn-invoice"
@@ -388,7 +388,7 @@ class PublishInvoiceLib {
         });
     }
 
-    releaseAnExistingInvoiceViaUsb(invoiceId, xmlFile, pdfFile) {
+    releaseAnExistingInvoiceViaUsb(invoiceId, historyId, xmlFile, pdfFile) {
         const url = '/doctor-api/api/release-invoice-by-usb/' + invoiceId + '/';
         const self = this;
         return new Promise(function(resolve, reject){
@@ -397,6 +397,7 @@ class PublishInvoiceLib {
                 // xmlFile and pdfFile are expected to be Blob objects
                 formData.append('xml_file', xmlFile, 'signed.xml');
                 formData.append('pdf_file', pdfFile, 'signed.pdf');
+                formData.append('history_id', historyId)
 
                 // get csrf token from api manager if available
                 const csrftoken = (self.api && typeof self.api._getCsrfToken === 'function') ? self.api._getCsrfToken() : '';
@@ -453,14 +454,20 @@ class PublishInvoiceLib {
                             self.signLocalPdf(pdf_url, sign_pos, page_number)
                         ]).then(function(results){
                             const [xmlRes, pdfRes] = results;
-                            self.releaseAnExistingInvoiceViaUsb(
+                            return self.releaseAnExistingInvoiceViaUsb(
                                 resPrepare.data.id,
+                                historyId,
                                 xmlRes.data,
                                 pdfRes.data
                             ).then(function(resReleaseUSB) {
                                 console.log("release by USB success", resReleaseUSB)
+                                self._closePdfModal();
+                                return {xml_file: xmlRes.data, pdf_file: pdfRes.data, data: resReleaseUSB.data};
                             })
                             return {xml_file: xmlRes.data, pdf_file: pdfRes.data, data: resPrepare.data};
+                        }).catch(function(err) {
+                            console.log("Lỗi ký số. Vui lòng cắm USB và mở app Ptoken 1")
+                            return Promise.reject({ text: 'Lỗi ký số. Vui lòng cắm USB và mở app Ptoken'});
                         });
                     }
                     return Promise.reject({ message: 'Prepare release failed', resp: resPrepare });
@@ -483,14 +490,20 @@ class PublishInvoiceLib {
                                     self.signLocalPdf(pdf_url, sign_pos, page_number)
                                 ]).then(function(results){
                                     const [xmlRes, pdfRes] = results;
-                                    self.releaseAnExistingInvoiceViaUsb(
+                                    return self.releaseAnExistingInvoiceViaUsb(
                                         resPrepare.data.id,
+                                        historyId,
                                         xmlRes.data,
                                         pdfRes.data
                                     ).then(function(resReleaseUSB) {
                                         console.log("release by USB success", resReleaseUSB)
+                                        self._closePdfModal();
+                                        return {xml_file: xmlRes.data, pdf_file: pdfRes.data, data: resReleaseUSB.data};
                                     })
                                     return {xml_file: xmlRes.data, pdf_file: pdfRes.data, data: resPrepare.data};
+                                }).catch(function(err) {
+                                    console.log("Lỗi ký số. Vui lòng cắm USB và mở app Ptoken 2")
+                                    return Promise.reject({ text: 'Lỗi ký số. Vui lòng cắm USB và mở app Ptoken'});
                                 });
                             }
                             return Promise.reject({ message: 'Prepare release failed', resp: resPrepare });
@@ -759,7 +772,7 @@ $(document).ready(function(){
             btn.attr('data-invoice-uuid', invoiceUuid).data('invoice-uuid', invoiceUuid);
             btn.removeClass('btn-primary').addClass('btn-success');
             btn.text('Xem hóa đơn');
-
+            $("#invoice_status_"+historyId).html("Chờ cấp mã")
         }).catch(function(err){
             console.error(err);
             alert('Lỗi xuất hóa đơn. Vui lòng thử lại. ' + err.text);

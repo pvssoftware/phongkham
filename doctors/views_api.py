@@ -590,6 +590,7 @@ def release_invoice_by_usb(request, invoice_id):
     # get xml_file and pdf_file from request
     xml_file = request.FILES.get('xml_file')
     pdf_file = request.FILES.get('pdf_file')
+    history_id = request.POST.get('history_id')
     if not xml_file or not pdf_file:
         return Response({'message': 'Thiếu file XML hoặc PDF'}, status=status.HTTP_400_BAD_REQUEST)
     target_url = settings.INVOICE_SERVICE_HOST + '/e-invoices/release-by-usb/' + str(invoice_id)
@@ -608,6 +609,12 @@ def release_invoice_by_usb(request, invoice_id):
     status_code = resp.status_code
     try:
         resp_data = resp.json()
+        if status_code == 200 and resp_data["success"]:
+            data = resp_data["data"]
+            # update invoice data to history record
+            history = MedicalHistory.objects.filter(pk=int(history_id)).first()
+            if history:
+                history.update_metadata_by_key('invoice_data', data)
     except ValueError:
         resp_data = resp.text
 

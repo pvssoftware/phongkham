@@ -59,3 +59,4 @@ zipp==0.6.0
 zope.interface==5.4.0
 factory_boy==3.2.1
 Faker==8.1.1
+redis
