@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .dza-commands-table { width: 100%; }
+  .dza-commands-table td, .dza-commands-table th { vertical-align: top; }
+  .dza-usage, .dza-output, .dza-command-line {
+    white-space: pre-wrap; word-break: break-word; margin: 0;
+    background: #f8f8f8; border: 1px solid #eee; padding: 8px; font-size: 12px;
+  }
+  .dza-output { max-height: 420px; overflow: auto; }
+  .dza-output-error { background: #fff3f3; border-color: #f2c8c8; }
+  .dza-command-form .form-row label { display: block; float: none; width: auto; padding: 0 0 4px; }
+  .dza-command-form .help { margin-left: 0; padding-left: 0; }
+  .dza-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; color: #fff; font-weight: bold; }
+  .dza-badge-success { background: #2e7d32; }
+  .dza-badge-warning { background: #ef6c00; }
+  .dza-badge-danger { background: #c62828; }
+  .dza-running { margin-right: 12px; color: #666; }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+  &rsaquo; <a href="{% url 'admin:dza_commands' %}">{% trans 'Django commands' %}</a>
+  {% if command %}&rsaquo; {{ command.name }}{% endif %}
+</div>
+{% endblock %}

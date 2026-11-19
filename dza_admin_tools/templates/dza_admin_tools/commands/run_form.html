@@ -1,0 +1,98 @@
+{% extends "dza_admin_tools/commands/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div id="content-main">
+  <form class="dza-command-form" method="post" action="{% url 'admin:dza_commands_run' command.name %}" data-dza-command-form>
+    {% csrf_token %}
+    {% if command.help %}<p class="help">{{ command.help }}</p>{% endif %}
+
+    <fieldset class="module aligned">
+      {% for bound in bound_fields %}
+      {% with spec=bound.field %}
+      <div class="form-row{% if bound.errors %} errors{% endif %}">
+        {% if bound.errors %}
+        <ul class="errorlist">{% for error in bound.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if spec.kind == "checkbox" %}
+        <label class="vCheckboxLabel">
+          <input type="checkbox" name="{{ spec.dest }}" id="id_{{ spec.dest }}"{% if bound.checked %} checked{% endif %}>
+          <code>{{ spec.label }}</code>
+        </label>
+        {% else %}
+        <label for="id_{{ spec.dest }}"{% if spec.required %} class="required"{% endif %}><code>{{ spec.label }}</code>{% if spec.required %} *{% endif %}</label>
+        {% if spec.kind == "select" %}
+        <select name="{{ spec.dest }}" id="id_{{ spec.dest }}">
+          {% if not spec.required %}<option value="">---------</option>{% endif %}
+          {% for choice in spec.choices %}
+          <option value="{{ choice }}"{% if choice == bound.value %} selected{% endif %}>{{ choice }}</option>
+          {% endfor %}
+        </select>
+        {% elif spec.kind == "password" %}
+        <input type="password" name="{{ spec.dest }}" id="id_{{ spec.dest }}" class="vTextField" autocomplete="new-password"{% if spec.required %} required{% endif %}>
+        {% elif spec.kind == "number" %}
+        <input type="number" step="any" name="{{ spec.dest }}" id="id_{{ spec.dest }}" value="{{ bound.value }}"{% if spec.required %} required{% endif %}>
+        {% elif spec.kind == "date" %}
+        <input type="date" name="{{ spec.dest }}" id="id_{{ spec.dest }}" value="{{ bound.value }}"{% if spec.required %} required{% endif %}>
+        {% else %}
+        <input type="text" name="{{ spec.dest }}" id="id_{{ spec.dest }}" class="vTextField" value="{{ bound.value }}"{% if spec.required %} required{% endif %}>
+        {% endif %}
+        {% endif %}
+        {% if spec.help or spec.multiple %}
+        <div class="help">
+          {{ spec.help }}
+          {% if spec.multiple %}{% trans 'Multiple values, separated by spaces (quote values containing spaces).' %}{% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% endwith %}
+      {% empty %}
+      <p>{% trans 'This command has no parameters. Run it now?' %}</p>
+      {% endfor %}
+    </fieldset>
+
+    <input type="hidden" name="_dza_download_token" value="" data-dza-token>
+    <div class="submit-row">
+      <span class="dza-running" data-dza-running hidden>{% blocktrans with timeout=timeout_seconds %}Running… (up to {{ timeout }} seconds){% endblocktrans %}</span>
+      <span class="dza-running" data-dza-done hidden>{% trans 'Done, the file has been downloaded.' %}</span>
+      <a class="button" href="{% url 'admin:dza_commands' %}">{% trans 'Cancel' %}</a>
+      <input type="submit" class="default" value="{% trans 'Run' %}" data-dza-submit>
+    </div>
+  </form>
+</div>
+<script>
+(function () {
+  // Command chạy xong mà trả file thì trình duyệt tải về và KHÔNG rời trang: dò cookie token để bật lại nút Run.
+  var form = document.querySelector("[data-dza-command-form]");
+  if (!form) return;
+  var cookieName = "dza_download_token";
+  var submit = form.querySelector("[data-dza-submit]");
+  var running = form.querySelector("[data-dza-running]");
+  var done = form.querySelector("[data-dza-done]");
+  var timer = null;
+
+  function readCookie() {
+    var match = document.cookie.match(new RegExp("(?:^|; )" + cookieName + "=([^;]*)"));
+    return match ? match[1] : null;
+  }
+
+  form.addEventListener("submit", function () {
+    var token = Date.now().toString(36) + Math.random().toString(36).slice(2);
+    form.querySelector("[data-dza-token]").value = token;
+    // disable sau khi submit đã được gửi đi, không chặn chính lần submit này
+    setTimeout(function () { submit.disabled = true; }, 0);
+    running.hidden = false;
+    done.hidden = true;
+    clearInterval(timer);
+    timer = setInterval(function () {
+      if (readCookie() !== token) return;
+      clearInterval(timer);
+      document.cookie = cookieName + "=; Max-Age=0; path=/";
+      submit.disabled = false;
+      running.hidden = true;
+      done.hidden = false;
+    }, 500);
+  });
+})();
+</script>
+{% endblock %}

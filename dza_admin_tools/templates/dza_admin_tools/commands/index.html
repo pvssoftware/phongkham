@@ -1,0 +1,41 @@
+{% extends "dza_admin_tools/commands/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div id="content-main">
+  <p class="help">{% blocktrans with timeout=timeout_seconds %}Only commands in DZA_ADMIN_COMMANDS["ALLOWED"] are listed. Each run is limited to {{ timeout }} seconds.{% endblocktrans %}</p>
+  {% if commands %}
+  <div class="module">
+    <table class="dza-commands-table">
+      <thead>
+        <tr>
+          <th scope="col">{% trans 'Command' %}</th>
+          <th scope="col">{% trans 'Description' %}</th>
+          <th scope="col">{% trans 'Usage' %}</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for command in commands %}
+        <tr>
+          <th scope="row"><code>{{ command.name }}</code><div class="help">{{ command.app }}</div></th>
+          <td>
+            {{ command.help|linebreaksbr }}
+            {% if command.error %}<p class="errornote">{{ command.error }}</p>{% endif %}
+          </td>
+          <td><pre class="dza-usage">{{ command.usage }}</pre></td>
+          <td>
+            {% if command.runnable %}
+            <a class="button" href="{% url 'admin:dza_commands_run' command.name %}">{% trans 'Run now' %}</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p>{% trans 'No commands are allowed. Add command names to DZA_ADMIN_COMMANDS["ALLOWED"].' %}</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "dza_admin_tools/commands/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div id="content-main" class="dza-command-result">
+  <p>
+    {% if result.timed_out %}
+    <span class="dza-badge dza-badge-warning">{% trans 'Timed out' %}</span>
+    {% elif result.succeeded %}
+    <span class="dza-badge dza-badge-success">{% trans 'Succeeded' %}</span>
+    {% else %}
+    <span class="dza-badge dza-badge-danger">{% blocktrans with code=result.exit_code %}Failed (exit code {{ code }}){% endblocktrans %}</span>
+    {% endif %}
+    <span class="help">{% blocktrans with seconds=result.duration|floatformat:1 %}{{ seconds }} s{% endblocktrans %}</span>
+  </p>
+  <pre class="dza-command-line">{{ command_line }}</pre>
+
+  <h3>stdout{% if result.stdout_truncated %} <span class="help">({% trans 'truncated, showing the end' %})</span>{% endif %}</h3>
+  <pre class="dza-output">{{ result.stdout|default:"—" }}</pre>
+  {% if result.stderr %}
+  <h3>stderr{% if result.stderr_truncated %} <span class="help">({% trans 'truncated, showing the end' %})</span>{% endif %}</h3>
+  <pre class="dza-output dza-output-error">{{ result.stderr }}</pre>
+  {% endif %}
+
+  <div class="submit-row">
+    <a class="button" href="{% url 'admin:dza_commands' %}">{% trans 'Back to commands' %}</a>
+    <a class="button default" href="{% url 'admin:dza_commands_run' command.name %}">{% trans 'Run again' %}</a>
+  </div>
+</div>
+{% endblock %}
