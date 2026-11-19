@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'user',
     'doctors',
+    'dza_admin_tools.apps.DzaAdminToolsConfig',
 
     # 3rd Party
     'crispy_forms',
@@ -53,6 +54,13 @@ INSTALLED_APPS = [
     'django_celery_beat',
 
 ]
+
+# Trang "Django commands" trong admin (chỉ superuser), xem dza_admin_tools/README.md
+DZA_ADMIN_COMMANDS = {
+    "ALLOWED": ["export_patient_visits"],
+    "TIMEOUT_SECONDS": 50,  # < nginx proxy_read_timeout (60s) và gunicorn --timeout
+    "MAX_OUTPUT_CHARS": 100_000,
+}
 
 # CELERY BROKER RABBITMQ
 CELERY_BROKER_URL = 'amqp://localhost'
