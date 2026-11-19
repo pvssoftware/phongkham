@@ -59,7 +59,7 @@ Command chạy lâu hơn `TIMEOUT_SECONDS` sẽ bị dừng → cân nhắc ch�
 
 | Command | Mô tả |
 |---|---|
-| `export_patient_visits --from-date YYYY-MM-DD --to-date YYYY-MM-DD` | Excel danh sách lượt khám toàn hệ thống theo ngày khám (`date_booked`, giờ VN), tối đa 366 ngày. Code: `doctors/exporters.py`, `doctors/management/commands/export_patient_visits.py`. |
+| `export_patient_visits --from-date YYYY-MM-DD --to-date YYYY-MM-DD [--unique-patients]` | Excel danh sách lượt khám toàn hệ thống theo ngày khám (`date_booked`, giờ VN), tối đa 366 ngày. `--unique-patients`: mỗi hồ sơ bệnh nhân 1 dòng (lượt gần nhất, phí của lượt đó) + cột "Số lần khám", file `benh_nhan_<from>_<to>.xlsx`. Code: `doctors/exporters.py`, `doctors/management/commands/export_patient_visits.py`. |
 
 ## Test
 

@@ -98,6 +98,59 @@ class PatientVisitExcelExporterTests(TestCase):
         self.assertEqual(rows[1][17], "Đang chờ")
 
 
+class UniquePatientsExporterTests(TestCase):
+    def export(self, from_date, to_date):
+        exporter = PatientVisitExcelExporter(from_date, to_date, unique_patients=True)
+        title, rows = read_rows(exporter.to_bytes())
+        return exporter, title, rows
+
+    def test_one_row_per_patient_with_latest_visit_and_count(self):
+        record_a = MedicalRecordFactory(full_name="Bệnh nhân A")
+        MedicalHistoryFactory(medical_record=record_a, date_booked=vn_datetime(2026, 11, 2, 8, 0),
+                              diagnostis="lần 1", medical_examination_cost="100000", is_waiting=False)
+        MedicalHistoryFactory(medical_record=record_a, date_booked=vn_datetime(2026, 11, 9, 15, 0),
+                              diagnostis="lần 2", medical_examination_cost="200000",
+                              medical_ultrasonography_cost="50000", is_waiting=True)
+        MedicalHistoryFactory(medical_record=record_a, date_booked=vn_datetime(2026, 12, 1, 8, 0),
+                              diagnostis="ngoài khoảng")
+        record_b = MedicalRecordFactory(full_name="Bệnh nhân B")
+        MedicalHistoryFactory(medical_record=record_b, date_booked=vn_datetime(2026, 11, 5, 10, 0), diagnostis="B")
+
+        exporter, title, rows = self.export(date(2026, 11, 1), date(2026, 11, 30))
+
+        self.assertEqual(title, "Bệnh nhân")
+        self.assertEqual(exporter.filename, "benh_nhan_2026-11-01_2026-11-30.xlsx")
+        self.assertEqual(rows[0], EXPECTED_HEADERS + ["Số lần khám"])
+        self.assertEqual(len(rows), 3)
+        # sắp theo ngày khám của lượt đại diện: B (05/11) trước A (09/11)
+        row_b, row_a = rows[1], rows[2]
+        self.assertEqual((row_b[0], row_b[6], row_b[13], row_b[18]), (1, "Bệnh nhân B", "B", 1))
+        self.assertEqual(
+            (row_a[0], row_a[1], row_a[6], row_a[13], row_a[14], row_a[15], row_a[17], row_a[18]),
+            (2, "09/11/2026 15:00", "Bệnh nhân A", "lần 2", 200000, 50000, "Đang chờ", 2),
+        )
+        self.assertEqual(exporter.row_count, 2)
+
+    def test_same_datetime_tie_breaks_by_latest_id(self):
+        record = MedicalRecordFactory()
+        MedicalHistoryFactory(medical_record=record, date_booked=vn_datetime(2026, 11, 3, 9, 0), diagnostis="cũ")
+        MedicalHistoryFactory(medical_record=record, date_booked=vn_datetime(2026, 11, 3, 9, 0), diagnostis="mới")
+
+        _, _, rows = self.export(date(2026, 11, 3), date(2026, 11, 3))
+
+        self.assertEqual([(row[13], row[18]) for row in rows[1:]], [("mới", 2)])
+
+    def test_default_mode_unchanged(self):
+        record = MedicalRecordFactory()
+        MedicalHistoryFactory(medical_record=record, date_booked=vn_datetime(2026, 11, 3, 9, 0))
+        MedicalHistoryFactory(medical_record=record, date_booked=vn_datetime(2026, 11, 4, 9, 0))
+
+        exporter = PatientVisitExcelExporter(date(2026, 11, 1), date(2026, 11, 30))
+        title, rows = read_rows(exporter.to_bytes())
+
+        self.assertEqual((title, rows[0], len(rows)), ("Lượt khám", EXPECTED_HEADERS, 3))
+
+
 class ExportPatientVisitsCommandTests(TestCase):
     def make_output_dir(self):
         tmp = tempfile.TemporaryDirectory()
@@ -121,6 +174,19 @@ class ExportPatientVisitsCommandTests(TestCase):
             _, rows = read_rows(file.read())
         self.assertEqual(len(rows), 2)
         self.assertIn("1", stdout)
+
+    def test_unique_patients_flag(self):
+        record = MedicalRecordFactory()
+        MedicalHistoryFactory(medical_record=record, date_booked=vn_datetime(2026, 11, 10, 10, 0))
+        MedicalHistoryFactory(medical_record=record, date_booked=vn_datetime(2026, 11, 11, 10, 0))
+
+        output_dir, _ = self.run_command("--from-date", "2026-11-01", "--to-date", "2026-11-19", "--unique-patients")
+
+        self.assertEqual(os.listdir(output_dir), ["benh_nhan_2026-11-01_2026-11-19.xlsx"])
+        with open(os.path.join(output_dir, "benh_nhan_2026-11-01_2026-11-19.xlsx"), "rb") as file:
+            _, rows = read_rows(file.read())
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[1][18], 2)
 
     def test_invalid_input_raises_and_writes_nothing(self):
         cases = [

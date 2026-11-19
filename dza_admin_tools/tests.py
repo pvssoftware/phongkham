@@ -34,6 +34,7 @@ class ServicesTests(TestCase):
             [
                 ("from_date", FieldKind.DATE, "--from-date", True),
                 ("to_date", FieldKind.DATE, "--to-date", True),
+                ("unique_patients", FieldKind.CHECKBOX, "--unique-patients", False),
             ],
         )
 
@@ -43,6 +44,9 @@ class ServicesTests(TestCase):
         built = build_argv(command, {"from_date": "2026-11-01", "to_date": "2026-11-19"})
         self.assertEqual(built.errors, {})
         self.assertEqual(built.argv, ["--from-date=2026-11-01", "--to-date=2026-11-19"])
+
+        built = build_argv(command, {"from_date": "2026-11-01", "to_date": "2026-11-19", "unique_patients": "on"})
+        self.assertEqual(built.argv, ["--from-date=2026-11-01", "--to-date=2026-11-19", "--unique-patients"])
 
         built = build_argv(command, {"from_date": "19/11/2026", "to_date": ""})
         self.assertEqual(set(built.errors), {"from_date", "to_date"})

@@ -22,18 +22,22 @@ class Command(BaseCommand):
                             help="Từ ngày (YYYY-MM-DD), tính cả ngày này.")
         parser.add_argument("--to-date", dest="to_date", type=parse_date_arg, required=True,
                             help="Đến ngày (YYYY-MM-DD), tính cả ngày này.")
+        parser.add_argument("--unique-patients", dest="unique_patients", action="store_true",
+                            help="Bỏ trùng theo hồ sơ bệnh nhân: mỗi bệnh nhân 1 dòng (lượt khám gần nhất trong "
+                                 "khoảng, phí của lượt đó), thêm cột 'Số lần khám'.")
 
-    def handle(self, *args, from_date, to_date, **options):
+    def handle(self, *args, from_date, to_date, unique_patients=False, **options):
         if from_date > to_date:
             raise CommandError("--from-date must be on or before --to-date.")
         if (to_date - from_date).days + 1 > MAX_RANGE_DAYS:
             raise CommandError("Date range must not exceed %d days." % MAX_RANGE_DAYS)
 
-        exporter = PatientVisitExcelExporter(from_date, to_date)
+        exporter = PatientVisitExcelExporter(from_date, to_date, unique_patients=unique_patients)
         content = exporter.to_bytes()  # sinh hết vào memory trước, lỗi giữa chừng không để lại file dở
         path = os.path.join(get_output_dir(), exporter.filename)
         with open(path, "wb") as file:
             file.write(content)
 
-        logger.info("Exported %d patient visits (%s..%s) to %s", exporter.row_count, from_date, to_date, path)
-        self.stdout.write(self.style.SUCCESS("Exported %d visits to %s" % (exporter.row_count, path)))
+        unit = "patients" if unique_patients else "visits"
+        logger.info("Exported %d %s (%s..%s) to %s", exporter.row_count, unit, from_date, to_date, path)
+        self.stdout.write(self.style.SUCCESS("Exported %d %s to %s" % (exporter.row_count, unit, path)))

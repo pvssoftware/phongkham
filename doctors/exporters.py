@@ -1,5 +1,6 @@
 import re
 
+from django.db.models import Count, IntegerField, OuterRef, Subquery
 from django.utils import timezone
 
 from doctors.models import MedicalHistory
@@ -66,19 +67,34 @@ class PatientVisitExcelExporter(BaseExcelExporter):
         "service", "disease_symptom", "diagnostis", "medical_examination_cost", "is_waiting",
     ) + ULTRASOUND_COST_FIELDS + TEST_COST_FIELDS
 
-    def __init__(self, from_date, to_date):
-        super().__init__(filename="luot_kham_%s_%s.xlsx" % (from_date.isoformat(), to_date.isoformat()))
+    def __init__(self, from_date, to_date, unique_patients=False):
+        """unique_patients: mỗi hồ sơ bệnh nhân 1 dòng = lượt khám gần nhất trong khoảng, thêm cột "Số lần khám"."""
+        prefix, sheet_name = ("benh_nhan", "Bệnh nhân") if unique_patients else ("luot_kham", None)
+        super().__init__(
+            filename="%s_%s_%s.xlsx" % (prefix, from_date.isoformat(), to_date.isoformat()),
+            sheet_name=sheet_name,
+        )
         self.from_date = from_date
         self.to_date = to_date
+        self.unique_patients = unique_patients
         self.row_count = 0
+        if unique_patients:
+            self.columns.append(ExcelColumn(field="visit_count", header="Số lần khám", width=12))
 
     def get_queryset(self):
-        return (
-            MedicalHistory.objects
-            .filter(date_booked__date__range=(self.from_date, self.to_date))
-            .order_by("date_booked", "id")
-            .values(*self.value_fields)
-        )
+        in_range = MedicalHistory.objects.filter(date_booked__date__range=(self.from_date, self.to_date))
+        value_fields = self.value_fields
+        queryset = in_range
+        if self.unique_patients:
+            same_patient = in_range.filter(medical_record=OuterRef("medical_record"))
+            latest_id = same_patient.order_by("-date_booked", "-id").values("id")[:1]
+            # order_by() rỗng: không để Meta.ordering (-date_booked) lọt vào GROUP BY làm đếm sai
+            visit_count = same_patient.order_by().values("medical_record").annotate(n=Count("id")).values("n")
+            queryset = in_range.filter(id=Subquery(latest_id)).annotate(
+                visit_count=Subquery(visit_count, output_field=IntegerField()),
+            )
+            value_fields += ("visit_count",)
+        return queryset.order_by("date_booked", "id").values(*value_fields)
 
     def get_data_iterator(self):
         self.row_count = 0
